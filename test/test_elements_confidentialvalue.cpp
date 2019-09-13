@@ -19,7 +19,9 @@ TEST(ConfidentialValue, Constractor) {
   EXPECT_STREQ(value.GetHex().c_str(), "");
   EXPECT_EQ(value.GetData().GetDataSize(), 0);
   EXPECT_EQ(value.HasBlinding(), false);
-  EXPECT_THROW(value.GetAmount().GetSatoshiValue(), CfdException);
+  int64_t satoshi = 0;
+  EXPECT_NO_THROW((satoshi = value.GetAmount().GetSatoshiValue()));
+  EXPECT_EQ(satoshi, 0);
 }
 
 TEST(ConfidentialValue, Constractor_hex0) {
@@ -28,7 +30,9 @@ TEST(ConfidentialValue, Constractor_hex0) {
   EXPECT_STREQ(value.GetHex().c_str(), "");
   EXPECT_EQ(value.GetData().GetDataSize(), 0);
   EXPECT_EQ(value.HasBlinding(), false);
-  EXPECT_THROW(value.GetAmount().GetSatoshiValue(), CfdException);
+  int64_t satoshi = 0;
+  EXPECT_NO_THROW((satoshi = value.GetAmount().GetSatoshiValue()));
+  EXPECT_EQ(satoshi, 0);
 }
 
 TEST(ConfidentialValue, Constractor_hex8) {
@@ -72,7 +76,9 @@ TEST(ConfidentialValue, Constractor_bytedata0) {
   EXPECT_STREQ(value.GetHex().c_str(), "");
   EXPECT_EQ(value.GetData().GetDataSize(), 0);
   EXPECT_EQ(value.HasBlinding(), false);
-  EXPECT_THROW(value.GetAmount().GetSatoshiValue(), CfdException);
+  int64_t satoshi = 0;
+  EXPECT_NO_THROW((satoshi = value.GetAmount().GetSatoshiValue()));
+  EXPECT_EQ(satoshi, 0);
 }
 
 TEST(ConfidentialValue, Constractor_bytedata8) {

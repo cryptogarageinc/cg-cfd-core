@@ -89,7 +89,16 @@ Privkey::Privkey() : data_() {
   // do nothing
 }
 
-Privkey::Privkey(ByteData byte_data) : data_(byte_data) {
+Privkey::Privkey(const ByteData& byte_data) : data_(byte_data) {
+  if (!IsValid(data_.GetBytes())) {
+    warn(CFD_LOG_SOURCE, "Invalid Privkey data. hex={}.", data_.GetHex());
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Invalid Privkey data.");
+  }
+}
+
+Privkey::Privkey(const ByteData256& byte_data)
+    : data_(ByteData(byte_data.GetBytes())) {
   if (!IsValid(data_.GetBytes())) {
     warn(CFD_LOG_SOURCE, "Invalid Privkey data. hex={}.", data_.GetHex());
     throw CfdException(
@@ -151,7 +160,7 @@ Privkey Privkey::FromWif(
     throw CfdException(
         CfdError::kCfdIllegalArgumentError, "Invalid Privkey data");
   }
-  return Privkey(privkey);
+  return Privkey(ByteData(privkey));
 }
 
 Pubkey Privkey::GeneratePubkey(bool is_compressed) {

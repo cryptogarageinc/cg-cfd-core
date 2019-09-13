@@ -70,3 +70,22 @@ TEST(ByteData256, BytesConstructorException) {
   ASSERT_TRUE(false);
 }
 
+TEST(ByteData256, EqualsMatch) {
+  ByteData256 byte_data1 = ByteData256(
+      "1234567890123456789012345678901234567890123456789012345678901234");
+  ByteData256 byte_data2 = ByteData256(
+      "1234567890123456789012345678901234567890123456789012345678901234");
+  bool is_equals = byte_data1.Equals(byte_data2);
+
+  EXPECT_TRUE(is_equals);
+}
+
+TEST(ByteData256, EqualsUnMatch) {
+  ByteData256 byte_data1 = ByteData256(
+      "1234567890123456789012345678901234567890123456789012345678901234");
+  ByteData256 byte_data2 = ByteData256(
+      "0234567890123456789012345678901234567890123456789012345678901234");
+  bool is_equals = byte_data1.Equals(byte_data2);
+
+  EXPECT_FALSE(is_equals);
+}

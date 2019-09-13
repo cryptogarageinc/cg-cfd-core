@@ -9,8 +9,10 @@
 
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_logger.h"
-#include "cfdcore_secp256k1.h"  // NOLINT
-#include "secp256k1.h"          // NOLINT
+#include "cfdcore_secp256k1.h"     // NOLINT
+#include "secp256k1.h"             // NOLINT
+#include "secp256k1_generator.h"   // NOLINT
+#include "secp256k1_rangeproof.h"  // NOLINT
 
 namespace cfdcore {
 

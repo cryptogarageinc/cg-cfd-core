@@ -180,6 +180,12 @@ class CFD_CORE_EXPORT ConfidentialValue {
    * @retval false unblind
    */
   bool HasBlinding() const;
+  /**
+   * @brief 空かどうかを取得する.
+   * @retval true  empty
+   * @retval false exist value
+   */
+  bool IsEmpty() const;
 
   /**
    * @brief satoshiをConfidentialValueへと変換する.
@@ -665,6 +671,19 @@ struct UnblindParameter {
 };
 
 /**
+ * @brief Blind用情報構造体
+ */
+using BlindParameter = UnblindParameter;
+
+/**
+ * @brief Issuance confidentialKeyペア構造体
+ */
+struct IssuanceBlindingKeyPair {
+  Privkey asset_key;  //!< asset blinding key
+  Privkey token_key;  //!< token blinding key
+};
+
+/**
  * @brief Confidential Transaction情報クラス
  */
 class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
@@ -918,6 +937,22 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
       const ByteData256& contract_hash);
 
   /**
+   * @brief ReissueAssetの情報を設定する.
+   * @param[in] tx_in_index             設定するTxInのindex位置
+   * @param[in] asset_amount            reissuance amount
+   * @param[in] asset_locking_script    asset locking script
+   * @param[in] asset_blind_nonce       blind nonce
+   * @param[in] asset_blind_factor      blind factor
+   * @param[in] entropy                 entropy
+   * @return reissuance entropy and asset parameter.
+   */
+  IssuanceParameter SetAssetReissuance(
+      uint32_t tx_in_index, const Amount& asset_amount,
+      const Script& asset_locking_script,
+      const ConfidentialNonce& asset_blind_nonce,
+      const BlindFactor& asset_blind_factor, const BlindFactor& entropy);
+
+  /**
    * @brief TxOutを取得する.
    * @param[in] index     取得するindex位置
    * @return TxOutReference
@@ -996,18 +1031,27 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
   void RemoveTxOut(uint32_t index);
   /**
    * @brief Transactionのblindingを行う.
-   * @details
-   * elements-cliで値を取得した際、以下の値についてはreverseされているため、
-   * 値を確認したうえで必要に応じてrevereseさせてから設定すること。
-   * - value_blind_factor (amount blind factor もしくは blind factor)
-   * - asset_blind_factor
-   *
-   * asset_idはTXIDと同じく、元からreverse前提である。
-   * @param[in] blind_pubkeys             blinding pubkey list.
-   * @param[in] asset_id_list             txin asset id list.
-   * @param[in] asset_blind_factor_list   asset blind factor list.
-   * @param[in] value_blind_factor_list   value blind factor list.
-   * @param[in] input_value_list          utxo value list.
+   * @param[in] txin_info_list            txin blind info list.
+   * @param[in] issuance_blinding_keys    issue blinding key list.
+   * @param[in] txout_confidential_keys   blinding pubkey list.
+   * @param[in] minimum_range_value       rangeproof minimum value.
+   *   0 to max(int64_t)
+   * @param[in] exponent                  rangeproof exponent value.
+   *   -1 to 18. -1 is public value. 0 is most private.
+   * @param[in] minimum_bits              rangeproof blinding bits.
+   *   0 to 64. Number of bits of the value to keep private. 0 is auto.
+   * @return 追加したTxOutのindex位置
+   */
+  void BlindTransaction(
+      const std::vector<BlindParameter>& txin_info_list,
+      const std::vector<IssuanceBlindingKeyPair>& issuance_blinding_keys,
+      const std::vector<Pubkey>& txout_confidential_keys,
+      int64_t minimum_range_value = 1, int exponent = 0,
+      int minimum_bits = 36);
+  /**
+   * @brief TransactionのTxOutのblindingを行う.
+   * @param[in] txin_info_list            txin blind info list.
+   * @param[in] txout_confidential_keys   blinding pubkey list.
    * @param[in] minimum_range_value       rangeproof minimum value.
    *   0 to max(int64_t)
    * @param[in] exponent                  rangeproof exponent value.
@@ -1017,13 +1061,20 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
    * @return 追加したTxOutのindex位置
    */
   void BlindTxOut(
-      const std::vector<Pubkey>& blind_pubkeys,  // pubkey
-      const std::vector<ConfidentialAssetId>& asset_id_list,
-      const std::vector<BlindFactor>& asset_blind_factor_list,  // txin::abf
-      const std::vector<BlindFactor>& value_blind_factor_list,  // txin::vbf
-      const std::vector<Amount>& input_value_list,              // satoshi
+      const std::vector<BlindParameter>& txin_info_list,
+      const std::vector<Pubkey>& txout_confidential_keys,
       int64_t minimum_range_value = 1, int exponent = 0,
       int minimum_bits = 36);
+  /**
+   * @brief indexで指定されたInputに対して、unblind処理を行う.
+   * @param tx_in_index TxInのindex値
+   * @param blinding_key blinding key(秘密鍵)
+   * @param token_blinding_key token blinding key(秘密鍵).
+   * @return unblindの出力データを格納したUnblindParameter構造体
+   */
+  std::vector<UnblindParameter> UnblindTxIn(
+      uint32_t tx_in_index, const Privkey& blinding_key,
+      const Privkey token_blinding_key = Privkey());
   /**
    * @brief indexで指定されたOutputに対して、unblind処理を行う.
    * @param tx_out_index TxOutのindex値
@@ -1096,11 +1147,21 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
    * @param[in] vout              utxo vout
    * @param[in] is_blind          blinding issuance
    * @param[in] contract_hash     asset entropy
+   * @param[in] asset_entropy     asset entropy for reissue
    * @return issuance entropy and asset parameter.
    */
   static IssuanceParameter CalculateIssuanceValue(
       const Txid& txid, uint32_t vout, bool is_blind,
-      const ByteData256 contract_hash);
+      const ByteData256& contract_hash, const ByteData256& asset_entropy);
+  /**
+   * @brief issuance/reissuanceのblinding keyを取得する.
+   * @param[in] master_blinding_key master blindingKey
+   * @param[in] txid                issuance utxo txid
+   * @param[in] vout                issuance utxo vout
+   * @return issuance blinding key
+   */
+  static Privkey GetIssuanceBlindingKey(
+      const Privkey& master_blinding_key, const Txid& txid, uint32_t vout);
 
  private:
   std::vector<ConfidentialTxIn> vin_;    ///< TxIn配列
@@ -1207,6 +1268,46 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
       const ConfidentialNonce& nonce, const Privkey& blinding_key,
       const ByteData& rangeproof, const ConfidentialValue& value_commitment,
       const Script& extra, const ConfidentialAssetId& asset);
+
+  /**
+   * blindされたIssueデータに対して、unblind処理をかける
+   * @param[in] blinding_key      blindingした際の秘密鍵
+   * @param[in] rangeproof        asset amountの検証に用いる検証値
+   * @param[in] value_commitment  blindされたvalueのcommitement値
+   * @param[in] extra             unblindに必要な情報
+   * @param[in] asset             confidential asset id
+   * @return Unblindされた際に出力されたUnblindParameter構造体
+   */
+  static UnblindParameter CalculateUnblindIssueData(
+      const Privkey& blinding_key, const ByteData& rangeproof,
+      const ConfidentialValue& value_commitment, const Script& extra,
+      const ConfidentialAssetId& asset);
+
+  /**
+   * @brief rangeProofなどを生成する。
+   * @param[in] value             amount
+   * @param[in] pubkey            public key
+   * @param[in] privkey           private key
+   * @param[in] asset             confidential asset
+   * @param[in] abf               asset blind factor
+   * @param[in] vbf               value(amount) blind factor
+   * @param[in] script            script
+   * @param[in] minimum_range_value       rangeproof minimum value.
+   *   0 to max(int64_t)
+   * @param[in] exponent                  rangeproof exponent value.
+   *   -1 to 18. -1 is public value. 0 is most private.
+   * @param[in] minimum_bits              rangeproof blinding bits.
+   *   0 to 64. Number of bits of the value to keep private. 0 is auto.
+   * @param[out] commitment        amount commitment
+   * @param[out] range_proof       amount range proof
+   * @return asset generator
+   */
+  static ByteData GetRangeProof(
+      const uint64_t value, const Pubkey* pubkey, const Privkey& privkey,
+      const ConfidentialAssetId& asset, const std::vector<uint8_t>& abf,
+      const std::vector<uint8_t>& vbf, const Script& script,
+      int64_t minimum_range_value, int exponent, int minimum_bits,
+      std::vector<uint8_t>* commitment, std::vector<uint8_t>* range_proof);
 };
 
 }  // namespace cfdcore

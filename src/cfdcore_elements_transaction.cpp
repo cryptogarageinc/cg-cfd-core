@@ -20,6 +20,7 @@
 #include "cfdcore/cfdcore_util.h"
 #include "cfdcore_wally_util.h"  // NOLINT
 #include "wally_elements.h"      // NOLINT
+#include "wally_transaction.h"   // NOLINT
 // #include "wally_script.h" // NOLINT
 
 namespace cfdcore {
@@ -62,6 +63,8 @@ static constexpr uint32_t kTxInVoutMask = WALLY_TX_INDEX_MASK;
 static constexpr uint8_t kTxInFeatureIssuance = WALLY_TX_IS_ISSUANCE;
 /// txin::featureのPeginフラグ
 static constexpr uint8_t kTxInFeaturePegin = WALLY_TX_IS_PEGIN;
+/// ByteData256の空データ
+static const ByteData256 kEmptyByteData256;
 // @formatter:on
 
 // -----------------------------------------------------------------------------
@@ -317,7 +320,7 @@ std::string ConfidentialValue::GetHex() const { return data_.GetHex(); }
 
 Amount ConfidentialValue::GetAmount() const {
   Amount amount = Amount::CreateBySatoshiAmount(0);
-  if (!HasBlinding()) {
+  if (version_ == 1) {
     amount = ConvertFromConfidentialValue(GetData());
   }
   return amount;
@@ -326,6 +329,8 @@ Amount ConfidentialValue::GetAmount() const {
 bool ConfidentialValue::HasBlinding() const {
   return (version_ != 0) && (version_ != kConfidentialVersion_1);
 }
+
+bool ConfidentialValue::IsEmpty() const { return (version_ == 0); }
 
 ByteData ConfidentialValue::ConvertToConfidentialValue(  // force LF
     const Amount &value) {
@@ -1094,8 +1099,8 @@ IssuanceParameter ConfidentialTransaction::SetAssetIssuance(
     throw CfdException(
         kCfdIllegalArgumentError, "already set to issue parameter");
   }
-  if ((asset_amount.GetSatoshiValue() == 0) &&
-      (token_amount.GetSatoshiValue() == 0)) {
+  if ((asset_amount.GetSatoshiValue() <= 0) &&
+      (token_amount.GetSatoshiValue() <= 0)) {
     warn(CFD_LOG_SOURCE, "Issuance must have one non-zero amount.");
     throw CfdException(
         kCfdIllegalArgumentError, "Issuance must have one non-zero amount.");
@@ -1103,7 +1108,7 @@ IssuanceParameter ConfidentialTransaction::SetAssetIssuance(
 
   IssuanceParameter param = CalculateIssuanceValue(
       vin_[tx_in_index].GetTxid(), vin_[tx_in_index].GetVout(), is_blind,
-      contract_hash);
+      contract_hash, ByteData256());
 
   // 指定されたTxInへの設定
   SetIssuance(
@@ -1112,22 +1117,87 @@ IssuanceParameter ConfidentialTransaction::SetAssetIssuance(
       ByteData(), ByteData());
 
   // TxOut追加
-  if (asset_amount.GetSatoshiValue() != 0) {
+  if (asset_amount.GetSatoshiValue() > 0) {
     AddTxOut(asset_amount, param.asset, asset_locking_script, asset_nonce);
   }
-  if (token_amount.GetSatoshiValue() != 0) {
+  if (token_amount.GetSatoshiValue() > 0) {
     AddTxOut(token_amount, param.token, token_locking_script, token_nonce);
   }
+
+  return param;
+}
+
+IssuanceParameter ConfidentialTransaction::SetAssetReissuance(
+    uint32_t tx_in_index, const Amount &asset_amount,
+    const Script &asset_locking_script,
+    const ConfidentialNonce &asset_blind_nonce,
+    const BlindFactor &asset_blind_factor, const BlindFactor &entropy) {
+  CheckTxInIndex(tx_in_index, __LINE__, __FUNCTION__);
+
+  if ((vin_[tx_in_index].GetInflationKeys().GetData().GetDataSize() > 0) ||
+      (vin_[tx_in_index].GetIssuanceAmount().GetData().GetDataSize() > 0)) {
+    warn(CFD_LOG_SOURCE, "already set to reissue parameter");
+    throw CfdException(
+        kCfdIllegalArgumentError, "already set to reissue parameter");
+  }
+
+  if (asset_amount.GetSatoshiValue() <= 0) {
+    warn(CFD_LOG_SOURCE, "ReIssuance must have one non-zero amount.");
+    throw CfdException(
+        kCfdIllegalArgumentError, "ReIssuance must have one non-zero amount.");
+  }
+
+  std::vector<uint8_t> asset(kAssetSize);
+  int ret = wally_tx_elements_issuance_calculate_asset(
+      entropy.GetData().GetBytes().data(), entropy.GetData().GetBytes().size(),
+      asset.data(), asset.size());
+  if (ret != WALLY_OK) {
+    warn(
+        CFD_LOG_SOURCE, "wally_tx_elements_issuance_calculate_asset NG[{}].",
+        ret);
+    throw CfdException(kCfdIllegalStateError, "asset calculate error.");
+  }
+
+  IssuanceParameter param;
+  param.entropy = entropy;
+  param.asset = ConfidentialAssetId(ByteData(asset));
+
+  // 指定されたTxInへの設定
+  SetIssuance(
+      tx_in_index, asset_blind_factor.GetData(), entropy.GetData(),
+      ConfidentialValue(asset_amount), ConfidentialValue(), ByteData(),
+      ByteData());
+
+  // TxOut追加
+  AddTxOut(asset_amount, param.asset, asset_locking_script, asset_blind_nonce);
   return param;
 }
 
 IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
     const Txid &txid, uint32_t vout, bool is_blind,
-    const ByteData256 contract_hash) {
+    const ByteData256 &contract_hash, const ByteData256 &asset_entropy) {
   IssuanceParameter result;
   const std::vector<uint8_t> &txid_byte = txid.GetData().GetBytes();
   const std::vector<uint8_t> &contract_hash_byte = contract_hash.GetBytes();
+  std::vector<uint8_t> asset(kAssetSize);
   std::vector<uint8_t> entropy(kEntropySize);
+
+  if (!asset_entropy.Equals(kEmptyByteData256)) {
+    // reissue
+    const std::vector<uint8_t> &entropy_byte = contract_hash.GetBytes();
+    int ret = wally_tx_elements_issuance_calculate_asset(
+        entropy_byte.data(), entropy_byte.size(), asset.data(), asset.size());
+    if (ret != WALLY_OK) {
+      warn(
+          CFD_LOG_SOURCE, "wally_tx_elements_issuance_calculate_asset NG[{}].",
+          ret);
+      throw CfdException(kCfdIllegalStateError, "asset calculate error.");
+    }
+    result.entropy = BlindFactor(contract_hash);
+    result.asset = ConfidentialAssetId(ByteData(asset));
+    return result;
+  }
+
   // issue値の計算
   int ret = wally_tx_elements_issuance_generate_entropy(
       txid_byte.data(), txid_byte.size(), vout, contract_hash_byte.data(),
@@ -1139,7 +1209,6 @@ IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
     throw CfdException(kCfdIllegalStateError, "entropy generate error.");
   }
 
-  std::vector<uint8_t> asset(kAssetSize);
   ret = wally_tx_elements_issuance_calculate_asset(
       entropy.data(), entropy.size(), asset.data(), asset.size());
   if (ret != WALLY_OK) {
@@ -1163,6 +1232,9 @@ IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
   result.entropy = BlindFactor(ByteData256(entropy));
   result.asset = ConfidentialAssetId(ByteData(asset));
   result.token = ConfidentialAssetId(ByteData(token));
+  info(
+      CFD_LOG_SOURCE, "asset[{}] token[{}] is_blind[{}]",
+      result.asset.GetHex(), result.token.GetHex(), is_blind);
   return result;
 }
 
@@ -1312,24 +1384,44 @@ void ConfidentialTransaction::RemoveTxOut(uint32_t index) {
   vout_.erase(ite);
 }
 
-void ConfidentialTransaction::BlindTxOut(
-    const std::vector<Pubkey> &blind_pubkeys,
-    const std::vector<ConfidentialAssetId> &asset_id_list,
-    const std::vector<BlindFactor> &asset_blind_factor_list,
-    const std::vector<BlindFactor> &value_blind_factor_list,
-    const std::vector<Amount> &input_value_list, int64_t minimum_range_value,
-    int exponent, int minimum_bits) {
-  std::vector<uint8_t> input_generators;
+void ConfidentialTransaction::BlindTransaction(
+    const std::vector<BlindParameter> &txin_info_list,
+    const std::vector<IssuanceBlindingKeyPair> &issuance_blinding_keys,
+    const std::vector<Pubkey> &txout_confidential_keys,
+    int64_t minimum_range_value, int exponent, int minimum_bits) {
   std::vector<uint64_t> input_values;
-  std::vector<uint8_t> input_asset_ids;
+  std::vector<uint8_t> input_generators;  // serialize
+  std::vector<uint8_t> input_asset_ids;   // serialize
+  std::vector<uint8_t> abfs;              // serialize
+  std::vector<uint8_t> vbfs;              // serialize
+  std::vector<uint8_t> input_abfs;        // serialize
+  std::vector<uint8_t> empty_factor(kBlindFactorSize);
+  uint32_t blinded_txin_count = 0;
+  size_t blind_target_count = 0;
+  std::vector<size_t> blind_issuance_indexes;
+  std::vector<size_t> blind_txout_indexes;
   int ret;
+  memset(empty_factor.data(), 0, empty_factor.size());
 
-  // create asset generator
-  for (size_t index = 0; index < asset_id_list.size(); ++index) {
+  if (vin_.size() > txin_info_list.size()) {
+    warn(
+        CFD_LOG_SOURCE, "txin_info_list few count. [{},{}].", vin_.size(),
+        txin_info_list.size());
+    throw CfdException(kCfdIllegalStateError, "txin_info_list few error.");
+  }
+  if (vout_.size() > txout_confidential_keys.size()) {
+    warn(
+        CFD_LOG_SOURCE, "txout_confidential_keys few count. [{},{}].",
+        vout_.size(), txout_confidential_keys.size());
+    throw CfdException(
+        kCfdIllegalStateError, "txout_confidential_keys few error.");
+  }
+
+  for (size_t index = 0; index < txin_info_list.size(); ++index) {
+    const BlindParameter &param = txin_info_list[index];
     const std::vector<uint8_t> &asset_id =
-        asset_id_list[index].GetUnblindedData().GetBytes();
-    const std::vector<uint8_t> &abf =
-        asset_blind_factor_list[index].GetData().GetBytes();
+        param.asset.GetUnblindedData().GetBytes();
+    const std::vector<uint8_t> &abf = param.abf.GetData().GetBytes();
     std::vector<uint8_t> generator(ASSET_GENERATOR_LEN);
     ret = wally_asset_generator_from_bytes(
         asset_id.data(), asset_id.size(), abf.data(), abf.size(),
@@ -1343,55 +1435,260 @@ void ConfidentialTransaction::BlindTxOut(
     input_asset_ids.insert(
         input_asset_ids.end(), std::begin(asset_id), std::end(asset_id));
     info(CFD_LOG_SOURCE, "input asset=[{}]", ByteData(asset_id).GetHex());
-  }
-  for (const auto &value : input_value_list) {
-    input_values.push_back(value.GetSatoshiValue());
-  }
+    input_abfs.insert(input_abfs.end(), std::begin(abf), std::end(abf));
+    const std::vector<uint8_t> &vbf = param.vbf.GetData().GetBytes();
 
-  size_t output_count = 0;
-  for (const auto &output : vout_) {
-    if (!output.GetLockingScript().IsEmpty()) {
-      // fee以外の値
-      Amount temp_amount = output.GetConfidentialValue().GetAmount();
-      input_values.push_back(temp_amount.GetSatoshiValue());
-      ++output_count;
+    const Amount &amount = param.value.GetAmount();
+    if (amount.GetSatoshiValue() < 0) {
+      warn(
+          CFD_LOG_SOURCE, "satoshi under zero. [{}].",
+          amount.GetSatoshiValue());
+      throw CfdException(kCfdIllegalStateError, "satoshi under zero.");
+    }
+    if ((abf != empty_factor) || (vbf != empty_factor)) {
+      ++blinded_txin_count;
+      input_values.push_back(amount.GetSatoshiValue());
+      abfs.insert(abfs.end(), std::begin(abf), std::end(abf));
+      vbfs.insert(vbfs.end(), std::begin(vbf), std::end(vbf));
+    }
+
+    if (((!vin_[index].GetIssuanceAmount().IsEmpty()) ||
+         (!vin_[index].GetInflationKeys().IsEmpty()))) {
+      if (vin_[index].GetIssuanceAmount().HasBlinding() ||
+          vin_[index].GetInflationKeys().HasBlinding()) {
+        warn(CFD_LOG_SOURCE, "already txin blinded.");
+        throw CfdException(kCfdIllegalStateError, "already txin blinded.");
+      }
+
+      bool asset_blind = false;
+      bool token_blind = false;
+      if ((!issuance_blinding_keys.empty()) &&
+          (issuance_blinding_keys.size() > index)) {
+        asset_blind = !issuance_blinding_keys[index].asset_key.IsInvalid();
+        token_blind = !issuance_blinding_keys[index].token_key.IsInvalid();
+      }
+      IssuanceParameter issue = CalculateIssuanceValue(
+          vin_[index].GetTxid(), vin_[index].GetVout(), token_blind,
+          vin_[index].GetAssetEntropy(), vin_[index].GetBlindingNonce());
+      info(
+          CFD_LOG_SOURCE, "input issue asset=[{}] token=[{}] token_blind=[{}]",
+          issue.asset.GetHex(), issue.token.GetHex(), token_blind);
+      bool is_reissue =
+          !vin_[index].GetBlindingNonce().Equals(kEmptyByteData256);
+
+      if (!vin_[index].GetIssuanceAmount().IsEmpty()) {
+        const std::vector<uint8_t> &asset_bytes =
+            issue.asset.GetUnblindedData().GetBytes();
+        input_asset_ids.insert(
+            input_asset_ids.end(), std::begin(asset_bytes),
+            std::end(asset_bytes));
+        std::vector<uint8_t> asset_generator(ASSET_GENERATOR_LEN);
+        ret = wally_asset_generator_from_bytes(
+            asset_bytes.data(), asset_bytes.size(), empty_factor.data(),
+            empty_factor.size(), asset_generator.data(),
+            asset_generator.size());
+        if (ret != WALLY_OK) {
+          warn(
+              CFD_LOG_SOURCE, "wally_asset_generator_from_bytes NG[{}].", ret);
+          throw CfdException(
+              kCfdIllegalStateError, "issue asset generator error.");
+        }
+        ByteData generator_data(asset_generator);
+        input_generators.insert(
+            input_generators.end(), std::begin(asset_generator),
+            std::end(asset_generator));
+        // 空のfactor
+        input_abfs.insert(
+            input_abfs.end(), std::begin(empty_factor),
+            std::end(empty_factor));
+        info(
+            CFD_LOG_SOURCE, "generator_data asset=[{}]",
+            generator_data.GetHex());
+      }
+      if ((!is_reissue) && (!vin_[index].GetInflationKeys().IsEmpty())) {
+        const std::vector<uint8_t> &token_bytes =
+            issue.token.GetUnblindedData().GetBytes();
+        input_asset_ids.insert(
+            input_asset_ids.end(), std::begin(token_bytes),
+            std::end(token_bytes));
+        std::vector<uint8_t> token_generator(ASSET_GENERATOR_LEN);
+        ret = wally_asset_generator_from_bytes(
+            token_bytes.data(), token_bytes.size(), empty_factor.data(),
+            empty_factor.size(), token_generator.data(),
+            token_generator.size());
+        if (ret != WALLY_OK) {
+          warn(
+              CFD_LOG_SOURCE, "wally_asset_generator_from_bytes NG[{}].", ret);
+          throw CfdException(
+              kCfdIllegalStateError, "token asset generator error.");
+        }
+        ByteData generator_data(token_generator);
+        input_generators.insert(
+            input_generators.end(), std::begin(token_generator),
+            std::end(token_generator));
+        // 空のfactor
+        input_abfs.insert(
+            input_abfs.end(), std::begin(empty_factor),
+            std::end(empty_factor));
+        info(
+            CFD_LOG_SOURCE, "generator_data token=[{}]",
+            generator_data.GetHex());
+      }
+      // Marked for blinding
+      if (asset_blind) {
+        if (vin_[index].GetIssuanceAmount().HasBlinding() ||
+            (vin_[index].GetIssuanceAmountRangeproof().GetDataSize() > 0)) {
+          warn(CFD_LOG_SOURCE, "already txin asset blinded.");
+          throw CfdException(
+              kCfdIllegalStateError, "already txin asset blinded.");
+        }
+        ++blind_target_count;
+      }
+      if ((!is_reissue) && token_blind) {
+        if (vin_[index].GetInflationKeys().HasBlinding() ||
+            (vin_[index].GetInflationKeysRangeproof().GetDataSize() > 0)) {
+          warn(CFD_LOG_SOURCE, "already txin token blinded.");
+          throw CfdException(
+              kCfdIllegalStateError, "already txin token blinded.");
+        }
+        ++blind_target_count;
+      }
+      if (asset_blind || token_blind) {
+        blind_issuance_indexes.push_back(index);
+      }
     }
   }
+  info(
+      CFD_LOG_SOURCE, "txin blind_target_count={} blinded_txin_count={}",
+      blind_target_count, blinded_txin_count);
 
-  std::vector<uint8_t> input_abfs;
-  std::vector<ByteData> output_abfs(output_count);
-  std::vector<ByteData> output_vbfs(output_count - 1);
+  for (const size_t index : blind_issuance_indexes) {
+    bool asset_blind = false;
+    bool token_blind = false;
+    if ((!issuance_blinding_keys.empty()) &&
+        (issuance_blinding_keys.size() > index)) {
+      asset_blind = !issuance_blinding_keys[index].asset_key.IsInvalid();
+      token_blind = !issuance_blinding_keys[index].token_key.IsInvalid();
+    }
+    IssuanceParameter issue = CalculateIssuanceValue(
+        vin_[index].GetTxid(), vin_[index].GetVout(), token_blind,
+        vin_[index].GetAssetEntropy(), vin_[index].GetBlindingNonce());
+    bool is_reissue =
+        !vin_[index].GetBlindingNonce().Equals(kEmptyByteData256);
+    ConfidentialTxIn txin = vin_[index];
+    std::vector<uint8_t> commitment(ASSET_COMMITMENT_LEN);
+    std::vector<uint8_t> range_proof(ASSET_RANGEPROOF_MAX_LEN);
 
-  std::vector<uint8_t> abfs;  // serialize
-  for (const BlindFactor &abf : asset_blind_factor_list) {
-    const std::vector<uint8_t> &data = abf.GetData().GetBytes();
-    abfs.insert(abfs.end(), std::begin(data), std::end(data));
+    if (asset_blind) {
+      const Amount &amount = vin_[index].GetIssuanceAmount().GetAmount();
+      int64_t value = amount.GetSatoshiValue();
+      input_values.push_back(value);
+      const std::vector<uint8_t> &vbf =
+          RandomNumberUtil::GetRandomBytes(kBlindFactorSize);
+      vbfs.insert(vbfs.end(), std::begin(vbf), std::end(vbf));
+      abfs.insert(
+          abfs.end(), std::begin(empty_factor), std::end(empty_factor));
+
+      GetRangeProof(
+          static_cast<uint64_t>(value), nullptr,
+          issuance_blinding_keys[index].asset_key, issue.asset, empty_factor,
+          vbf, Script(), minimum_range_value, exponent, minimum_bits,
+          &commitment, &range_proof);
+
+      txin.SetIssuance(
+          txin.GetBlindingNonce(), txin.GetAssetEntropy(),
+          ConfidentialValue(ByteData(commitment)), txin.GetInflationKeys(),
+          ByteData(range_proof), txin.GetInflationKeysRangeproof());
+    }
+
+    if (token_blind) {
+      const Amount &amount = vin_[index].GetInflationKeys().GetAmount();
+      int64_t value = amount.GetSatoshiValue();
+
+      if (!is_reissue) {
+        input_values.push_back(value);
+
+        const std::vector<uint8_t> &vbf =
+            RandomNumberUtil::GetRandomBytes(kBlindFactorSize);
+        vbfs.insert(vbfs.end(), std::begin(vbf), std::end(vbf));
+        abfs.insert(
+            abfs.end(), std::begin(empty_factor), std::end(empty_factor));
+
+        GetRangeProof(
+            static_cast<uint64_t>(value), nullptr,
+            issuance_blinding_keys[index].token_key, issue.token, empty_factor,
+            vbf, Script(), minimum_range_value, exponent, minimum_bits,
+            &commitment, &range_proof);
+
+        txin.SetIssuance(
+            txin.GetBlindingNonce(), txin.GetAssetEntropy(),
+            txin.GetIssuanceAmount(), ConfidentialValue(ByteData(commitment)),
+            txin.GetIssuanceAmountRangeproof(), ByteData(range_proof));
+      }
+    }
+
+    SetIssuance(
+        static_cast<uint32_t>(index), txin.GetBlindingNonce(),
+        txin.GetAssetEntropy(), txin.GetIssuanceAmount(),
+        txin.GetInflationKeys(), txin.GetIssuanceAmountRangeproof(),
+        txin.GetInflationKeysRangeproof());
   }
-  input_abfs = abfs;
+  size_t input_blind_amount_count = input_values.size();
+
+  std::vector<Pubkey> input_confidential_keys(vout_.size());
+  for (size_t index = 0; index < vout_.size(); ++index) {
+    if (vout_[index].GetLockingScript().IsEmpty()) {
+      // fee
+    } else if (txout_confidential_keys[index].IsValid()) {
+      const ConfidentialValue &value = vout_[index].GetConfidentialValue();
+      if (value.HasBlinding() || vout_[index].GetAsset().HasBlinding()) {
+        warn(CFD_LOG_SOURCE, "already blinded vout. index={}", index);
+        throw CfdException(
+            kCfdIllegalStateError, "already blinded vout error.");
+      }
+      Amount temp_amount = value.GetAmount();
+      input_values.push_back(temp_amount.GetSatoshiValue());
+      blind_txout_indexes.push_back(index);
+      input_confidential_keys[index] = txout_confidential_keys[index];
+    }
+  }
+  blind_target_count += blind_txout_indexes.size();
+  if ((blinded_txin_count == 0) && (blind_target_count <= 1)) {
+    // elements: if (num_blind_attempts == 1 && num_known_input_blinds == 0)
+    warn(
+        CFD_LOG_SOURCE, "blind target few({}). set over 2.",
+        blind_target_count);
+    throw CfdException(kCfdIllegalArgumentError, "blind target few error.");
+  }
+  info(CFD_LOG_SOURCE, "total blind_target_count=[{}]", blind_target_count);
+  if (blind_txout_indexes.empty()) {
+    // txout blind data nothing.
+    return;
+  }
+
+  std::vector<ByteData> output_abfs(blind_txout_indexes.size());
+  std::vector<ByteData> output_vbfs(blind_txout_indexes.size() - 1);
+
   for (size_t index = 0; index < output_abfs.size(); ++index) {
-    // generate random byte
     const std::vector<uint8_t> &data =
         RandomNumberUtil::GetRandomBytes(kBlindFactorSize);
     output_abfs[index] = ByteData(data);
     abfs.insert(abfs.end(), std::begin(data), std::end(data));
   }
 
-  std::vector<uint8_t> vbfs;  // serialize
-  for (const BlindFactor &vbf : value_blind_factor_list) {
-    const std::vector<uint8_t> &data = vbf.GetData().GetBytes();
-    vbfs.insert(vbfs.end(), std::begin(data), std::end(data));
-  }
   for (size_t index = 0; index < output_vbfs.size(); ++index) {
-    // generate random byte
     const std::vector<uint8_t> &data =
         RandomNumberUtil::GetRandomBytes(kBlindFactorSize);
     output_vbfs[index] = ByteData(data);
     vbfs.insert(vbfs.end(), std::begin(data), std::end(data));
   }
 
+  info(
+      CFD_LOG_SOURCE, "n_total[{}] n_inputs[{}]", input_values.size(),
+      input_blind_amount_count);
   std::vector<uint8_t> asset_data(kAssetSize);
   ret = wally_asset_final_vbf(
-      input_values.data(), input_values.size(), input_value_list.size(),
+      input_values.data(), input_values.size(), input_blind_amount_count,
       abfs.data(), abfs.size(), vbfs.data(), vbfs.size(), asset_data.data(),
       asset_data.size());
   if (ret != WALLY_OK) {
@@ -1402,73 +1699,30 @@ void ConfidentialTransaction::BlindTxOut(
   output_vbfs.push_back(ByteData(asset_data));
 
   uint32_t count = 0;
-  for (uint32_t vout_index = 0; vout_index < vout_.size(); ++vout_index) {
-    const auto &output = vout_[vout_index];
-    if (output.GetLockingScript().IsEmpty()) {
-      // feeは除外
-      continue;
-    }
-
-    const std::vector<uint8_t> &pubkey_byte =
-        blind_pubkeys[count].GetData().GetBytes();
-
+  std::vector<uint8_t> commitment(ASSET_COMMITMENT_LEN);
+  std::vector<uint8_t> range_proof(ASSET_RANGEPROOF_MAX_LEN);
+  for (const size_t txout_index : blind_txout_indexes) {
+    const auto &output = vout_[txout_index];
     Amount amount = output.GetConfidentialValue().GetAmount();
     uint64_t value = static_cast<uint64_t>(amount.GetSatoshiValue());
     ConfidentialAssetId output_asset_id(output.GetAsset());
-    std::vector<uint8_t> asset = output_asset_id.GetUnblindedData().GetBytes();
-    const std::vector<uint8_t> &script =
-        output.GetLockingScript().GetData().GetBytes();
-
     const std::vector<uint8_t> &abf = output_abfs[count].GetBytes();
-    const std::vector<uint8_t> &vbf = output_vbfs[count].GetBytes();
-
-    std::vector<uint8_t> generator(ASSET_GENERATOR_LEN);
-    ret = wally_asset_generator_from_bytes(
-        asset.data(), asset.size(), abf.data(), abf.size(), generator.data(),
-        generator.size());
-    if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_asset_generator_from_bytes NG[{}].", ret);
-      throw CfdException(
-          kCfdIllegalStateError, "output asset generator error.");
-    }
-
-    std::vector<uint8_t> commitment(ASSET_COMMITMENT_LEN);
-    ret = wally_asset_value_commitment(
-        value, vbf.data(), vbf.size(), generator.data(), generator.size(),
-        commitment.data(), commitment.size());
-    if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_asset_value_commitment NG[{}].", ret);
-      throw CfdException(
-          kCfdIllegalStateError, "calc asset commitment error.");
-    }
-    info(
-        CFD_LOG_SOURCE, "generator=[{}] commitment=[{}]",
-        ByteData(generator).GetHex(), ByteData(commitment).GetHex());
 
     Privkey key = Privkey::GenerageRandomKey();
-    const std::vector<uint8_t> &privkey_byte = key.GetData().GetBytes();
+    ByteData gen = GetRangeProof(
+        value, &input_confidential_keys[txout_index], key, output_asset_id,
+        abf, output_vbfs[count].GetBytes(), output.GetLockingScript(),
+        minimum_range_value, exponent, minimum_bits, &commitment,
+        &range_proof);
+    const std::vector<uint8_t> &generator = gen.GetBytes();
 
-    std::vector<uint8_t> range_proof(ASSET_RANGEPROOF_MAX_LEN);
     size_t size = 0;
-    ret = wally_asset_rangeproof(
-        value, pubkey_byte.data(), pubkey_byte.size(), privkey_byte.data(),
-        privkey_byte.size(), asset.data(), asset.size(), abf.data(),
-        abf.size(), vbf.data(), vbf.size(), commitment.data(),
-        commitment.size(), script.data(), script.size(), generator.data(),
-        generator.size(), static_cast<uint64_t>(minimum_range_value), exponent,
-        minimum_bits, range_proof.data(), range_proof.size(), &size);
-    if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_asset_rangeproof NG[{}].", ret);
-      throw CfdException(
-          kCfdIllegalStateError, "calc asset rangeproof error.");
-    }
-    range_proof.resize(size);
-
-    size = 0;
     ret = wally_asset_surjectionproof_size(
         input_asset_ids.size() / kAssetSize, &size);
     if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_asset_surjectionproof_size NG[{}].", ret);
+      warn(
+          CFD_LOG_SOURCE, "wally_asset_surjectionproof_size NG[{}] index={}",
+          ret, txout_index);
       throw CfdException(
           kCfdIllegalStateError, "calc asset surjectionproof size error.");
     }
@@ -1476,26 +1730,166 @@ void ConfidentialTransaction::BlindTxOut(
 
     std::vector<uint8_t> bytes =
         RandomNumberUtil::GetRandomBytes(kBlindFactorSize);
+    const std::vector<uint8_t> &asset_bytes =
+        output_asset_id.GetUnblindedData().GetBytes();
     ret = wally_asset_surjectionproof(
-        asset.data(), asset.size(), abf.data(), abf.size(), generator.data(),
-        generator.size(), bytes.data(), bytes.size(), input_asset_ids.data(),
-        input_asset_ids.size(), input_abfs.data(), input_abfs.size(),
-        input_generators.data(), input_generators.size(),
+        asset_bytes.data(), asset_bytes.size(), abf.data(), abf.size(),
+        generator.data(), generator.size(), bytes.data(), bytes.size(),
+        input_asset_ids.data(), input_asset_ids.size(), input_abfs.data(),
+        input_abfs.size(), input_generators.data(), input_generators.size(),
         surjection_proof.data(), surjection_proof.size(), &size);
     if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_asset_surjectionproof NG[{}].", ret);
+      warn(
+          CFD_LOG_SOURCE, "wally_asset_surjectionproof NG[{}] index={}", ret,
+          txout_index);
       throw CfdException(
           kCfdIllegalStateError, "calc asset surjectionproof error.");
     }
     surjection_proof.resize(size);
 
     SetTxOutCommitment(
-        vout_index, ConfidentialAssetId(ByteData(generator)),
+        static_cast<uint32_t>(txout_index),
+        ConfidentialAssetId(ByteData(generator)),
         ConfidentialValue(ByteData(commitment)),
         ConfidentialNonce(key.GeneratePubkey().GetData()),
         ByteData(surjection_proof), ByteData(range_proof));
     ++count;
   }
+}
+
+void ConfidentialTransaction::BlindTxOut(
+    const std::vector<BlindParameter> &txin_info_list,
+    const std::vector<Pubkey> &txout_confidential_keys,
+    int64_t minimum_range_value, int exponent, int minimum_bits) {
+  BlindTransaction(
+      txin_info_list, std::vector<IssuanceBlindingKeyPair>(),
+      txout_confidential_keys, minimum_range_value, exponent, minimum_bits);
+}
+
+ByteData ConfidentialTransaction::GetRangeProof(
+    const uint64_t value, const Pubkey *pubkey, const Privkey &privkey,
+    const ConfidentialAssetId &asset, const std::vector<uint8_t> &abf,
+    const std::vector<uint8_t> &vbf, const Script &script,
+    int64_t minimum_range_value, int exponent, int minimum_bits,
+    std::vector<uint8_t> *commitment, std::vector<uint8_t> *range_proof) {
+  std::vector<uint8_t> generator(ASSET_GENERATOR_LEN);
+  const std::vector<uint8_t> &asset_bytes =
+      asset.GetUnblindedData().GetBytes();
+  int ret = wally_asset_generator_from_bytes(
+      asset_bytes.data(), asset_bytes.size(), abf.data(), abf.size(),
+      generator.data(), generator.size());
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "wally_asset_generator_from_bytes NG[{}].", ret);
+    throw CfdException(kCfdIllegalStateError, "output asset generator error.");
+  }
+
+  commitment->resize(ASSET_COMMITMENT_LEN);
+  ret = wally_asset_value_commitment(
+      value, vbf.data(), vbf.size(), generator.data(), generator.size(),
+      commitment->data(), commitment->size());
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "wally_asset_value_commitment NG[{}].", ret);
+    throw CfdException(kCfdIllegalStateError, "calc asset commitment error.");
+  }
+  // info(
+  //    CFD_LOG_SOURCE, "generator=[{}] commitment=[{}]",
+  //    ByteData(generator).GetHex(), ByteData(commitment).GetHex());
+
+  range_proof->resize(ASSET_RANGEPROOF_MAX_LEN);
+  size_t size = 0;
+  const std::vector<uint8_t> &privkey_byte = privkey.GetData().GetBytes();
+  const std::vector<uint8_t> &script_byte = script.GetData().GetBytes();
+  const std::vector<ScriptElement> &script_item = script.GetElementList();
+  int64_t min_range_value = minimum_range_value;
+  if (script_item.empty() ||
+      (script_item[0].GetOpCode() == ScriptOperator::OP_RETURN) ||
+      (script_byte.size() > Script::kMaxScriptSize)) {
+    min_range_value = 0;
+  }
+
+  if (pubkey == nullptr) {
+    ret = wally_asset_rangeproof_with_nonce(
+        value, privkey_byte.data(), privkey_byte.size(), asset_bytes.data(),
+        asset_bytes.size(), abf.data(), abf.size(), vbf.data(), vbf.size(),
+        commitment->data(), commitment->size(), script_byte.data(),
+        script_byte.size(), generator.data(), generator.size(),
+        static_cast<uint64_t>(min_range_value), exponent, minimum_bits,
+        range_proof->data(), range_proof->size(), &size);
+  } else {
+    const std::vector<uint8_t> &pubkey_byte = pubkey->GetData().GetBytes();
+    ret = wally_asset_rangeproof(
+        value, pubkey_byte.data(), pubkey_byte.size(), privkey_byte.data(),
+        privkey_byte.size(), asset_bytes.data(), asset_bytes.size(),
+        abf.data(), abf.size(), vbf.data(), vbf.size(), commitment->data(),
+        commitment->size(), script_byte.data(), script_byte.size(),
+        generator.data(), generator.size(),
+        static_cast<uint64_t>(min_range_value), exponent, minimum_bits,
+        range_proof->data(), range_proof->size(), &size);
+  }
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "wally_asset_rangeproof NG[{}].", ret);
+    throw CfdException(kCfdIllegalStateError, "calc asset rangeproof error.");
+  }
+  range_proof->resize(size);
+  return ByteData(generator);
+}
+
+std::vector<UnblindParameter> ConfidentialTransaction::UnblindTxIn(
+    uint32_t tx_in_index, const Privkey &blinding_key,
+    const Privkey token_blinding_key) {
+  CheckTxInIndex(tx_in_index, __LINE__, __FUNCTION__);
+
+  ConfidentialTxIn tx_in(vin_[tx_in_index]);
+  if (((!tx_in.GetIssuanceAmount().HasBlinding()) &&
+       (!tx_in.GetInflationKeys().HasBlinding())) ||
+      ((tx_in.GetIssuanceAmountRangeproof().GetDataSize() == 0) &&
+      (tx_in.GetInflationKeysRangeproof().GetDataSize() == 0))) {
+    warn(
+        CFD_LOG_SOURCE,
+        "Failed to unblind TxIn. Target TxIn already unblinded.: "
+        "tx_in_index=[{}]",
+        tx_in_index);
+    throw CfdException(
+        kCfdIllegalStateError,
+        "Failed to unblind TxIn. Target TxIn already unblinded.");
+  }
+
+  IssuanceParameter issue = CalculateIssuanceValue(
+      tx_in.GetTxid(), tx_in.GetVout(), true, tx_in.GetAssetEntropy(),
+      tx_in.GetBlindingNonce());
+
+  ByteData amount_rangeproof = tx_in.GetIssuanceAmountRangeproof();
+  ByteData token_rangeproof = tx_in.GetInflationKeysRangeproof();
+
+  UnblindParameter asset_unblind;
+  UnblindParameter token_unblind;
+
+  if (tx_in.GetIssuanceAmount().HasBlinding()) {
+    asset_unblind = CalculateUnblindIssueData(
+        blinding_key, amount_rangeproof, tx_in.GetIssuanceAmount(), Script(),
+        issue.asset);
+    amount_rangeproof = ByteData();
+  }
+
+  if (tx_in.GetInflationKeysRangeproof().GetDataSize() != 0) {
+    if (tx_in.GetInflationKeys().HasBlinding()) {
+      token_unblind = CalculateUnblindIssueData(
+          (token_blinding_key.IsInvalid()) ? blinding_key : token_blinding_key,
+          token_rangeproof, tx_in.GetInflationKeys(), Script(), issue.token);
+      token_rangeproof = ByteData();
+    }
+  }
+
+  // clear and set unblind value to txin
+  SetIssuance(
+      tx_in_index, tx_in.GetBlindingNonce(), tx_in.GetAssetEntropy(),
+      asset_unblind.value, token_unblind.value, amount_rangeproof,
+      token_rangeproof);
+  std::vector<UnblindParameter> result;
+  result.push_back(asset_unblind);
+  result.push_back(token_unblind);
+
+  return result;
 }
 
 UnblindParameter ConfidentialTransaction::UnblindTxOut(
@@ -1532,30 +1926,27 @@ UnblindParameter ConfidentialTransaction::UnblindTxOut(
 
 std::vector<UnblindParameter> ConfidentialTransaction::UnblindTxOut(
     const std::vector<Privkey> &blinding_keys) {
-  uint32_t output_cout = 0;
-  for (const auto vout : vout_) {
-    // count txouts without fee
-    if (!vout.GetLockingScript().IsEmpty()) ++output_cout;
-  }
   // validate input vector size
-  if (output_cout != blinding_keys.size()) {
+  if (vout_.size() != blinding_keys.size()) {
     warn(
         CFD_LOG_SOURCE,
         "Unmatch size blinding_keys and txouts.:"
         " txout num=[{}], blinding key num=[{}]",
-        output_cout, blinding_keys.size());
+        vout_.size(), blinding_keys.size());
     throw CfdException(
         kCfdIllegalArgumentError, "Unmatch size blinding_keys and txouts.");
   }
 
-  uint32_t index = 0;
   std::vector<UnblindParameter> results;
-  for (const ConfidentialTxOut vout : vout_) {
+  for (uint32_t index = 0; index < vout_.size(); index++) {
     // skip if vout is txout for fee
-    if (vout.GetLockingScript().IsEmpty()) continue;
-
-    results.push_back(UnblindTxOut(index, blinding_keys[index]));
-    ++index;
+    if (vout_[index].GetLockingScript().IsEmpty()) {
+      // fall-through
+    } else if (blinding_keys[index].IsInvalid()) {
+      // fall-through
+    } else {
+      results.push_back(UnblindTxOut(index, blinding_keys[index]));
+    }
   }
 
   return results;
@@ -1598,6 +1989,72 @@ UnblindParameter ConfidentialTransaction::CalculateUnblindData(
   result.value = ConfidentialValue(Amount::CreateBySatoshiAmount(value_out));
 
   return result;
+}
+
+UnblindParameter ConfidentialTransaction::CalculateUnblindIssueData(
+    const Privkey &blinding_key, const ByteData &rangeproof,
+    const ConfidentialValue &value_commitment, const Script &extra,
+    const ConfidentialAssetId &asset) {
+  int ret;
+  const std::vector<uint8_t> nonce_bytes = blinding_key.GetData().GetBytes();
+  const std::vector<uint8_t> rangeproof_bytes = rangeproof.GetBytes();
+  const std::vector<uint8_t> commitment_bytes =
+      value_commitment.GetData().GetBytes();
+  std::vector<uint8_t> extra_bytes;
+  if (!extra.IsEmpty()) {
+    extra_bytes = extra.GetData().GetBytes();
+  }
+
+  std::vector<uint8_t> empty_factor(kBlindFactorSize);
+  memset(empty_factor.data(), 0, empty_factor.size());
+  const std::vector<uint8_t> asset_bytes = asset.GetUnblindedData().GetBytes();
+  std::vector<uint8_t> generator(ASSET_GENERATOR_LEN);
+  ret = wally_asset_generator_from_bytes(
+      asset_bytes.data(), asset_bytes.size(), empty_factor.data(),
+      empty_factor.size(), generator.data(), generator.size());
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "wally_asset_generator_from_bytes NG[{}].", ret);
+    throw CfdException(kCfdIllegalStateError, "asset generator error.");
+  }
+
+  std::vector<uint8_t> abf_out(kBlindFactorSize);
+  std::vector<uint8_t> vbf_out(kBlindFactorSize);
+  std::vector<uint8_t> asset_out(kAssetSize);
+  uint64_t value_out = 0;
+  ret = wally_asset_unblind_with_nonce(
+      nonce_bytes.data(), nonce_bytes.size(), rangeproof_bytes.data(),
+      rangeproof_bytes.size(), commitment_bytes.data(),
+      commitment_bytes.size(), extra_bytes.data(), extra_bytes.size(),
+      generator.data(), generator.size(), asset_out.data(), asset_out.size(),
+      abf_out.data(), abf_out.size(), vbf_out.data(), vbf_out.size(),
+      &value_out);
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "wally_asset_unblind_with_nonce NG[{}].", ret);
+    throw CfdException(
+        kCfdIllegalStateError, "unblind confidential data error.");
+  }
+
+  UnblindParameter result;
+  result.asset = ConfidentialAssetId(asset_out);
+  result.abf = BlindFactor(ByteData256(abf_out));
+  result.vbf = BlindFactor(ByteData256(vbf_out));
+  result.value = ConfidentialValue(Amount::CreateBySatoshiAmount(value_out));
+  return result;
+}
+
+Privkey ConfidentialTransaction::GetIssuanceBlindingKey(
+    const Privkey &master_blinding_key, const Txid &txid, uint32_t vout) {
+  // script: OP_RETURN <txid> <vout>
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_RETURN);
+  builder.AppendData(txid.GetData());
+  int64_t vout64 = vout;
+  builder.AppendData(vout64);
+  Script script = builder.Build();
+
+  ByteData256 data = CryptoUtil::HmacSha256(
+      master_blinding_key.GetData().GetBytes(), script.GetData());
+  return Privkey(data);
 }
 
 ByteData256 ConfidentialTransaction::GetElementsSignatureHash(
