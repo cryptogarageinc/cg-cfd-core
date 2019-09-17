@@ -12,6 +12,7 @@
 // TEST(test_suite_name, test_name)
 
 using cfdcore::ByteData;
+using cfdcore::ByteData256;
 using cfdcore::Privkey;
 using cfdcore::Pubkey;
 using cfdcore::NetType;
@@ -23,6 +24,15 @@ TEST(Privkey, Privkey) {
 
 TEST(Privkey, Privkey_ByteData) {
   ByteData bytedata(
+      "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27");
+  Privkey privkey(bytedata);
+  EXPECT_STREQ(
+      privkey.GetData().GetHex().c_str(),
+      "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27");
+}
+
+TEST(Privkey, Privkey_ByteData256) {
+  ByteData256 bytedata(
       "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27");
   Privkey privkey(bytedata);
   EXPECT_STREQ(

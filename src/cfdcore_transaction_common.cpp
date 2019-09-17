@@ -198,6 +198,19 @@ ByteData SignatureUtil::CalculateEcSignature(
   return ByteData(buffer);
 }
 
+bool SignatureUtil::VerifyEcSignature(
+    const ByteData256 &signature_hash, const Pubkey &pubkey,
+    const ByteData &signature) {
+  std::vector<uint8_t> pubkey_data = pubkey.GetData().GetBytes();
+  std::vector<uint8_t> sighash = signature_hash.GetBytes();
+  std::vector<uint8_t> signature_data = signature.GetBytes();
+  int flag = EC_FLAG_ECDSA;
+  int ret = wally_ec_sig_verify(
+      pubkey_data.data(), pubkey_data.size(), sighash.data(), sighash.size(),
+      flag, signature_data.data(), signature_data.size());
+  return ret == WALLY_OK;
+}
+
 // -----------------------------------------------------------------------------
 // AbstractTransaction
 // -----------------------------------------------------------------------------

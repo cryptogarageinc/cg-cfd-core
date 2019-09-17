@@ -35,7 +35,7 @@ std::vector<uint8_t> ByteData::GetBytes() const { return data_; }
 
 size_t ByteData::GetDataSize() const { return data_.size(); }
 
-bool ByteData::Equals(const ByteData& bytedata) {
+bool ByteData::Equals(const ByteData& bytedata) const {
   if (data_ == bytedata.data_) {
     return true;
   }
@@ -45,7 +45,9 @@ bool ByteData::Equals(const ByteData& bytedata) {
 //////////////////////////////////
 /// ByteData160
 //////////////////////////////////
-ByteData160::ByteData160() : data_(std::vector<uint8_t>(kByteData160Length)) {}
+ByteData160::ByteData160() : data_(std::vector<uint8_t>(kByteData160Length)) {
+  memset(data_.data(), 0, data_.size());
+}
 
 ByteData160::ByteData160(const std::vector<uint8_t>& vector)
     : data_(std::vector<uint8_t>(kByteData160Length)) {
@@ -74,10 +76,19 @@ std::string ByteData160::GetHex() const {
 
 std::vector<uint8_t> ByteData160::GetBytes() const { return data_; }
 
+bool ByteData160::Equals(const ByteData160& bytedata) const {
+  if (data_ == bytedata.data_) {
+    return true;
+  }
+  return false;
+}
+
 //////////////////////////////////
 /// ByteData256
 //////////////////////////////////
-ByteData256::ByteData256() : data_(std::vector<uint8_t>(kByteData256Length)) {}
+ByteData256::ByteData256() : data_(std::vector<uint8_t>(kByteData256Length)) {
+  memset(data_.data(), 0, data_.size());
+}
 
 ByteData256::ByteData256(const std::vector<uint8_t>& vector)
     : data_(std::vector<uint8_t>(kByteData256Length)) {
@@ -105,5 +116,12 @@ std::string ByteData256::GetHex() const {
 }
 
 std::vector<uint8_t> ByteData256::GetBytes() const { return data_; }
+
+bool ByteData256::Equals(const ByteData256& bytedata) const {
+  if (data_ == bytedata.data_) {
+    return true;
+  }
+  return false;
+}
 
 }  // namespace cfdcore

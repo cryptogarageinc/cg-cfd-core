@@ -64,7 +64,7 @@ class CFD_CORE_EXPORT ByteData {
    * @retval true 一致した場合
    * @retval false 不一致の場合
    */
-  bool Equals(const ByteData& bytedata);
+  bool Equals(const ByteData& bytedata) const;
 
  private:
   /**
@@ -107,6 +107,13 @@ class CFD_CORE_EXPORT ByteData160 {
    * @return Byte配列
    */
   std::vector<uint8_t> GetBytes() const;
+  /**
+   * @brief ByteData比較
+   * @param bytedata 比較対象のオブジェクト
+   * @retval true 一致した場合
+   * @retval false 不一致の場合
+   */
+  bool Equals(const ByteData160& bytedata) const;
 
  private:
   /**
@@ -149,6 +156,13 @@ class CFD_CORE_EXPORT ByteData256 {
    * @return Byte配列
    */
   std::vector<uint8_t> GetBytes() const;
+  /**
+   * @brief ByteData比較
+   * @param bytedata 比較対象のオブジェクト
+   * @retval true 一致した場合
+   * @retval false 不一致の場合
+   */
+  bool Equals(const ByteData256& bytedata) const;
 
  private:
   /**

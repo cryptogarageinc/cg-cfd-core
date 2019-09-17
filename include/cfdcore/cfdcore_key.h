@@ -123,7 +123,13 @@ class CFD_CORE_EXPORT Privkey {
    * @brief コンストラクタ
    * @param[in] byte_data 秘密鍵のByteDataインスタンス
    */
-  explicit Privkey(ByteData byte_data);
+  explicit Privkey(const ByteData& byte_data);
+
+  /**
+   * @brief コンストラクタ
+   * @param[in] byte_data 秘密鍵のByteDataインスタンス
+   */
+  explicit Privkey(const ByteData256& byte_data);
 
   /**
    * @brief 文字列からPrivateKeyモデルを復元するコンストラクタ.

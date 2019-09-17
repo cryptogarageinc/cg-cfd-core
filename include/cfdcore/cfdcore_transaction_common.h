@@ -552,6 +552,17 @@ class CFD_CORE_EXPORT SignatureUtil {
       const ByteData256& signature_hash, const Privkey& private_key,
       bool has_grind_r = true);
 
+  /**
+   * @brief Verify if a signature with respect to a public key and a message.
+   * @param[in] signature_hash  the message to verify the signature against.
+   * @param[in] pubkey          the public key to verify the signature against.
+   * @param[in] signature       the signature to verify.
+   * @return true if the signature is valid, false if not.
+   */
+  static bool VerifyEcSignature(
+      const ByteData256& signature_hash, const Pubkey& pubkey,
+      const ByteData& signature);
+
  private:
   SignatureUtil();
   // constructor抑止

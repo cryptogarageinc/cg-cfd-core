@@ -37,10 +37,12 @@ typedef struct {
  * @brief Address種別の定義
  */
 enum AddressType {
-  kP2shAddress = 1,  //!< Legacy address (Script Hash)
-  kP2pkhAddress,     //!< Legacy address (PublicKey Hash)
-  kP2wshAddress,     //!< Native segwit address (Script Hash)
-  kP2wpkhAddress     //!< Native segwit address (PublicKey Hash)
+  kP2shAddress = 1,   //!< Legacy address (Script Hash)
+  kP2pkhAddress,      //!< Legacy address (PublicKey Hash)
+  kP2wshAddress,      //!< Native segwit address (Script Hash)
+  kP2wpkhAddress,     //!< Native segwit address (PublicKey Hash)
+  kP2shP2wshAddress,  //!< P2sh wrapped address (Script Hash)
+  kP2shP2wpkhAddress  //!< P2sh wrapped address (Pubkey Hash)
 };
 
 /**
