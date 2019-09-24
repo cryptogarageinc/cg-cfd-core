@@ -45,6 +45,7 @@ Script ContractHashUtil::GetContractScript(
   ByteData claim_script_data = claim_script.GetData();
   bool liquidv1_op_else = false;
   ByteData pubkey_data;
+  ByteData256 tweak;
   for (const ScriptElement& element : fedpeg_script.GetElementList()) {
     if (is_liquidv1_watchman &&
         (element.GetOpCode() == ScriptOperator::OP_ELSE)) {
@@ -53,7 +54,8 @@ Script ContractHashUtil::GetContractScript(
     ByteData data = element.GetBinaryData();
     if ((!liquidv1_op_else) && element.IsBinary() &&
         (data.GetDataSize() == Pubkey::kCompressedPubkeySize)) {
-      pubkey_data = WallyUtil::AddTweakPubkey(data, claim_script_data, true);
+      tweak = CryptoUtil::HmacSha256(data.GetBytes(), claim_script_data);
+      pubkey_data = WallyUtil::AddTweakPubkey(data, tweak, true);
       builder.AppendData(pubkey_data);
     } else {
       builder.AppendElement(element);

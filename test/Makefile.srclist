@@ -27,6 +27,7 @@ TEST_CFDCORE_SOURCES= \
     test_abstract_transaction.cpp \
     test_pubkey.cpp \
     test_privkey.cpp \
+    test_extkey.cpp \
     test_address.cpp \
     test_scriptbuilder.cpp \
     test_script.cpp \

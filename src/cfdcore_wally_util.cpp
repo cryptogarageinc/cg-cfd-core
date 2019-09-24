@@ -55,24 +55,18 @@ ByteData WallyUtil::CombinePubkeySecp256k1Ec(
 }
 
 ByteData WallyUtil::AddTweakPubkey(
-    const ByteData& pubkey, const ByteData& byte_data, bool is_tweak_check) {
+    const ByteData& pubkey, const ByteData256& tweak, bool is_tweak_check) {
   struct secp256k1_context_struct* context = wally_get_secp_context();
   Secp256k1 secp256k1(context);
-
-  std::vector<uint8_t> pubkey_data = pubkey.GetBytes();
-  std::vector<uint8_t> byte_array = byte_data.GetBytes();
-  std::vector<uint8_t> tweak_data(HMAC_SHA256_LEN);
-  int ret = wally_hmac_sha256(
-      pubkey_data.data(), pubkey_data.size(), byte_array.data(),
-      byte_array.size(), tweak_data.data(), tweak_data.size());
-  if (ret != WALLY_OK) {
-    warn(CFD_LOG_SOURCE, "wally_hmac_sha256 NG[{}].", ret);
-    throw CfdException(kCfdIllegalStateError, "HmacSha256 error.");
-  }
-
-  // pubkey length check in TweakPubkeySecp256k1Ec
   return secp256k1.AddTweakPubkeySecp256k1Ec(
-      pubkey, ByteData(tweak_data), is_tweak_check);
+      pubkey, ByteData(tweak.GetBytes()), is_tweak_check);
+}
+
+ByteData256 WallyUtil::AddTweakPrivkey(
+    const ByteData256& privkey, const ByteData256& tweak) {
+  struct secp256k1_context_struct* context = wally_get_secp_context();
+  Secp256k1 secp256k1(context);
+  return secp256k1.AddTweakPrivkeySecp256k1Ec(privkey, tweak);
 }
 
 std::vector<uint8_t> WallyUtil::CreateScriptDataFromBytes(
@@ -99,6 +93,23 @@ std::vector<uint8_t> WallyUtil::CreateScriptDataFromBytes(
   }
   ret_bytes.resize(written);
   return ret_bytes;
+}
+
+ByteData WallyUtil::NegatePubkey(const ByteData& pubkey) {
+  struct secp256k1_context_struct* context = wally_get_secp_context();
+  Secp256k1 secp256k1(context);
+  return secp256k1.NegatePubkeySecp256k1Ec(pubkey);
+}
+
+ByteData WallyUtil::SignWhitelist(
+    const ByteData& offline_pubkey, const ByteData256& online_privkey,
+    const ByteData256& tweak_sum, const std::vector<ByteData>& online_keys,
+    const std::vector<ByteData>& offline_keys, uint32_t whitelist_index) {
+  struct secp256k1_context_struct* context = wally_get_secp_context();
+  Secp256k1 secp256k1(context);
+  return secp256k1.SignWhitelistSecp256k1Ec(
+      offline_pubkey, online_privkey, tweak_sum, online_keys, offline_keys,
+      whitelist_index);
 }
 
 }  // namespace cfdcore

@@ -54,12 +54,22 @@ class WallyUtil {
   /**
    * @brief Pubkey調整処理
    * @param[in] pubkey            Pubkey
-   * @param[in] byte_data         調整値
+   * @param[in] tweak             調整値
    * @param[in] is_tweak_check    pubkey調整チェック実施有無
    * @return 調整後のPubkeyデータ
    */
   static ByteData AddTweakPubkey(
-      const ByteData& pubkey, const ByteData& byte_data, bool is_tweak_check);
+      const ByteData& pubkey, const ByteData256& tweak,
+      bool is_tweak_check = false);
+
+  /**
+   * @brief Privkey調整処理
+   * @param[in] privkey           Privkey
+   * @param[in] tweak             調整値
+   * @return 調整後のPrivkeyデータ
+   */
+  static ByteData256 AddTweakPrivkey(
+      const ByteData256& privkey, const ByteData256& tweak);
 
   /**
    * @brief Scriptにpushするデータを生成する
@@ -69,6 +79,28 @@ class WallyUtil {
    */
   static std::vector<uint8_t> CreateScriptDataFromBytes(
       const std::vector<uint8_t>& bytes, int32_t flags = 0);
+
+  /**
+   * @brief Pubkey negate処理
+   * @param[in] pubkey            Pubkey
+   * @return 加工後のPubkeyデータ
+   */
+  static ByteData NegatePubkey(const ByteData& pubkey);
+
+  /**
+   * @brief Whitelist 証明情報生成処理
+   * @param[in] offline_pubkey    offline pubkey
+   * @param[in] online_privkey    online private key
+   * @param[in] tweak_sum         tweak sum data
+   * @param[in] online_keys       whitelist online key list
+   * @param[in] offline_keys      whitelist offline key list
+   * @param[in] whitelist_index   whitelist target index
+   * @return Whitelist proof
+   */
+  static ByteData SignWhitelist(
+      const ByteData& offline_pubkey, const ByteData256& online_privkey,
+      const ByteData256& tweak_sum, const std::vector<ByteData>& online_keys,
+      const std::vector<ByteData>& offline_keys, uint32_t whitelist_index);
 
  private:
   /**

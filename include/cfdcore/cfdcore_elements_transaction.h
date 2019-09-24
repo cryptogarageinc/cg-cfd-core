@@ -684,6 +684,14 @@ struct IssuanceBlindingKeyPair {
 };
 
 /**
+ * @brief PegOut Key情報構造体
+ */
+struct PegoutKeyData {
+  Pubkey btc_pubkey_bytes;   //!< bitcoin pubkey byte data
+  ByteData whitelist_proof;  //!< whitelist proof
+};
+
+/**
  * @brief Confidential Transaction情報クラス
  */
 class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
@@ -1162,6 +1170,22 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
    */
   static Privkey GetIssuanceBlindingKey(
       const Privkey& master_blinding_key, const Txid& txid, uint32_t vout);
+  /**
+   * @brief pegoutで使用するpubkey情報を取得する.
+   * @param[in] online_pubkey       online pubkey
+   * @param[in] master_online_key   online privkey
+   * @param[in] bitcoin_descriptor  bip32 pubkey (m/0/\*)
+   * @param[in] bip32_counter       bip32 pubkey counter (0 - 1000000000)
+   * @param[in] whitelist           whitelist for block extension space
+   * @param[in] net_type            network type
+   * @param[in] pubkey_prefix       ext pubkey prefix (elements customize)
+   * @return pegout key data
+   */
+  static PegoutKeyData GetPegoutPubkeyData(
+      const Pubkey& online_pubkey, const Privkey& master_online_key,
+      const std::string& bitcoin_descriptor, uint32_t bip32_counter,
+      const ByteData& whitelist, NetType net_type = NetType::kMainnet,
+      const ByteData& pubkey_prefix = ByteData("0488b21e"));
 
  private:
   std::vector<ConfidentialTxIn> vin_;    ///< TxIn配列
@@ -1308,6 +1332,15 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
       const std::vector<uint8_t>& vbf, const Script& script,
       int64_t minimum_range_value, int exponent, int minimum_bits,
       std::vector<uint8_t>* commitment, std::vector<uint8_t>* range_proof);
+
+  /**
+   * @brief Descriptor情報から拡張Keyを生成する.
+   * @param[in] bitcoin_descriptor    descriptor
+   * @param[in] prefix                extend pubkey prefix
+   * @return extend key
+   */
+  static ExtKey GenerateExtPubkeyFromDescriptor(
+      const std::string& bitcoin_descriptor, const ByteData& prefix);
 };
 
 }  // namespace cfdcore
