@@ -13,6 +13,7 @@
 #include "secp256k1.h"             // NOLINT
 #include "secp256k1_generator.h"   // NOLINT
 #include "secp256k1_rangeproof.h"  // NOLINT
+#include "secp256k1_whitelist.h"   // NOLINT
 
 namespace cfdcore {
 
@@ -184,6 +185,239 @@ ByteData Secp256k1::AddTweakPubkeySecp256k1Ec(
     }
   }
   return ByteData(byte_data);
+}
+
+ByteData256 Secp256k1::AddTweakPrivkeySecp256k1Ec(
+    const ByteData256& privkey, const ByteData256& tweak) {
+  secp256k1_context* context =
+      static_cast<secp256k1_context*>(secp256k1_context_);
+  if (secp256k1_context_ == NULL) {
+    warn(CFD_LOG_SOURCE, "Secp256k1 context is NULL.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 context is NULL.");
+  }
+
+  int ret;
+  std::vector<uint8_t> privkey_data = privkey.GetBytes();
+  std::vector<uint8_t> tweak_data = tweak.GetBytes();
+  ret = secp256k1_ec_privkey_tweak_add(
+      context, privkey_data.data(), tweak_data.data());
+  if (ret != 1) {
+    warn(CFD_LOG_SOURCE, "secp256k1_ec_privkey_tweak_add Error.({})", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 privkey tweak Error.");
+  }
+  return ByteData256(privkey_data);
+}
+
+ByteData Secp256k1::NegatePubkeySecp256k1Ec(const ByteData& pubkey) {
+  secp256k1_context* context =
+      static_cast<secp256k1_context*>(secp256k1_context_);
+
+  if (secp256k1_context_ == NULL) {
+    warn(CFD_LOG_SOURCE, "Secp256k1 context is NULL.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 context is NULL.");
+  }
+  if (pubkey.GetDataSize() != 33) {
+    warn(CFD_LOG_SOURCE, "Invalid Argument pubkey size.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Invalid Pubkey size.");
+  }
+
+  int ret;
+  const std::vector<uint8_t>& pubkey_data = pubkey.GetBytes();
+  secp256k1_pubkey pubkey_secp;
+
+  ret = secp256k1_ec_pubkey_parse(
+      context, &pubkey_secp, pubkey_data.data(), pubkey_data.size());
+  if (ret != 1) {
+    warn(CFD_LOG_SOURCE, "secp256k1_ec_pubkey_parse Error.({})", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 pubkey parse Error.");
+  }
+
+  ret = secp256k1_ec_pubkey_negate(context, &pubkey_secp);
+  if (ret != 1) {
+    warn(CFD_LOG_SOURCE, "secp256k1_ec_pubkey_negate Error.({})", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 pubkey negate Error.");
+  }
+
+  std::vector<uint8_t> byte_data(65);
+  size_t byte_size = byte_data.size();
+  ret = secp256k1_ec_pubkey_serialize(
+      context, byte_data.data(), &byte_size, &pubkey_secp,
+      SECP256K1_EC_COMPRESSED);
+  if (ret != 1) {
+    warn(CFD_LOG_SOURCE, "secp256k1_ec_pubkey_serialize Error.({})", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Secp256k1 pubkey serialize Error.");
+  }
+  byte_data.resize(byte_size);
+  return ByteData(byte_data);
+}
+
+RangeProofInfo Secp256k1::RangeProofInfoSecp256k1Ec(
+    const ByteData& range_proof) {
+  secp256k1_context* context =
+      static_cast<secp256k1_context*>(secp256k1_context_);
+  if (secp256k1_context_ == nullptr) {
+    warn(CFD_LOG_SOURCE, "Secp256k1 context is NULL.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 context is NULL.");
+  }
+  if (!range_proof.GetDataSize()) {
+    warn(CFD_LOG_SOURCE, "Secp256k1 range proof is empty.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Secp256k1 empty range proof Error.");
+  }
+
+  RangeProofInfo range_proof_info;
+  std::vector<uint8_t> range_proof_bytes = range_proof.GetBytes();
+  int ret = secp256k1_rangeproof_info(
+      context, &range_proof_info.exponent, &range_proof_info.mantissa,
+      &range_proof_info.min_value, &range_proof_info.max_value,
+      range_proof_bytes.data(), range_proof_bytes.size());
+  if (ret != 1) {
+    warn(CFD_LOG_SOURCE, "secp256k1_rangeproof_info Error.({})", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Secp256k1 decode range proof info Error.");
+  }
+
+  return range_proof_info;
+}
+
+ByteData Secp256k1::SignWhitelistSecp256k1Ec(
+    const ByteData& offline_pubkey, const ByteData256& online_privkey,
+    const ByteData256& tweak_sum, const std::vector<ByteData>& online_keys,
+    const std::vector<ByteData>& offline_keys, uint32_t whitelist_index) {
+  static constexpr uint32_t kWhitelistCountMaximum = 256;
+  static constexpr uint32_t kPrivkeySize = 32;
+  static constexpr uint32_t kOutputMaxSize =
+      1 + (kPrivkeySize * (1 + kWhitelistCountMaximum));
+  secp256k1_context* context =
+      static_cast<secp256k1_context*>(secp256k1_context_);
+
+  if (secp256k1_context_ == NULL) {
+    warn(CFD_LOG_SOURCE, "Secp256k1 context is NULL.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 context is NULL.");
+  }
+  if (offline_pubkey.GetDataSize() != 33) {
+    warn(CFD_LOG_SOURCE, "Invalid Argument pubkey size.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Invalid Pubkey size.");
+  }
+  if (online_keys.empty()) {
+    warn(CFD_LOG_SOURCE, "Invalid Argument online_keys empty.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Empty online_keys.");
+  }
+  if (online_keys.size() > kWhitelistCountMaximum) {
+    warn(CFD_LOG_SOURCE, "Invalid Argument online_keys maximum over.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Invalid online_keys size over.");
+  }
+  if (online_keys.size() != offline_keys.size()) {
+    warn(CFD_LOG_SOURCE, "Invalid Argument online_keys length.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Unmatch keylist length.");
+  }
+
+  int ret;
+  const std::vector<uint8_t>& offline_pubkey_data = offline_pubkey.GetBytes();
+  secp256k1_pubkey offline_pubkey_secp;
+  ret = secp256k1_ec_pubkey_parse(
+      context, &offline_pubkey_secp, offline_pubkey_data.data(),
+      offline_pubkey_data.size());
+  if (ret != 1) {
+    warn(
+        CFD_LOG_SOURCE, "secp256k1_ec_pubkey_parse offline_pubkey Error.({})",
+        ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Secp256k1 offline_pubkey parse Error.");
+  }
+
+  std::vector<secp256k1_pubkey> online_pubkeys(online_keys.size());
+  std::vector<secp256k1_pubkey> offline_pubkeys(offline_keys.size());
+  for (size_t index = 0; index < online_pubkeys.size(); ++index) {
+    const std::vector<uint8_t>& online_data = online_keys[index].GetBytes();
+    ret = secp256k1_ec_pubkey_parse(
+        context, &online_pubkeys[index], online_data.data(),
+        online_data.size());
+    if (ret != 1) {
+      warn(
+          CFD_LOG_SOURCE, "secp256k1_ec_pubkey_parse onlines[{}] Error.({})",
+          index, ret);
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError,
+          "Secp256k1 onlines pubkey parse Error.");
+    }
+
+    const std::vector<uint8_t>& offline_data = offline_keys[index].GetBytes();
+    ret = secp256k1_ec_pubkey_parse(
+        context, &offline_pubkeys[index], offline_data.data(),
+        offline_data.size());
+    if (ret != 1) {
+      warn(
+          CFD_LOG_SOURCE, "secp256k1_ec_pubkey_parse offlines[{}] Error.({})",
+          index, ret);
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError,
+          "Secp256k1 offlines pubkey parse Error.");
+    }
+  }
+
+  secp256k1_whitelist_signature signature;
+  ret = secp256k1_whitelist_sign(
+      context, &signature, online_pubkeys.data(), offline_pubkeys.data(),
+      online_pubkeys.size(), &offline_pubkey_secp,
+      online_privkey.GetBytes().data(), tweak_sum.GetBytes().data(),
+      whitelist_index, nullptr, nullptr);
+  if (ret != 1) {
+    warn(CFD_LOG_SOURCE, "secp256k1_whitelist_sign Error.({})", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "Secp256k1 whitelist sign Error.");
+  }
+
+  ret = secp256k1_whitelist_verify(
+      context, &signature, online_pubkeys.data(), offline_pubkeys.data(),
+      online_pubkeys.size(), &offline_pubkey_secp);
+  if (ret != 1) {
+    warn(CFD_LOG_SOURCE, "secp256k1_whitelist_verify Error.({})", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Secp256k1 whitelist verify Error.");
+  }
+
+  std::vector<uint8_t> output(kOutputMaxSize);
+  size_t output_size = 1 + (kPrivkeySize * (1 + online_pubkeys.size()));
+  size_t outlen = output_size;
+  ret = secp256k1_whitelist_signature_serialize(
+      context, output.data(), &outlen, &signature);
+  if (ret != 1) {
+    warn(
+        CFD_LOG_SOURCE, "secp256k1_whitelist_signature_serialize Error.({})",
+        ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Secp256k1 whitelist signature serialize Error.");
+  }
+  if (outlen != output_size) {
+    warn(
+        CFD_LOG_SOURCE,
+        "secp256k1_whitelist_signature_serialize size Error.({})", outlen);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Secp256k1 whitelist signature serialize size Error.");
+  }
+  output.resize(output_size);
+  return ByteData(output);
 }
 
 }  // namespace cfdcore

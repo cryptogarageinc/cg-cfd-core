@@ -13,6 +13,16 @@
 namespace cfdcore {
 
 /**
+ * @brief RangeProofの範囲値情報構造体
+ */
+struct RangeProofInfo {
+  int exponent;        //!< 指数
+  int mantissa;        //!< 仮数
+  uint64_t min_value;  //!< 最小値
+  uint64_t max_value;  //!< 最大値
+};
+
+/**
  * @brief secp256k1クラス.
  */
 class Secp256k1 {
@@ -39,6 +49,44 @@ class Secp256k1 {
    */
   ByteData AddTweakPubkeySecp256k1Ec(
       const ByteData& pubkey, const ByteData& tweak, bool is_tweak_check);
+
+  /**
+   * @brief Privkey調整処理
+   * @param[in] privkey           Privkey
+   * @param[in] tweak             調整値
+   * @return 調整後のPrivkeyデータ
+   */
+  ByteData256 AddTweakPrivkeySecp256k1Ec(
+      const ByteData256& privkey, const ByteData256& tweak);
+
+  /**
+   * @brief Pubkey negate処理
+   * @param[in] pubkey            Pubkey
+   * @return 加工後のPubkeyデータ
+   */
+  ByteData NegatePubkeySecp256k1Ec(const ByteData& pubkey);
+
+  /**
+   * @brief rangeproof情報からの範囲値取得
+   * @param[in] range_proof     range proof
+   * @return 範囲値情報
+   */
+  RangeProofInfo RangeProofInfoSecp256k1Ec(const ByteData& range_proof);
+
+  /**
+   * @brief Whitelist 証明情報生成処理
+   * @param[in] offline_pubkey    offline pubkey
+   * @param[in] online_privkey    online private key
+   * @param[in] tweak_sum         tweak sum data
+   * @param[in] online_keys       whitelist online key list
+   * @param[in] offline_keys      whitelist offline key list
+   * @param[in] whitelist_index   whitelist target index
+   * @return Whitelist proof
+   */
+  ByteData SignWhitelistSecp256k1Ec(
+      const ByteData& offline_pubkey, const ByteData256& online_privkey,
+      const ByteData256& tweak_sum, const std::vector<ByteData>& online_keys,
+      const std::vector<ByteData>& offline_keys, uint32_t whitelist_index);
 
  private:
   /**

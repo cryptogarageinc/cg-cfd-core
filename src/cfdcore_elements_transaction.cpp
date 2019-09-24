@@ -1843,7 +1843,7 @@ std::vector<UnblindParameter> ConfidentialTransaction::UnblindTxIn(
   if (((!tx_in.GetIssuanceAmount().HasBlinding()) &&
        (!tx_in.GetInflationKeys().HasBlinding())) ||
       ((tx_in.GetIssuanceAmountRangeproof().GetDataSize() == 0) &&
-      (tx_in.GetInflationKeysRangeproof().GetDataSize() == 0))) {
+       (tx_in.GetInflationKeysRangeproof().GetDataSize() == 0))) {
     warn(
         CFD_LOG_SOURCE,
         "Failed to unblind TxIn. Target TxIn already unblinded.: "
@@ -2144,6 +2144,216 @@ void ConfidentialTransaction::RandomizeTxOut() {
         txout.GetLockingScript(), txout.GetNonce(), txout.GetSurjectionProof(),
         txout.GetRangeProof());
   }
+}
+
+PegoutKeyData ConfidentialTransaction::GetPegoutPubkeyData(
+    const Pubkey &online_pubkey, const Privkey &master_online_key,
+    const std::string &bitcoin_descriptor, uint32_t bip32_counter,
+    const ByteData &whitelist, NetType net_type,
+    const ByteData &pubkey_prefix) {
+  static constexpr uint32_t kPegoutBip32CountMaximum = 1000000000;
+  static constexpr uint32_t kWhitelistCountMaximum = 256;
+  static constexpr uint32_t kPubkeySize = Pubkey::kCompressedPubkeySize;
+  static constexpr uint32_t kWhitelistSingleSize = kPubkeySize * 2;
+  PegoutKeyData result;
+  std::vector<ByteData> offline_keys;
+  std::vector<ByteData> online_keys;
+  std::vector<uint8_t> whitelist_bytes = whitelist.GetBytes();
+  uint32_t whitelist_size = static_cast<uint32_t>(whitelist_bytes.size());
+
+  // TODO(k-matsuzawa): 関数分割検討
+  if ((whitelist_size == 0) ||
+      ((whitelist_size % kWhitelistSingleSize) != 0)) {
+    throw CfdException(kCfdIllegalArgumentError, "whitelist length error.");
+  }
+  // parameter check
+  if (bip32_counter > kPegoutBip32CountMaximum) {
+    throw CfdException(kCfdIllegalArgumentError, "bip32_counter over error.");
+  }
+  if ((!online_pubkey.IsValid()) || master_online_key.IsInvalid() ||
+      (!master_online_key.GeneratePubkey().Equals(online_pubkey))) {
+    throw CfdException(kCfdIllegalArgumentError, "Illegal online key error.");
+  }
+
+  // CreatePAKListFromExtensionSpace
+  decltype(whitelist_bytes)::const_iterator ite = whitelist_bytes.begin();
+  uint32_t whitelist_count = whitelist_size / kWhitelistSingleSize;
+  if (whitelist_count > kWhitelistCountMaximum) {
+    throw CfdException(
+        kCfdIllegalArgumentError, "Illegal whitelist maximum error.");
+  }
+
+  try {
+    for (uint32_t index = 0; index < whitelist_count; ++index) {
+      uint32_t offline_key_start = index * kWhitelistSingleSize;
+      uint32_t offline_key_end = offline_key_start + kPubkeySize;
+      uint32_t online_key_start = offline_key_start + kPubkeySize;
+      uint32_t online_key_end = (index + 1) * kWhitelistSingleSize;
+      Pubkey offline_key(std::vector<uint8_t>(
+          ite + offline_key_start, ite + offline_key_end));
+      offline_keys.push_back(offline_key.GetData());
+      Pubkey online_key(
+          std::vector<uint8_t>(ite + online_key_start, ite + online_key_end));
+      online_keys.push_back(online_key.GetData());
+    }
+  } catch (const CfdException &except) {
+    throw CfdException(
+        kCfdIllegalArgumentError,
+        "Illegal whitelist key. (" + std::string(except.what()) + ")");
+  }
+
+  static auto split_function =
+      [](const std::string &text,
+         const char separator) -> std::vector<std::string> {
+    std::vector<std::string> list;
+    std::vector<char> text_array;
+    const char *p_data = text.data();
+    for (size_t offset = 0; offset < text.size(); ++offset) {
+      if (p_data[offset] == separator) {
+        text_array.push_back('\0');
+        list.push_back(std::string(text_array.data()));
+        text_array.clear();
+      } else {
+        text_array.push_back(p_data[offset]);
+      }
+    }
+    if (!text_array.empty()) {
+      text_array.push_back('\0');
+      list.push_back(std::string(text_array.data()));
+    }
+    // 実際のBIP32解析では強化鍵確認も必要だが、pegoutでは使わないので除外
+    return list;
+  };
+
+  ByteData prefix = pubkey_prefix;
+  if ((net_type == NetType::kTestnet) || ((net_type == NetType::kRegtest))) {
+    prefix = ByteData("043587cf");
+  } else if (net_type == NetType::kMainnet) {
+    prefix = ByteData("0488b21e");
+  } else if (prefix.GetDataSize() != 4) {
+    throw CfdException(
+        kCfdIllegalArgumentError, "Illegal prefix and nettype.");
+  }
+
+  // check descriptor
+  ExtKey xpub = GenerateExtPubkeyFromDescriptor(bitcoin_descriptor, prefix);
+
+  std::string desc_str = bitcoin_descriptor;
+  // TODO(k-matsuzawa): 一旦省略するが、実際は厳密なチェックが必要そう
+  // FlatSigningProvider provider;
+  // const auto descriptor = Parse(desc_str, provider);
+  // if (!descriptor) desc_str = "pkh(" + xpub.GetBase58String() + "/0/*)";
+
+  // Strip last parenths(up to 2) and "/*" to let ParseKeyPath do its thing
+  desc_str.erase(
+      std::remove(desc_str.begin(), desc_str.end(), ')'), desc_str.end());
+  desc_str = desc_str.substr(0, desc_str.size() - 2);
+  // Since we know there are no key origin data, directly call inner parsing functions  // NOLINT
+  std::vector<uint32_t> key_path;
+  std::vector<std::string> split_list = split_function(desc_str, '/');
+  split_list.erase(split_list.begin());  // remove top data
+  for (const auto &text_data : split_list) {
+    key_path.push_back(std::stoul(text_data));
+  }
+  key_path.push_back(bip32_counter);
+
+  // check whitelist
+  uint32_t whitelist_index = 0;
+  bool is_find = false;
+  const ByteData &online_pubkey_bytes = online_pubkey.GetData();
+  for (uint32_t index = 0; index < online_keys.size(); ++index) {
+    if (online_pubkey_bytes.Equals(online_keys[index])) {
+      whitelist_index = index;
+      is_find = true;
+      break;
+    }
+  }
+  if (!is_find) {
+    throw CfdException(kCfdIllegalArgumentError, "online_pubkey not exists.");
+  }
+
+  Pubkey offline_pubkey = xpub.GetPubkey();
+  ByteData offline_pubkey_negate =
+      WallyUtil::NegatePubkey(offline_pubkey.GetData());
+  if (!offline_keys[whitelist_index].Equals(offline_pubkey_negate)) {
+    throw CfdException(kCfdIllegalArgumentError, "offline_pubkey not exists.");
+  }
+
+  // calc tweak
+  ByteData256 tweak_sum = xpub.DerivePubTweak(key_path);
+  ByteData btcpubkeybytes =
+      WallyUtil::AddTweakPubkey(offline_pubkey.GetData(), tweak_sum);
+
+  ByteData whitelist_proof = WallyUtil::SignWhitelist(
+      btcpubkeybytes, ByteData256(master_online_key.GetData().GetBytes()),
+      tweak_sum, online_keys, offline_keys, whitelist_index);
+
+  result.btc_pubkey_bytes = Pubkey(btcpubkeybytes);
+  result.whitelist_proof = whitelist_proof;
+  return result;
+}
+
+ExtKey ConfidentialTransaction::GenerateExtPubkeyFromDescriptor(
+    const std::string &bitcoin_descriptor, const ByteData &prefix) {
+  static auto starts_with = [](const std::string &text,
+                               const std::string &check) -> bool {
+    return (
+        (text.length() >= check.length()) &&
+        (text.substr(0, check.length()) == check));
+  };
+  static auto ends_with = [](const std::string &text,
+                             const std::string &check) -> bool {
+    return (
+        (text.length() >= check.length()) &&
+        (text.substr(text.length() - check.length(), check.length()) ==
+         check));
+  };
+
+  ExtKey xpub;
+  try {
+    // 指定キーチェック (ただのbase58check文字列)
+    ExtKey check_key(bitcoin_descriptor);
+    if (check_key.GetPrefix().Equals(prefix)) {
+      xpub = check_key;
+    }
+  } catch (const CfdException &except) {
+    info(
+        CFD_LOG_SOURCE, "bitcoin_descriptor check fail. go on next check.({})",
+        except.what());
+    // other descriptor
+  }
+
+  if (!xpub.GetPubkey().IsValid()) {
+    std::string xpub_str = "";
+    std::string desc = bitcoin_descriptor;
+    if (starts_with(desc, "sh(wpkh(") && ends_with(desc, "))")) {
+      xpub_str = desc.substr(8, desc.size() - 2);
+    } else if (starts_with(desc, "wpkh(") && ends_with(desc, ")")) {
+      xpub_str = desc.substr(5, desc.size() - 1);
+    } else if (starts_with(desc, "pkh(") && ends_with(desc, ")")) {
+      xpub_str = desc.substr(4, desc.size() - 1);
+    } else {
+      warn(CFD_LOG_SOURCE, "bitcoin_descriptor invalid type.");
+      throw CfdException(
+          kCfdIllegalArgumentError,
+          "bitcoin_descriptor is not of any type supported: pkh(<xpub>), "
+          "sh(wpkh(<xpub>)), wpkh(<xpub>), or <xpub>.");
+    }
+    if (xpub_str.find("]") != std::string::npos) {
+      xpub_str = xpub_str.substr(xpub_str.find("]"), std::string::npos);
+    }
+    xpub_str = xpub_str.substr(0, xpub_str.find("/"));
+    xpub = ExtKey(xpub_str);
+    if (!xpub.GetPrefix().Equals(prefix)) {
+      warn(
+          CFD_LOG_SOURCE, "bitcoin_descriptor illegal prefix[{}].",
+          xpub.GetPrefix().GetHex());
+      throw CfdException(
+          kCfdIllegalArgumentError, "bitcoin_descriptor illegal prefix.");
+    }
+  }
+
+  return xpub;
 }
 
 ByteData ConfidentialTransaction::ConvertToByteData(
