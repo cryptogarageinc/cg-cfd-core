@@ -547,6 +547,19 @@ Txid AbstractTransaction::GetTxid() const {
   return Txid(bytedata);
 }
 
+bool AbstractTransaction::IsCoinBase() const {
+  bool is_coinbase = false;
+  struct wally_tx *tx = static_cast<struct wally_tx *>(wally_tx_pointer_);
+  if (tx != nullptr) {
+    size_t coinbase = 0;
+    int ret = wally_tx_is_coinbase(tx, &coinbase);
+    if ((ret == WALLY_OK) && (coinbase != 0)) {
+      is_coinbase = true;
+    }
+  }
+  return is_coinbase;
+}
+
 bool AbstractTransaction::GetVariableInt(
     const uint8_t *p_byte_data, size_t data_size, uint64_t *p_result,
     size_t *p_size) {

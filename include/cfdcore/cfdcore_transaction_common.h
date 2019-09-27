@@ -406,6 +406,12 @@ class CFD_CORE_EXPORT AbstractTransaction {
    * @return txid
    */
   Txid GetTxid() const;
+  /**
+   * @brief coinbaseかどうか判定する.
+   * @retval true  coinbase transaction
+   * @retval false 通常のtransaction
+   */
+  bool IsCoinBase() const;
 
   /**
    * @brief libwally処理用フラグを取得する。

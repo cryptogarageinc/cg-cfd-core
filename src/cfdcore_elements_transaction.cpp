@@ -669,13 +669,14 @@ void ConfidentialTransaction::SetFromHex(const std::string &hex_string) {
       std::vector<uint8_t> script_buf(
           txin_item->script, txin_item->script + txin_item->script_len);
       Script unlocking_script = Script(ByteData(script_buf));
+      /* 一旦除外
       if (!unlocking_script.IsPushOnly()) {
         warn(CFD_LOG_SOURCE, "IsPushOnly() false.");
         throw CfdException(
             kCfdIllegalArgumentError,
             "unlocking script error. "
             "The script needs to be push operator only.");
-      }
+      } */
       std::vector<uint8_t> blinding_buf(
           txin_item->blinding_nonce,
           txin_item->blinding_nonce + sizeof(txin_item->blinding_nonce));

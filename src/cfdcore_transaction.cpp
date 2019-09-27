@@ -266,13 +266,14 @@ void Transaction::SetFromHex(const std::string &hex_string) {
       std::vector<uint8_t> script_buf(
           txin_item->script, txin_item->script + txin_item->script_len);
       Script unlocking_script = Script(ByteData(script_buf));
+      /* 一旦除外
       if (!unlocking_script.IsPushOnly()) {
         warn(CFD_LOG_SOURCE, "IsPushOnly() false.");
         throw CfdException(
             kCfdIllegalArgumentError,
             "unlocking script error. "
             "The script needs to be push operator only.");
-      }
+      } */
       TxIn txin(
           Txid(ByteData256(txid_buf)), txin_item->index, txin_item->sequence,
           unlocking_script);
