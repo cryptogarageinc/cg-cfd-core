@@ -38,7 +38,7 @@ class CFD_CORE_EXPORT ByteData {
    * @brief コンストラクタ
    * @param[in] hex  Byteデータ HEX文字列
    */
-  ByteData(const std::string& hex);  // NOLINT
+  explicit ByteData(const std::string& hex);
 
   /**
    * @brief HEX文字列を取得する.
@@ -59,12 +59,32 @@ class CFD_CORE_EXPORT ByteData {
   size_t GetDataSize() const;
 
   /**
+   * @brief データが空か取得する.
+   * @retval true  データが空
+   * @retval false データが存在
+   */
+  bool Empty() const;
+
+  /**
    * @brief ByteData比較
    * @param bytedata 比較対象のオブジェクト
    * @retval true 一致した場合
    * @retval false 不一致の場合
    */
   bool Equals(const ByteData& bytedata) const;
+
+  /**
+   * @brief byte data情報をserializeする.
+   * @return serialize data
+   */
+  ByteData Serialize() const;
+
+  /**
+   * @brief 可変長サイズ情報(バッファ)を取得する.
+   * @param[in] value    size value
+   * @return variable size buffer
+   */
+  static ByteData GetVariableInt(uint64_t value);
 
  private:
   /**
@@ -94,7 +114,7 @@ class CFD_CORE_EXPORT ByteData160 {
    * @brief コンストラクタ
    * @param[in] hex  ByteデータHEX文字列
    */
-  ByteData160(const std::string& hex);  // NOLINT
+  explicit ByteData160(const std::string& hex);
 
   /**
    * @brief HEX文字列を取得する.
@@ -107,6 +127,14 @@ class CFD_CORE_EXPORT ByteData160 {
    * @return Byte配列
    */
   std::vector<uint8_t> GetBytes() const;
+
+  /**
+   * @brief データが空か取得する.
+   * @retval true  データが空
+   * @retval false データが存在
+   */
+  bool Empty() const;
+
   /**
    * @brief ByteData比較
    * @param bytedata 比較対象のオブジェクト
@@ -114,6 +142,18 @@ class CFD_CORE_EXPORT ByteData160 {
    * @retval false 不一致の場合
    */
   bool Equals(const ByteData160& bytedata) const;
+
+  /**
+   * @brief byte data情報を取得する.
+   * @return byte data
+   */
+  ByteData GetData() const;
+
+  /**
+   * @brief byte data情報をserializeする.
+   * @return serialize data
+   */
+  ByteData Serialize() const;
 
  private:
   /**
@@ -143,7 +183,7 @@ class CFD_CORE_EXPORT ByteData256 {
    * @brief コンストラクタ
    * @param[in] hex  ByteデータHEX文字列
    */
-  ByteData256(const std::string& hex);  // NOLINT
+  explicit ByteData256(const std::string& hex);
 
   /**
    * @brief HEX文字列を取得する.
@@ -156,6 +196,14 @@ class CFD_CORE_EXPORT ByteData256 {
    * @return Byte配列
    */
   std::vector<uint8_t> GetBytes() const;
+
+  /**
+   * @brief データが空か取得する.
+   * @retval true  データが空
+   * @retval false データが存在
+   */
+  bool Empty() const;
+
   /**
    * @brief ByteData比較
    * @param bytedata 比較対象のオブジェクト
@@ -163,6 +211,18 @@ class CFD_CORE_EXPORT ByteData256 {
    * @retval false 不一致の場合
    */
   bool Equals(const ByteData256& bytedata) const;
+
+  /**
+   * @brief byte data情報を取得する.
+   * @return byte data
+   */
+  ByteData GetData() const;
+
+  /**
+   * @brief byte data情報をserializeする.
+   * @return serialize data
+   */
+  ByteData Serialize() const;
 
  private:
   /**

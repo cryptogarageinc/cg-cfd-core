@@ -25,6 +25,10 @@ constexpr size_t kScriptHashP2shLength = 23;
 constexpr size_t kScriptHashP2wpkhLength = 22;
 /// P2WSHのScriptサイズ（WALLY_SCRIPTPUBKEY_P2WSH_LEN）
 constexpr size_t kScriptHashP2wshLength = 34;
+/// WitnessProgramの最小サイズ
+constexpr size_t kMinWitnessProgramLength = 4;
+/// WitnessProgramの最大サイズ
+constexpr size_t kMaxWitnessProgramLength = 42;
 
 /**
  * @brief script element type
@@ -681,6 +685,62 @@ class CFD_CORE_EXPORT Script {
    * @retval false  contain other operator.
    */
   bool IsPushOnly() const;
+
+  /**
+   * @brief Check if the script is pay to pubkey script.
+   * @retval true   script is pay to pubkey.
+   * @retval false  not pay to pubkey.
+   */
+  bool IsP2pkScript() const;
+
+  /**
+   * @brief Check if the script is pay to pubkey hash script.
+   * @retval true   script is pay to pubkey hash.
+   * @retval false  not pay to pubkey hash.
+   */
+  bool IsP2pkhScript() const;
+
+  /**
+   * @brief Check if the script is pay to script hash script.
+   * @retval true   script is pay to script hash.
+   * @retval false  not pay to script hash.
+   */
+  bool IsP2shScript() const;
+
+  /**
+   * @brief Check if the script is pay to multi-sig script.
+   * @retval true   script is pay to multi-sig.
+   * @retval false  not pay to multi-sig.
+   */
+  bool IsMultisigScript() const;
+
+  /**
+   * @brief Check if the script is pay to WitnessProgram script.
+   * @retval true   script is pay to WitnessProgram.
+   * @retval false  not pay to WitnessProgram.
+   */
+  bool IsWitnessProgram() const;
+
+  /**
+   * @brief Check if the script is pay to witness pubkey hash script.
+   * @retval true   script is pay to witness pubkey hash.
+   * @retval false  not pay to witness pubkey hash.
+   */
+  bool IsP2wpkhScript() const;
+
+  /**
+   * @brief Check if the script is pay to witness script hash script.
+   * @retval true   script is pay to witness script hash.
+   * @retval false  not pay to witness script hash.
+   */
+  bool IsP2wshScript() const;
+
+  /**
+   * @brief Check if the script is pegout script.
+   * @retval true   script is pegout script.
+   * @retval false  not pegout script.
+   */
+  bool IsPegoutScript() const;
 
  private:
   /// script byte data

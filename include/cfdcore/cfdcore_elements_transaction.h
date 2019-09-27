@@ -381,6 +381,12 @@ class CFD_CORE_EXPORT ConfidentialTxIn : public AbstractTxIn {
    */
   void RemovePeginWitnessStackAll();
 
+  /**
+   * @brief witness hashを取得する.
+   * @return witness hash
+   */
+  ByteData256 GetWitnessHash() const;
+
  private:
   ByteData256 blinding_nonce_;           //!< nonce for blind
   ByteData256 asset_entropy_;            //!< asset entropy
@@ -471,6 +477,17 @@ class CFD_CORE_EXPORT ConfidentialTxInReference
   ByteData issuance_amount_rangeproof_;  //!< amount rangeproof
   ByteData inflation_keys_rangeproof_;   //!< inflation key rangeproof
   ScriptWitness pegin_witness_;          //!< witness stack for pegin
+};
+
+/**
+ * @struct RangeProofInfo
+ * @brief basic informations by decoding range-proof
+ */
+struct RangeProofInfo {
+  int exponent;        //!< exponent value in the proof
+  int mantissa;        //!< Number of bits covered by the proof
+  uint64_t min_value;  //!< the minimum value that commit could have
+  uint64_t max_value;  //!< the maximum value that commit could have
 };
 
 /**
@@ -575,6 +592,20 @@ class CFD_CORE_EXPORT ConfidentialTxOut : public AbstractTxOut {
    * @return range proof
    */
   ByteData GetRangeProof() const { return range_proof_; }
+
+  /**
+   * @brief witness hashを取得する.
+   * @return witness hash
+   */
+  ByteData256 GetWitnessHash() const;
+
+  /**
+   * @brief Decode range-proof and extract information.
+   * @param[in] range_proof ByteData of range-proof value
+   * @return struct RangeProofInfo including decoded range-proof information
+   */
+  static const RangeProofInfo DecodeRangeProofInfo(
+      const ByteData& range_proof);
 
  private:
   ConfidentialAssetId asset_;             //!< confidential asset
@@ -1128,6 +1159,13 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
    * @details ブラインド前のみ実施可能.
    */
   void RandomizeTxOut();
+
+  /**
+   * @brief witness情報のみのHashを取得する.
+   * @return witness only hash
+   */
+  ByteData256 GetWitnessOnlyHash() const;
+
   /**
    * @brief witness情報かどうかを取得する.
    * @retval true   witness
@@ -1149,6 +1187,29 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
    */
   static ByteData GetBitcoinTransaction(
       const ByteData& bitcoin_tx_data, bool is_remove_witness = false);
+  /**
+   * @brief asset entropyの情報を算出する.
+   * @param[in] txid              utxo txid
+   * @param[in] vout              utxo vout
+   * @param[in] contract_hash     asset entropy
+   * @return asset entropy (BlindFactor).
+   */
+  static BlindFactor CalculateAssetEntropy(
+      const Txid& txid, const uint32_t vout, const ByteData256& contract_hash);
+  /**
+   * @brief assetの情報を算出する.
+   * @param[in] entropy           asset entropy
+   * @return asset id (ConfidentialAssetId).
+   */
+  static ConfidentialAssetId CalculateAsset(const BlindFactor& entropy);
+  /**
+   * @brief reissuance tokenの情報を算出する.
+   * @param[in] entropy           asset entropy
+   * @param[in] is_blind          asset is blinded or not
+   * @return reissuance token (ConfidentialAssetId).
+   */
+  static ConfidentialAssetId CalculateReissuanceToken(
+      const BlindFactor& entropy, bool is_blind);
   /**
    * @brief IssueAssetの情報を設定する.
    * @param[in] txid              utxo txid

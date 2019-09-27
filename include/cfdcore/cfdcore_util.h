@@ -362,6 +362,23 @@ class CFD_CORE_EXPORT CryptoUtil {
    */
   static ByteData DecodeBase58Check(const std::string &str);
 
+  /**
+   * @brief merkle rootの簡易計算を行う。
+   * @param[in] hashes  hash list
+   * @return merkle root
+   */
+  static ByteData256 ComputeFastMerkleRoot(
+      const std::vector<ByteData256> &hashes);
+
+  /**
+   * @brief merkle hash計算を行う。
+   * @param[in] left  left hash
+   * @param[in] right right hash
+   * @return merkle hash
+   */
+  static ByteData256 MerkleHashSha256Midstate(
+      const ByteData256 &left, const ByteData256 &right);
+
  private:
   CryptoUtil();
 };

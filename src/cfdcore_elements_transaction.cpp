@@ -474,6 +474,26 @@ void ConfidentialTxIn::RemovePeginWitnessStackAll() {
   pegin_witness_ = ScriptWitness();
 }
 
+ByteData256 ConfidentialTxIn::GetWitnessHash() const {
+  std::vector<ByteData256> leaves;
+  if (IsCoinBase()) {
+    ByteData256 empty_data = HashUtil::Sha256D(ByteData().Serialize());
+    leaves.push_back(empty_data);
+    leaves.push_back(empty_data);
+    leaves.push_back(empty_data);
+    leaves.push_back(empty_data);
+  } else {
+    leaves.push_back(
+        HashUtil::Sha256D(issuance_amount_rangeproof_.Serialize()));
+    leaves.push_back(
+        HashUtil::Sha256D(inflation_keys_rangeproof_.Serialize()));
+    leaves.push_back(HashUtil::Sha256D(script_witness_.Serialize()));
+    leaves.push_back(HashUtil::Sha256D(pegin_witness_.Serialize()));
+  }
+  ByteData256 result = CryptoUtil::ComputeFastMerkleRoot(leaves);
+  return result;
+}
+
 // -----------------------------------------------------------------------------
 // ConfidentialTxInReference
 // -----------------------------------------------------------------------------
@@ -559,6 +579,24 @@ void ConfidentialTxOut::SetCommitment(
 }
 
 void ConfidentialTxOut::SetValue(const Amount &value) { value_ = value; }
+
+ByteData256 ConfidentialTxOut::GetWitnessHash() const {
+  ByteData256 result;
+  std::vector<ByteData256> leaves;
+  leaves.push_back(HashUtil::Sha256D(surjection_proof_.Serialize()));
+  leaves.push_back(HashUtil::Sha256D(range_proof_.Serialize()));
+  result = CryptoUtil::ComputeFastMerkleRoot(leaves);
+  return result;
+}
+
+const RangeProofInfo ConfidentialTxOut::DecodeRangeProofInfo(
+    const ByteData &range_proof) {
+  RangeProofInfo range_proof_info;
+  WallyUtil::RangeProofInfo(
+      range_proof, &range_proof_info.exponent, &range_proof_info.mantissa,
+      &range_proof_info.min_value, &range_proof_info.max_value);
+  return range_proof_info;
+}
 
 // -----------------------------------------------------------------------------
 // ConfidentialTxOutReference
@@ -1173,32 +1211,12 @@ IssuanceParameter ConfidentialTransaction::SetAssetReissuance(
   return param;
 }
 
-IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
-    const Txid &txid, uint32_t vout, bool is_blind,
-    const ByteData256 &contract_hash, const ByteData256 &asset_entropy) {
-  IssuanceParameter result;
+BlindFactor ConfidentialTransaction::CalculateAssetEntropy(
+    const Txid &txid, const uint32_t vout, const ByteData256 &contract_hash) {
   const std::vector<uint8_t> &txid_byte = txid.GetData().GetBytes();
   const std::vector<uint8_t> &contract_hash_byte = contract_hash.GetBytes();
-  std::vector<uint8_t> asset(kAssetSize);
   std::vector<uint8_t> entropy(kEntropySize);
 
-  if (!asset_entropy.Equals(kEmptyByteData256)) {
-    // reissue
-    const std::vector<uint8_t> &entropy_byte = contract_hash.GetBytes();
-    int ret = wally_tx_elements_issuance_calculate_asset(
-        entropy_byte.data(), entropy_byte.size(), asset.data(), asset.size());
-    if (ret != WALLY_OK) {
-      warn(
-          CFD_LOG_SOURCE, "wally_tx_elements_issuance_calculate_asset NG[{}].",
-          ret);
-      throw CfdException(kCfdIllegalStateError, "asset calculate error.");
-    }
-    result.entropy = BlindFactor(contract_hash);
-    result.asset = ConfidentialAssetId(ByteData(asset));
-    return result;
-  }
-
-  // issue値の計算
   int ret = wally_tx_elements_issuance_generate_entropy(
       txid_byte.data(), txid_byte.size(), vout, contract_hash_byte.data(),
       contract_hash_byte.size(), entropy.data(), entropy.size());
@@ -1209,8 +1227,16 @@ IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
     throw CfdException(kCfdIllegalStateError, "entropy generate error.");
   }
 
-  ret = wally_tx_elements_issuance_calculate_asset(
-      entropy.data(), entropy.size(), asset.data(), asset.size());
+  return BlindFactor(ByteData256(entropy));
+}
+
+ConfidentialAssetId ConfidentialTransaction::CalculateAsset(
+    const BlindFactor &entropy) {
+  const std::vector<uint8_t> &entropy_byte = entropy.GetData().GetBytes();
+
+  std::vector<uint8_t> asset(kAssetSize);
+  int ret = wally_tx_elements_issuance_calculate_asset(
+      entropy_byte.data(), entropy_byte.size(), asset.data(), asset.size());
   if (ret != WALLY_OK) {
     warn(
         CFD_LOG_SOURCE, "wally_tx_elements_issuance_calculate_asset NG[{}].",
@@ -1218,10 +1244,18 @@ IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
     throw CfdException(kCfdIllegalStateError, "asset calculate error.");
   }
 
+  return ConfidentialAssetId(ByteData(asset));
+}
+
+ConfidentialAssetId ConfidentialTransaction::CalculateReissuanceToken(
+    const BlindFactor &entropy, bool is_blind) {
+  const std::vector<uint8_t> &entropy_byte = entropy.GetData().GetBytes();
+
   std::vector<uint8_t> token(kAssetSize);
   uint32_t flag = (is_blind) ? WALLY_TX_FLAG_BLINDED_INITIAL_ISSUANCE : 0;
-  ret = wally_tx_elements_issuance_calculate_reissuance_token(
-      entropy.data(), entropy.size(), flag, token.data(), token.size());
+  int ret = wally_tx_elements_issuance_calculate_reissuance_token(
+      entropy_byte.data(), entropy_byte.size(), flag, token.data(),
+      token.size());
   if (ret != WALLY_OK) {
     warn(
         CFD_LOG_SOURCE,
@@ -1229,9 +1263,35 @@ IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
     throw CfdException(kCfdIllegalStateError, "token calculate error.");
   }
 
-  result.entropy = BlindFactor(ByteData256(entropy));
-  result.asset = ConfidentialAssetId(ByteData(asset));
-  result.token = ConfidentialAssetId(ByteData(token));
+  return ConfidentialAssetId(ByteData(token));
+}
+
+IssuanceParameter ConfidentialTransaction::CalculateIssuanceValue(
+    const Txid &txid, uint32_t vout, bool is_blind,
+    const ByteData256 &contract_hash, const ByteData256 &asset_entropy) {
+  IssuanceParameter result;
+
+  if (!asset_entropy.Equals(kEmptyByteData256)) {
+    // reissue
+    result.entropy = BlindFactor(contract_hash);
+    result.asset = CalculateAsset(
+        result.entropy);  // ConfidentialAssetId(ByteData(asset));
+    return result;
+  }
+
+  // issue値の計算
+  const BlindFactor entropy = CalculateAssetEntropy(txid, vout, contract_hash);
+  result.entropy = entropy;
+
+  // assetの計算
+  const ConfidentialAssetId asset = CalculateAsset(entropy);
+  result.asset = asset;
+
+  // tokenの計算
+  const ConfidentialAssetId token =
+      CalculateReissuanceToken(entropy, is_blind);
+  result.token = token;
+
   info(
       CFD_LOG_SOURCE, "asset[{}] token[{}] is_blind[{}]",
       result.asset.GetHex(), result.token.GetHex(), is_blind);
@@ -2356,6 +2416,26 @@ ExtKey ConfidentialTransaction::GenerateExtPubkeyFromDescriptor(
   return xpub;
 }
 
+ByteData256 ConfidentialTransaction::GetWitnessOnlyHash() const {
+  std::vector<ByteData256> leaves;
+  leaves.reserve(std::max(vin_.size(), vout_.size()));
+  for (const auto &vin : vin_) {
+    leaves.push_back(vin.GetWitnessHash());
+  }
+  ByteData256 hash_in = CryptoUtil::ComputeFastMerkleRoot(leaves);
+  leaves.clear();
+
+  for (const auto &vout : vout_) {
+    leaves.push_back(vout.GetWitnessHash());
+  }
+  ByteData256 hash_out = CryptoUtil::ComputeFastMerkleRoot(leaves);
+  leaves.clear();
+
+  leaves.push_back(hash_in);
+  leaves.push_back(hash_out);
+  return CryptoUtil::ComputeFastMerkleRoot(leaves);
+}
+
 ByteData ConfidentialTransaction::ConvertToByteData(
     const uint8_t *data, size_t size) {
   std::vector<uint8_t> buffer(size);
@@ -2439,7 +2519,10 @@ ByteData ConfidentialTransaction::GetData(bool has_witness) const {
   struct wally_tx *tx_pointer =
       static_cast<struct wally_tx *>(wally_tx_pointer_);
   size_t size = 0;
-  uint32_t flag = WALLY_TX_FLAG_USE_WITNESS;
+  uint32_t flag = 0;
+  if (has_witness) {
+    flag = WALLY_TX_FLAG_USE_WITNESS;
+  }
 
   int ret = wally_tx_get_length(tx_pointer, flag, &size);
   if (ret != WALLY_OK) {

@@ -341,3 +341,124 @@ TEST(Script, IsPushOnly_empty) {
   Script script;
   EXPECT_EQ(script.IsPushOnly(), true);
 }
+
+TEST(Script, IsP2pkScriptTest) {
+  ScriptBuilder builder;
+  builder.AppendData(Pubkey("0288b03ce954e6eccfd9bdfd8cea71f80957e20d37d020b1b99973ea9f897f2b81"));
+  builder.AppendOperator(ScriptOperator::OP_CHECKSIG);
+  Script script = builder.Build();
+
+  EXPECT_TRUE(script.IsP2pkScript());
+  EXPECT_FALSE(script.IsP2pkhScript());
+  EXPECT_FALSE(script.IsP2shScript());
+  EXPECT_FALSE(script.IsMultisigScript());
+  EXPECT_FALSE(script.IsWitnessProgram());
+  EXPECT_FALSE(script.IsP2wpkhScript());
+  EXPECT_FALSE(script.IsP2wshScript());
+  EXPECT_FALSE(script.IsPegoutScript());
+}
+
+TEST(Script, IsP2pkhScriptTest) {
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_DUP);
+  builder.AppendOperator(ScriptOperator::OP_HASH160);
+  builder.AppendData(ByteData("18763afd24a108d323f53ebcea974e7f7d309503"));
+  builder.AppendOperator(ScriptOperator::OP_EQUALVERIFY);
+  builder.AppendOperator(ScriptOperator::OP_CHECKSIG);
+  Script script = builder.Build();
+
+  EXPECT_FALSE(script.IsP2pkScript());
+  EXPECT_TRUE(script.IsP2pkhScript());
+  EXPECT_FALSE(script.IsP2shScript());
+  EXPECT_FALSE(script.IsMultisigScript());
+  EXPECT_FALSE(script.IsWitnessProgram());
+  EXPECT_FALSE(script.IsP2wpkhScript());
+  EXPECT_FALSE(script.IsP2wshScript());
+  EXPECT_FALSE(script.IsPegoutScript());
+}
+
+TEST(Script, IsP2shScriptTest) {
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_HASH160);
+  builder.AppendData(ByteData("776f6d27bac2dabca92ac82d3ec353ec6f0550c4"));
+  builder.AppendOperator(ScriptOperator::OP_EQUAL);
+  Script script = builder.Build();
+
+  EXPECT_FALSE(script.IsP2pkScript());
+  EXPECT_FALSE(script.IsP2pkhScript());
+  EXPECT_TRUE(script.IsP2shScript());
+  EXPECT_FALSE(script.IsMultisigScript());
+  EXPECT_FALSE(script.IsWitnessProgram());
+  EXPECT_FALSE(script.IsP2wpkhScript());
+  EXPECT_FALSE(script.IsP2wshScript());
+  EXPECT_FALSE(script.IsPegoutScript());
+}
+
+TEST(Script, IsMultisigScriptTest) {
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_2);
+  builder.AppendData(Pubkey("0288b03ce954e6eccfd9bdfd8cea71f80957e20d37d020b1b99973ea9f897f2b81"));
+  builder.AppendData(Pubkey("03af2df16372b687457c4e522141ca5a600d64c61f3d7a19a465c051d060bdd727"));
+  builder.AppendData(Pubkey("02582b60250c5f99ab33faaec09c047f68e81bc267e4da7f136dc7b72afdaf0183"));
+  builder.AppendOperator(ScriptOperator::OP_3);
+  builder.AppendOperator(ScriptOperator::OP_CHECKMULTISIG);
+  Script script = builder.Build();
+
+  EXPECT_FALSE(script.IsP2pkScript());
+  EXPECT_FALSE(script.IsP2pkhScript());
+  EXPECT_FALSE(script.IsP2shScript());
+  EXPECT_TRUE(script.IsMultisigScript());
+  EXPECT_FALSE(script.IsWitnessProgram());
+  EXPECT_FALSE(script.IsP2wpkhScript());
+  EXPECT_FALSE(script.IsP2wshScript());
+  EXPECT_FALSE(script.IsPegoutScript());
+}
+
+TEST(Script, IsP2wpkhScriptTest) {
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_0);
+  builder.AppendData(ByteData("18763afd24a108d323f53ebcea974e7f7d309503"));
+  Script script = builder.Build();
+
+  EXPECT_FALSE(script.IsP2pkScript());
+  EXPECT_FALSE(script.IsP2pkhScript());
+  EXPECT_FALSE(script.IsP2shScript());
+  EXPECT_FALSE(script.IsMultisigScript());
+  EXPECT_TRUE(script.IsWitnessProgram());
+  EXPECT_TRUE(script.IsP2wpkhScript());
+  EXPECT_FALSE(script.IsP2wshScript());
+  EXPECT_FALSE(script.IsPegoutScript());
+}
+
+TEST(Script, IsP2wshScriptTest) {
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_0);
+  builder.AppendData(ByteData("0225718cefb8c26fdc0343681d116f5bdf6d6cd9dcf6a28067c76c9385e89fe3"));
+  Script script = builder.Build();
+
+  EXPECT_FALSE(script.IsP2pkScript());
+  EXPECT_FALSE(script.IsP2pkhScript());
+  EXPECT_FALSE(script.IsP2shScript());
+  EXPECT_FALSE(script.IsMultisigScript());
+  EXPECT_TRUE(script.IsWitnessProgram());
+  EXPECT_FALSE(script.IsP2wpkhScript());
+  EXPECT_TRUE(script.IsP2wshScript());
+  EXPECT_FALSE(script.IsPegoutScript());
+}
+
+TEST(Script, IsPegoutScriptTest) {
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_RETURN);
+  builder.AppendData(ByteData("06226e46111a0b59caaf126043eb5bbf28c34f3a5e332a1fc7b2b73cf188910f"));
+  builder.AppendData(ByteData("a91453c252a6a1379642adea35d055329ea04528eab787"));
+  Script script = builder.Build();
+
+  EXPECT_FALSE(script.IsP2pkScript());
+  EXPECT_FALSE(script.IsP2pkhScript());
+  EXPECT_FALSE(script.IsP2shScript());
+  EXPECT_FALSE(script.IsMultisigScript());
+  EXPECT_FALSE(script.IsWitnessProgram());
+  EXPECT_FALSE(script.IsP2wpkhScript());
+  EXPECT_FALSE(script.IsP2wshScript());
+  EXPECT_TRUE(script.IsPegoutScript());
+}

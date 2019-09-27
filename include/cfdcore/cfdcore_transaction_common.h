@@ -71,6 +71,18 @@ class CFD_CORE_EXPORT ScriptWitness {
    * @param[in] data      バイトデータ
    */
   void SetWitnessStack(uint32_t index, const ByteData& data);
+  /**
+   * @brief データが空か取得する.
+   * @retval true  データが空
+   * @retval false データが存在
+   */
+  bool Empty() const;
+
+  /**
+   * @brief witness stack情報をserializeする.
+   * @return serialize data
+   */
+  ByteData Serialize() const;
 
  private:
   std::vector<ByteData> witness_stack_;  ///< witness stack.
@@ -156,6 +168,13 @@ class CFD_CORE_EXPORT AbstractTxIn {
    * @brief script witnessを全て削除する.
    */
   void RemoveScriptWitnessStackAll();
+
+  /**
+   * @brief txid/voutによりcoinbaseを判定する.
+   * @retval true  coinbase
+   * @retval false other
+   */
+  bool IsCoinBase() const;
 
  protected:
   Txid txid_;                     ///< txid

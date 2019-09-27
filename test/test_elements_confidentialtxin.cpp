@@ -113,6 +113,8 @@ TEST(ConfidentialTxIn, Constractor2) {
     EXPECT_STREQ(test_peg_vector[idx].GetHex().c_str(),
         exp_peg_vector[idx].GetHex().c_str());
   }
+  EXPECT_STREQ(txin3.GetWitnessHash().GetHex().c_str(),
+    "c91991b67af0a40f5d200ba356b02afd3ae2c37174d0d79707a6bd6f9c69ce8c");
 }
 
 TEST(ConfidentialTxIn, SetIssuance) {
@@ -138,6 +140,8 @@ TEST(ConfidentialTxIn, SetIssuance) {
       exp_issuance_amount_rangeproof.GetHex().c_str());
   EXPECT_STREQ(txin.GetInflationKeysRangeproof().GetHex().c_str(),
       exp_inflation_keys_rangeproof.GetHex().c_str());
+  EXPECT_STREQ(txin.GetWitnessHash().GetHex().c_str(),
+    "66c6bd6d38aa080d0c840687accfcec970fa81cadebf94b379eda6a436f2a300");
 }
 
 TEST(ConfidentialTxIn, AddPeginWitnessStack) {
@@ -162,6 +166,8 @@ TEST(ConfidentialTxIn, AddPeginWitnessStack) {
   }
   EXPECT_STREQ(test_peg_vector[target_index].GetHex().c_str(),
       exp_data.GetHex().c_str());
+  EXPECT_STREQ(txin.GetWitnessHash().GetHex().c_str(), 
+    "d4fa3782068f8f1cef563520691eafbc883d1caf1d928012462644c7148cf1d5");
 }
 
 TEST(ConfidentialTxIn, SetPeginWitnessStack) {
@@ -180,6 +186,9 @@ TEST(ConfidentialTxIn, SetPeginWitnessStack) {
   EXPECT_STREQ(test_peg_vector[target_index].GetHex().c_str(),
       exp_data.GetHex().c_str());
 
+  EXPECT_STREQ(txin.GetWitnessHash().GetHex().c_str(),
+    "78edc6f5b6ee896fd2dca4ff75a7a23c734bf022528dad077c5570d02c2416fd");
+
   // fail case
   EXPECT_THROW((txin.SetPeginWitnessStack(9, exp_data)), CfdException);
 }
@@ -194,6 +203,8 @@ TEST(ConfidentialTxIn, RemovePeginWitnessStackAll) {
       exp_inflation_keys_rangeproof, exp_pegin_witness);
   EXPECT_NO_THROW((txin.RemovePeginWitnessStackAll()));
   EXPECT_EQ(txin.GetPeginWitnessStackNum(), 0);
+  EXPECT_STREQ(txin.GetWitnessHash().GetHex().c_str(),
+    "17f0c9b759a09c56116151cca94f18340acc3a782b2062cee3c41333b2dc63fe");
 }
 
 TEST(ConfidentialTxInReference, Constractor) {
@@ -204,6 +215,9 @@ TEST(ConfidentialTxInReference, Constractor) {
       exp_witness_stack, exp_blinding_nonce, exp_asset_entropy,
       exp_issuance_amount, exp_inflation_keys, exp_issuance_amount_rangeproof,
       exp_inflation_keys_rangeproof, exp_pegin_witness);
+  EXPECT_STREQ(txin.GetWitnessHash().GetHex().c_str(),
+    "c91991b67af0a40f5d200ba356b02afd3ae2c37174d0d79707a6bd6f9c69ce8c");
+  
   ConfidentialTxInReference txinref(txin);
   EXPECT_EQ(txinref.GetVout(), exp_index);
   EXPECT_EQ(txinref.GetSequence(), exp_sequence);

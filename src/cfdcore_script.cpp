@@ -744,7 +744,7 @@ std::string Script::ToString() const {
 bool Script::IsPushOnly() const {
   bool is_push_only = true;
   for (const ScriptElement& element : script_stack_) {
-    if (element.GetType() == ScriptElementType::kElementOpCode) {
+    if (element.IsOpCode()) {
       // OP_RESESRVEDもPush命令扱いとする（bitcoincore）
       if (element.GetOpCode().GetDataType() > ScriptType::kOp_16) {
         is_push_only = false;
@@ -753,6 +753,102 @@ bool Script::IsPushOnly() const {
     }
   }
   return is_push_only;
+}
+
+bool Script::IsP2pkScript() const {
+  return (
+      script_stack_.size() == 2 && script_stack_[0].IsBinary() &&
+      Pubkey::IsValid(script_stack_[0].GetBinaryData()) &&
+      script_stack_[1].GetOpCode() == ScriptOperator::OP_CHECKSIG);
+}
+
+bool Script::IsP2pkhScript() const {
+  return (
+      script_data_.GetDataSize() == kScriptHashP2pkhLength &&
+      script_stack_.size() == 5 &&
+      script_stack_[0].GetOpCode() == ScriptOperator::OP_DUP &&
+      script_stack_[1].GetOpCode() == ScriptOperator::OP_HASH160 &&
+      script_stack_[2].IsBinary() &&
+      script_stack_[3].GetOpCode() == ScriptOperator::OP_EQUALVERIFY &&
+      script_stack_[4].GetOpCode() == ScriptOperator::OP_CHECKSIG);
+}
+
+bool Script::IsP2shScript() const {
+  return (
+      script_data_.GetDataSize() == kScriptHashP2shLength &&
+      script_stack_.size() == 3 &&
+      script_stack_[0].GetOpCode() == ScriptOperator::OP_HASH160 &&
+      script_stack_[1].IsBinary() &&
+      script_stack_[2].GetOpCode() == ScriptOperator::OP_EQUAL);
+}
+
+bool Script::IsMultisigScript() const {
+  if (script_stack_.size() < 4 || !script_stack_[0].IsNumber() ||
+      !script_stack_[(script_stack_.size() - 2)].IsNumber() ||
+      script_stack_[(script_stack_.size() - 1)].GetOpCode() !=
+          ScriptOperator::OP_CHECKMULTISIG) {
+    return false;
+  }
+
+  for (size_t i = 1; i < (script_stack_.size() - 2); ++i) {
+    if (!script_stack_[i].IsBinary() ||
+        !Pubkey::IsValid(script_stack_[i].GetBinaryData())) {
+      return false;
+    }
+  }
+
+  if (script_stack_[0].GetNumber() >
+      script_stack_[(script_stack_.size() - 2)].GetNumber()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool Script::IsWitnessProgram() const {
+  return (
+      (kMinWitnessProgramLength <= script_data_.GetDataSize() ||
+       script_data_.GetDataSize() <= kMaxWitnessProgramLength) &&
+      script_stack_[0].GetOpCode() == ScriptOperator::OP_0 &&
+      script_stack_[1].IsBinary());
+}
+
+bool Script::IsP2wpkhScript() const {
+  return (
+      script_data_.GetDataSize() == kScriptHashP2wpkhLength &&
+      script_stack_.size() == 2 &&
+      script_stack_[0].GetOpCode() == ScriptOperator::OP_0 &&
+      script_stack_[1].IsBinary() &&
+      script_stack_[1].GetBinaryData().GetDataSize() == kByteData160Length);
+}
+
+bool Script::IsP2wshScript() const {
+  return (
+      script_data_.GetDataSize() == kScriptHashP2wshLength &&
+      script_stack_.size() == 2 &&
+      script_stack_[0].GetOpCode() == ScriptOperator::OP_0 &&
+      script_stack_[1].IsBinary() &&
+      script_stack_[1].GetBinaryData().GetDataSize() == kByteData256Length);
+}
+
+bool Script::IsPegoutScript() const {
+  if ((script_data_.GetDataSize() < 2) ||
+      (script_stack_[0].GetOpCode() != ScriptOperator::OP_RETURN)) {
+    return false;
+  }
+
+  if (!script_stack_[1].IsBinary() ||
+      script_stack_[1].GetBinaryData().GetDataSize() != kByteData256Length) {
+    return false;
+  }
+
+  for (size_t i = 2; i < script_stack_.size(); ++i) {
+    if (!script_stack_[i].IsBinary()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // -----------------------------------------------------------------------------

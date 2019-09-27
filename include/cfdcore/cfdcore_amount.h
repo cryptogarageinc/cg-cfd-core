@@ -47,11 +47,12 @@ class CFD_CORE_EXPORT Amount {
 
   /**
    * @brief 自身のインスタンスからbitcoin単位のAmount額を取得する.
+   * @details double精度の誤差が生じる可能性があるため注意.
    * @return bitcoin単位のAmountの数値
    */
   double GetCoinValue() const;
   /**
-   * @brief ByteDataをBigEndianで取得する。
+   * @brief ByteDataをBigEndianで取得する.
    * @return satoshiのByteData
    */
   ByteData GetByteData() const;

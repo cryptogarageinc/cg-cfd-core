@@ -12,6 +12,7 @@
 
 using cfdcore::AbstractTxIn;
 using cfdcore::ByteData;
+using cfdcore::ByteData256;
 using cfdcore::CfdException;
 using cfdcore::Script;
 using cfdcore::ScriptWitness;
@@ -110,4 +111,26 @@ TEST(AbstractTxIn, WitnessStackError) {
     return;
   }
   ASSERT_TRUE(false);
+}
+
+TEST(AbstractTxIn, IsCoinBaseTest) {
+  const Txid empty_txid = Txid(ByteData256());
+  const uint32_t max_vout = std::numeric_limits<uint32_t>::max();
+  const uint32_t sequence = 4294967295;
+  AbstractTxIn coinbase_input = AbstractTxIn(
+    empty_txid, max_vout, sequence);
+  EXPECT_TRUE(coinbase_input.IsCoinBase());
+
+  coinbase_input = AbstractTxIn(
+    empty_txid, max_vout, 0);
+  EXPECT_TRUE(coinbase_input.IsCoinBase());
+
+  AbstractTxIn not_coinbase = AbstractTxIn(
+    empty_txid, 0, sequence);
+  EXPECT_FALSE(not_coinbase.IsCoinBase());
+
+  not_coinbase = AbstractTxIn(
+    Txid("0d2a5386ec4fe2afb6fbf31b5d51781645ba8bd4a56daa1e7645bd4c4c4646d9"),
+    max_vout, sequence);
+  EXPECT_FALSE(not_coinbase.IsCoinBase());
 }

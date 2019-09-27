@@ -3,8 +3,6 @@ TEST_CFDCORE_ELEMENTS_SOURCES = \
     test_elements_confidentialtransaction.cpp \
     test_elements_confidentialtxin.cpp \
     test_elements_confidentialtxout.cpp \
-    test_elements_unblindedaddress.cpp \
-    test_elements_unblindedaddress.cpp \
     test_elements_confidentialnonce.cpp \
     test_elements_confidentialassetid.cpp \
     test_elements_confidentialvalue.cpp \
