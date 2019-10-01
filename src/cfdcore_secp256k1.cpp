@@ -259,8 +259,9 @@ ByteData Secp256k1::NegatePubkeySecp256k1Ec(const ByteData& pubkey) {
   return ByteData(byte_data);
 }
 
-RangeProofInfo Secp256k1::RangeProofInfoSecp256k1Ec(
-    const ByteData& range_proof) {
+void Secp256k1::RangeProofInfoSecp256k1(
+    const ByteData& range_proof, int* exponent, int* mantissa,
+    uint64_t* min_value, uint64_t* max_value) {
   secp256k1_context* context =
       static_cast<secp256k1_context*>(secp256k1_context_);
   if (secp256k1_context_ == nullptr) {
@@ -275,11 +276,9 @@ RangeProofInfo Secp256k1::RangeProofInfoSecp256k1Ec(
         "Secp256k1 empty range proof Error.");
   }
 
-  RangeProofInfo range_proof_info;
   std::vector<uint8_t> range_proof_bytes = range_proof.GetBytes();
   int ret = secp256k1_rangeproof_info(
-      context, &range_proof_info.exponent, &range_proof_info.mantissa,
-      &range_proof_info.min_value, &range_proof_info.max_value,
+      context, exponent, mantissa, min_value, max_value,
       range_proof_bytes.data(), range_proof_bytes.size());
   if (ret != 1) {
     warn(CFD_LOG_SOURCE, "secp256k1_rangeproof_info Error.({})", ret);
@@ -287,8 +286,6 @@ RangeProofInfo Secp256k1::RangeProofInfoSecp256k1Ec(
         CfdError::kCfdIllegalArgumentError,
         "Secp256k1 decode range proof info Error.");
   }
-
-  return range_proof_info;
 }
 
 ByteData Secp256k1::SignWhitelistSecp256k1Ec(

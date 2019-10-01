@@ -22,6 +22,8 @@ typedef enum {
   kMainnet = 0,               //!< MAINNET
   kTestnet,                   //!< TESTNET
   kRegtest,                   //!< REGTEST
+  kLiquidV1,                  //!< LiquidV1
+  kElementsRegtest,           //!< Elements Regtest
   kCustomChain,               //!< Custom chain
   kNetTypeNum = kCustomChain  //!< NETTYPE_NUM
 } NetType;

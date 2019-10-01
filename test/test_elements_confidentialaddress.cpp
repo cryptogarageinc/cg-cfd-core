@@ -9,9 +9,8 @@
 #include "cfdcore/cfdcore_util.h"
 
 using cfdcore::CfdException;
-using cfdcore::AbstractElementsAddress;
 using cfdcore::ElementsConfidentialAddress;
-using cfdcore::ElementsUnblindedAddress;
+using cfdcore::Address;
 using cfdcore::ConfidentialKey;
 using cfdcore::ElementsNetType;
 using cfdcore::ElementsAddressType;
@@ -23,6 +22,12 @@ using cfdcore::Script;
 using cfdcore::ScriptOperator;
 using cfdcore::ScriptBuilder;
 using cfdcore::HashUtil;
+using cfdcore::AddressFormatData;
+using cfdcore::GetElementsAddressFormatList;
+using cfdcore::ElementsConfidentialAddress;
+using cfdcore::ElementsNetType;
+using cfdcore::ElementsAddressType;
+using cfdcore::WitnessVersion;
 
 TEST(ElementsConfidentialAddress, EmptyAddressTest) {
   ElementsConfidentialAddress empty_address;
@@ -30,7 +35,7 @@ TEST(ElementsConfidentialAddress, EmptyAddressTest) {
                empty_address.GetUnblindedAddress().GetHash().GetHex().c_str());
   EXPECT_STREQ("", empty_address.GetConfidentialKey().GetHex().c_str());
 
-  ElementsUnblindedAddress unblind_addr;
+  Address unblind_addr;
   ConfidentialKey key;
   EXPECT_THROW((empty_address = ElementsConfidentialAddress("")), CfdException);
   EXPECT_THROW((empty_address = ElementsConfidentialAddress(unblind_addr, key)),
@@ -43,9 +48,9 @@ TEST(ElementsConfidentialAddress, P2pkhAddress) {
   ConfidentialKey key = ConfidentialKey(
       "02d570f84ffe5bdf7583400af2e6b9e219210ecf29a333757481cbca826ada8e16");
   ElementsConfidentialAddress address;
-  ElementsUnblindedAddress unblind_addr;
+  Address unblind_addr;
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kLiquidV1, pubkey);
+  unblind_addr = Address(ElementsNetType::kLiquidV1, pubkey, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "VTpyoufXeg8LByRmUeHt1zyzFm1RjEP7PvWYHsjGtj9Ef1ibxgVoGkPsUPDNvkKog17K7Qn5eQ3B7g9w",
@@ -58,12 +63,11 @@ TEST(ElementsConfidentialAddress, P2pkhAddress) {
   EXPECT_STREQ("QAcHVN55oetZU3wXXxnTrYHaqVUe35UhwJ",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2pkhAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2pkhAddress, address.GetAddressType());
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kElementsRegtest, pubkey);
+  unblind_addr = Address(ElementsNetType::kElementsRegtest, pubkey, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "CTEqTvCZtF8yBn4JeRxJKDjsVWk7m9mMuzThGzwTgn9G8cLBqjmqc5YkyheitzBooX7XBVNmAS34Be8o",
@@ -76,10 +80,9 @@ TEST(ElementsConfidentialAddress, P2pkhAddress) {
   EXPECT_STREQ("2dnmekh8NBmNX3Ckwte5CArjcsHLYdthCg3",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2pkhAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2pkhAddress, address.GetAddressType());
 
   // uncompress pubkey
   ConfidentialKey uc_key =
@@ -103,9 +106,9 @@ TEST(ElementsConfidentialAddress, P2shAddress) {
   ConfidentialKey key = ConfidentialKey(
       "02d570f84ffe5bdf7583400af2e6b9e219210ecf29a333757481cbca826ada8e16");
   ElementsConfidentialAddress address;
-  ElementsUnblindedAddress unblind_addr;
+  Address unblind_addr;
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kLiquidV1, script);
+  unblind_addr = Address(ElementsNetType::kLiquidV1, script, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "VJLBL3rkCh19CDi889GPXkn1BYqUih5DF2p8ViS2J4Tr2cnoKqrKf3qi2c9KJdah9d62ovTckv5uzzZC",
@@ -118,12 +121,11 @@ TEST(ElementsConfidentialAddress, P2shAddress) {
   EXPECT_STREQ("GzZ7frEGCDVVivMdSQA57zY1cRjYVu1g2r",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kElementsRegtest, script);
+  unblind_addr = Address(ElementsNetType::kElementsRegtest, script, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "AzppkWN3gNvcnBu2Pm4Nsi8EdCmugMU2zjbpsMQZGBfMDmBprXEMfscpFfYRqjkT2CjY7QAxtAv5PHkX",
@@ -136,10 +138,9 @@ TEST(ElementsConfidentialAddress, P2shAddress) {
   EXPECT_STREQ("XUiq7kxdkiB3AXNkKW9YaWLLGb1WBo9xcA",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 }
 
 TEST(ElementsConfidentialAddress, P2shWrappedP2wpkhAddress) {
@@ -154,9 +155,9 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wpkhAddress) {
   ConfidentialKey key = ConfidentialKey(
       "02d570f84ffe5bdf7583400af2e6b9e219210ecf29a333757481cbca826ada8e16");
   ElementsConfidentialAddress address;
-  ElementsUnblindedAddress unblind_addr;
+  Address unblind_addr;
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kLiquidV1, script);
+  unblind_addr = Address(ElementsNetType::kLiquidV1, script, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "VJLBL3rkCh19CDi889GPXkn1BYqUih5DF2p8ViS2J4Tr2cnYHZSM3ydLeZvFxSQ1MK8cXrXdQYVwx3i1",
@@ -169,12 +170,11 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wpkhAddress) {
   EXPECT_STREQ("GjWqFsdByr7TVs1SFiMmAaFwgSPAz5xzQm",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kElementsRegtest, script);
+  unblind_addr = Address(ElementsNetType::kElementsRegtest, script, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "AzppkWN3gNvcnBu2Pm4Nsi8EdCmugMU2zjbpsMQZGBfMDmBZpEpP4oQSsdKNVYZmDtn7qLEyXoK7qUrY",
@@ -187,10 +187,9 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wpkhAddress) {
   EXPECT_STREQ("XDgYhnMZYLnzwU2Z8pMEd64GLbf8W9A5vA",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 }
 
 TEST(ElementsConfidentialAddress, P2shWrappedP2wshAddress) {
@@ -213,9 +212,9 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wshAddress) {
   ConfidentialKey key = ConfidentialKey(
       "02d570f84ffe5bdf7583400af2e6b9e219210ecf29a333757481cbca826ada8e16");
   ElementsConfidentialAddress address;
-  ElementsUnblindedAddress unblind_addr;
+  Address unblind_addr;
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kLiquidV1, script);
+  unblind_addr = Address(ElementsNetType::kLiquidV1, script, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "VJLBL3rkCh19CDi889GPXkn1BYqUih5DF2p8ViS2J4Tr2cnZNmgEuyWyLvABqzeNyjtqWNNx3NTXMxXp",
@@ -228,12 +227,11 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wshAddress) {
   EXPECT_STREQ("Gkc3VmVBsUoojntzW5zBvoETXm1zv6Bibz",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 
-  unblind_addr = ElementsUnblindedAddress(ElementsNetType::kElementsRegtest, script);
+  unblind_addr = Address(ElementsNetType::kElementsRegtest, script, GetElementsAddressFormatList());
   EXPECT_NO_THROW((address = ElementsConfidentialAddress(unblind_addr, key)));
   EXPECT_STREQ(
       "AzppkWN3gNvcnBu2Pm4Nsi8EdCmugMU2zjbpsMQZGBfMDmBauT4GvoJ5ZyZJP6p8rKYLor6JAdFoaoYJ",
@@ -246,10 +244,9 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wshAddress) {
   EXPECT_STREQ("XEmkwgDZRyVMBPv7PByfPK2nBvHxWJXpBQ",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 }
 
 TEST(ElementsConfidentialAddress, P2pkhAddressFromString) {
@@ -270,10 +267,9 @@ TEST(ElementsConfidentialAddress, P2pkhAddressFromString) {
   EXPECT_STREQ("QAcHVN55oetZU3wXXxnTrYHaqVUe35UhwJ",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2pkhAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2pkhAddress, address.GetAddressType());
 
   EXPECT_NO_THROW(
       (address =
@@ -290,10 +286,9 @@ TEST(ElementsConfidentialAddress, P2pkhAddressFromString) {
   EXPECT_STREQ("2dnmekh8NBmNX3Ckwte5CArjcsHLYdthCg3",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2pkhAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2pkhAddress, address.GetAddressType());
 }
 
 TEST(ElementsConfidentialAddress, P2shAddressFromString) {
@@ -314,10 +309,9 @@ TEST(ElementsConfidentialAddress, P2shAddressFromString) {
   EXPECT_STREQ("GzZ7frEGCDVVivMdSQA57zY1cRjYVu1g2r",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 
   EXPECT_NO_THROW(
       (address =
@@ -334,10 +328,9 @@ TEST(ElementsConfidentialAddress, P2shAddressFromString) {
   EXPECT_STREQ("XUiq7kxdkiB3AXNkKW9YaWLLGb1WBo9xcA",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 }
 
 TEST(ElementsConfidentialAddress, P2shWrappedP2wpkhAddressFromString) {
@@ -358,10 +351,9 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wpkhAddressFromString) {
   EXPECT_STREQ("GjWqFsdByr7TVs1SFiMmAaFwgSPAz5xzQm",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 
   EXPECT_NO_THROW(
       (address =
@@ -378,10 +370,9 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wpkhAddressFromString) {
   EXPECT_STREQ("XDgYhnMZYLnzwU2Z8pMEd64GLbf8W9A5vA",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 }
 
 TEST(ElementsConfidentialAddress, P2shWrappedP2wshAddressFromString) {
@@ -402,10 +393,9 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wshAddressFromString) {
   EXPECT_STREQ("Gkc3VmVBsUoojntzW5zBvoETXm1zv6Bibz",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kLiquidV1, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
 
   EXPECT_NO_THROW(
       (address =
@@ -422,9 +412,114 @@ TEST(ElementsConfidentialAddress, P2shWrappedP2wshAddressFromString) {
   EXPECT_STREQ("XEmkwgDZRyVMBPv7PByfPK2nBvHxWJXpBQ",
                address.GetUnblindedAddress().GetAddress().c_str());
   EXPECT_TRUE(
-      AbstractElementsAddress::IsConfidentialAddress(address.GetAddress()));
-  EXPECT_TRUE(address.IsBlinded());
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
   EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
-  EXPECT_EQ(ElementsAddressType::kElementsP2shAddress, address.GetAddressType());
+  EXPECT_EQ(ElementsAddressType::kP2shAddress, address.GetAddressType());
+}
+
+TEST(ElementsConfidentialAddress, P2wpkhAddressFromString) {
+  ElementsConfidentialAddress address;
+
+  EXPECT_NO_THROW(
+      (address =
+          ElementsConfidentialAddress(
+              "el1qqtrrepq74crfxf3xzx8804qq9w4pgkf2a2l9gwwtughqv4p3nk8gepg0y9q39qhjgmnyfwfz5z5c5ek0llwtc3jfqw5zvqx5q")));
+  EXPECT_STREQ(
+      "el1qqtrrepq74crfxf3xzx8804qq9w4pgkf2a2l9gwwtughqv4p3nk8gepg0y9q39qhjgmnyfwfz5z5c5ek0llwtc3jfqw5zvqx5q",
+      address.GetAddress().c_str());
+  EXPECT_STREQ(
+      "02c63c841eae06932626118e77d4002baa14592aeabe5439cbe22e0654319d8e8c",
+      address.GetConfidentialKey().GetHex().c_str());
+  EXPECT_STREQ("850f21411282f246e644b922a0a98a66cfffdcbc",
+               address.GetHash().GetHex().c_str());
+  EXPECT_STREQ("ert1qs58jzsgjsteydejyhy32p2v2vm8llh9uns6d93",
+               address.GetUnblindedAddress().GetAddress().c_str());
+  EXPECT_TRUE(
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
+  EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
+  EXPECT_EQ(ElementsAddressType::kP2wpkhAddress, address.GetAddressType());
+}
+
+TEST(ElementsConfidentialAddress, P2wshAddressFromString) {
+  ElementsConfidentialAddress address;
+
+  EXPECT_NO_THROW(
+      (address =
+          ElementsConfidentialAddress(
+              "el1qqw3e3mk4ng3ks43mh54udznuekaadh9lgwef3mwgzrfzakmdwcvqqve2xzutyaf7vjcap67f28q90uxec2ve95g3rpu5crapcmfr2l9xl5jzazvcpysz")));
+  EXPECT_STREQ(
+      "el1qqw3e3mk4ng3ks43mh54udznuekaadh9lgwef3mwgzrfzakmdwcvqqve2xzutyaf7vjcap67f28q90uxec2ve95g3rpu5crapcmfr2l9xl5jzazvcpysz",
+      address.GetAddress().c_str());
+  EXPECT_STREQ(
+      "03a398eed59a2368563bbd2bc68a7ccdbbd6dcbf43b298edc810d22edb6d761800",
+      address.GetConfidentialKey().GetHex().c_str());
+  EXPECT_STREQ("332a30b8b2753e64b1d0ebc951c057f0d9c29992d11118794c0fa1c6d2357ca6",
+               address.GetHash().GetHex().c_str());
+  EXPECT_STREQ("ert1qxv4rpw9jw5lxfvwsa0y4rszh7rvu9xvj6yg3s72vp7sud5340jnquagp6g",
+               address.GetUnblindedAddress().GetAddress().c_str());
+  EXPECT_TRUE(
+      ElementsConfidentialAddress::IsConfidentialAddress(address.GetAddress()));
+  EXPECT_EQ(ElementsNetType::kElementsRegtest, address.GetNetType());
+  EXPECT_EQ(ElementsAddressType::kP2wshAddress, address.GetAddressType());
+}
+
+TEST(ElementsConfidentialAddress, P2wpkhAddressToConfidential) {
+  Address address;
+  ElementsConfidentialAddress confidential_address;
+  ConfidentialKey confidential_key(
+      "02c63c841eae06932626118e77d4002baa14592aeabe5439cbe22e0654319d8e8c");
+
+  EXPECT_NO_THROW(
+      (address =
+          Address(ElementsNetType::kElementsRegtest, WitnessVersion::kVersion0,
+                  Pubkey("02bedf98a38247c1718fdff7e07561b4dc15f10323ebb0accab581778e72c2e995"),
+                  GetElementsAddressFormatList())));
+  EXPECT_NO_THROW(
+      (confidential_address =
+          ElementsConfidentialAddress(address, confidential_key)));
+  EXPECT_STREQ(
+      "el1qqtrrepq74crfxf3xzx8804qq9w4pgkf2a2l9gwwtughqv4p3nk8gepg0y9q39qhjgmnyfwfz5z5c5ek0llwtc3jfqw5zvqx5q",
+      confidential_address.GetAddress().c_str());
+  EXPECT_STREQ(
+      "02c63c841eae06932626118e77d4002baa14592aeabe5439cbe22e0654319d8e8c",
+      confidential_address.GetConfidentialKey().GetHex().c_str());
+  EXPECT_STREQ("850f21411282f246e644b922a0a98a66cfffdcbc",
+               confidential_address.GetHash().GetHex().c_str());
+  EXPECT_STREQ("ert1qs58jzsgjsteydejyhy32p2v2vm8llh9uns6d93",
+               confidential_address.GetUnblindedAddress().GetAddress().c_str());
+  EXPECT_TRUE(
+      ElementsConfidentialAddress::IsConfidentialAddress(confidential_address.GetAddress()));
+  EXPECT_EQ(ElementsNetType::kElementsRegtest, confidential_address.GetNetType());
+  EXPECT_EQ(ElementsAddressType::kP2wpkhAddress, confidential_address.GetAddressType());
+}
+
+TEST(ElementsConfidentialAddress, P2wshAddressToConfidential) {
+  Address address;
+  ElementsConfidentialAddress confidential_address;
+  ConfidentialKey confidential_key(
+      "03a398eed59a2368563bbd2bc68a7ccdbbd6dcbf43b298edc810d22edb6d761800");
+
+  EXPECT_NO_THROW(
+      (address =
+          Address(ElementsNetType::kElementsRegtest, WitnessVersion::kVersion0,
+                  Script("a91429b1ec079a9c6a45a4e9ab38c3aa3e0ad3dc61f088"),
+                  GetElementsAddressFormatList())));
+  EXPECT_NO_THROW(
+      (confidential_address =
+          ElementsConfidentialAddress(address, confidential_key)));
+  EXPECT_STREQ(
+      "el1qqw3e3mk4ng3ks43mh54udznuekaadh9lgwef3mwgzrfzakmdwcvqqve2xzutyaf7vjcap67f28q90uxec2ve95g3rpu5crapcmfr2l9xl5jzazvcpysz",
+      confidential_address.GetAddress().c_str());
+  EXPECT_STREQ(
+      "03a398eed59a2368563bbd2bc68a7ccdbbd6dcbf43b298edc810d22edb6d761800",
+      confidential_address.GetConfidentialKey().GetHex().c_str());
+  EXPECT_STREQ("332a30b8b2753e64b1d0ebc951c057f0d9c29992d11118794c0fa1c6d2357ca6",
+               confidential_address.GetHash().GetHex().c_str());
+  EXPECT_STREQ("ert1qxv4rpw9jw5lxfvwsa0y4rszh7rvu9xvj6yg3s72vp7sud5340jnquagp6g",
+               confidential_address.GetUnblindedAddress().GetAddress().c_str());
+  EXPECT_TRUE(
+      ElementsConfidentialAddress::IsConfidentialAddress(confidential_address.GetAddress()));
+  EXPECT_EQ(ElementsNetType::kElementsRegtest, confidential_address.GetNetType());
+  EXPECT_EQ(ElementsAddressType::kP2wshAddress, confidential_address.GetAddressType());
 }
 #endif  // CFD_DISABLE_ELEMENTS

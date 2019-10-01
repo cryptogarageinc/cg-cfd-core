@@ -10,19 +10,21 @@
 #include "cfdcore/cfdcore_coin.h"
 #include "cfdcore/cfdcore_util.h"
 
-using cfdcore::CfdException;
+using cfdcore::Amount;
+using cfdcore::BlindFactor;
 using cfdcore::ByteData;
 using cfdcore::ByteData256;
-using cfdcore::BlindFactor;
-using cfdcore::Txid;
-using cfdcore::Script;
-using cfdcore::ScriptWitness;
-using cfdcore::ConfidentialValue;
+using cfdcore::CfdError;
+using cfdcore::CfdException;
 using cfdcore::ConfidentialAssetId;
 using cfdcore::ConfidentialNonce;
 using cfdcore::ConfidentialTxOut;
-using cfdcore::Amount;
 using cfdcore::ConfidentialTxOutReference;
+using cfdcore::ConfidentialValue;
+using cfdcore::RangeProofInfo;
+using cfdcore::Script;
+using cfdcore::ScriptWitness;
+using cfdcore::Txid;
 
 static const Script exp_script("0014fd1cd5452a43ca210ba7153d64227dc32acf6dbb");
 static const ConfidentialAssetId exp_asset(
@@ -98,6 +100,8 @@ TEST(ConfidentialTxOut, Constractor2) {
   EXPECT_STREQ(txout.GetSurjectionProof().GetHex().c_str(),
                exp_surjection_proof.GetHex().c_str());
   EXPECT_EQ(txout.GetValue().GetSatoshiValue(), 0);
+  EXPECT_STREQ(txout.GetWitnessHash().GetHex().c_str(),
+    "51e1922fa92165e1705155a1973d9c3b78cbc253ec185f58a4d53a59b3eee093");
 
   ConfidentialTxOutReference txout_ref(txout);
   EXPECT_STREQ(txout_ref.GetAsset().GetHex().c_str(),
@@ -126,6 +130,8 @@ TEST(ConfidentialTxOut, Constractor3) {
   EXPECT_STREQ(txout.GetRangeProof().GetHex().c_str(), "");
   EXPECT_STREQ(txout.GetSurjectionProof().GetHex().c_str(), "");
   EXPECT_EQ(txout.GetValue().GetSatoshiValue(), 0);
+  EXPECT_STREQ(txout.GetWitnessHash().GetHex().c_str(),
+    "7d993a3ac51b76589a07c59078e2e4241f4c13c5190a763f22213e0c9ed8e7d5");
 
   ConfidentialTxOutReference txout_ref(txout);
   EXPECT_STREQ(txout_ref.GetAsset().GetHex().c_str(),
@@ -149,6 +155,8 @@ TEST(ConfidentialTxOut, Setter) {
   EXPECT_STREQ(txout.GetRangeProof().GetHex().c_str(), "");
   EXPECT_STREQ(txout.GetSurjectionProof().GetHex().c_str(), "");
   EXPECT_EQ(txout.GetValue().GetSatoshiValue(), 0);
+  EXPECT_STREQ(txout.GetWitnessHash().GetHex().c_str(),
+    "7d993a3ac51b76589a07c59078e2e4241f4c13c5190a763f22213e0c9ed8e7d5");
 
   txout.SetValue(Amount::CreateBySatoshiAmount(100000000));
 
@@ -162,6 +170,8 @@ TEST(ConfidentialTxOut, Setter) {
 
   txout.SetCommitment(exp_asset, exp_value, exp_nonce, exp_surjection_proof,
                       exp_range_proof);
+  EXPECT_STREQ(txout.GetWitnessHash().GetHex().c_str(),
+    "51e1922fa92165e1705155a1973d9c3b78cbc253ec185f58a4d53a59b3eee093");
 
   EXPECT_STREQ(txout.GetAsset().GetHex().c_str(), exp_asset.GetHex().c_str());
   EXPECT_STREQ(txout.GetConfidentialValue().GetHex().c_str(),
@@ -187,6 +197,42 @@ TEST(ConfidentialTxOut, Setter) {
   EXPECT_STREQ(txout_ref.GetSurjectionProof().GetHex().c_str(),
                exp_surjection_proof.GetHex().c_str());
   EXPECT_EQ(txout_ref.GetValue().GetSatoshiValue(), 100000000);
+}
+
+TEST(ConfidentialTxOut, DecodeRangeProofInfoTest) {
+    ByteData range_proof("602300000000000000013883013a31aceb91aa584fa6c14c012797397725bf53c0d938457d41e31318fb844ea088615d1cfb76a86396a2ea0b2a1e356315876651e47c0e8911918f1d7e75eda6dfe4444208c9c3c24a98a8f8616283a4459f1e928d38ff8c5cce40aa50b58deae228af10a00e4c5f07998095bc2e61880d8b0b0ae3ebf63c51a5f0b9f885c88f8332a8f83c457872517c3581f3d8a0f0f3e2eee3e6909a9cda1903bf4bb4bd801e6077761f19fe115496c3e6661b68ae2b2a81b55145cb127b3c71fc715d28ceb35cea14fe7561878bee42c71dd0ba00d5553f59e1665e55a953c1a01025ed0edf01147dbd035e2b2e32c36c9400c2ab04942db231d5b9545f406b9fc290d389483bfcd519a9697a6498e816d8914d7df8123b20ed6641ae75cca7510015425c999d491f6ad899fe4890e5ff653aaeb55e37ec5d641ab12f68d129c5ae2c57c1addb984fdf53c42967eb1dcfac30757a2c110f2b39c5f160ff870724e25b0d9f73127e515398b3a5bb9797aad60d6017c4df6bf2f42633fadfc38021bdc801cbd2a2fe7647bf7874d18c6fc78fc616e6e031748106fff811fc431daeb99dd35a26367e7dff965493af24fb0fc0efa14cff00b776650ebba8d0fced41d559a9bedc8b356dc754866ea1b0cbbf551cf58f54d3a0053f4a7f720fa04a50c4d56f3e9f8cc253fe4cf30e3190530da38d1df259fc9dd5f54756eb766085f75ee885cc477e823180b6a9e9188f1d3f22d1328afafe4de03a5a7d10b293e0de7e001ccd1b61f1b8e15c7a9a35d1e8d9bd8fcdda402c96f7e3e7eb48488b010932d8d95168d81082757117ebf2af899d154ae6870cc4f7f00db4f96292b4fc1b384b8c91fb422adcdcc570d2ddf99e2645104ca216440cdcb94e33bfca56eb2c4a42c89efc1e1c0a16bbd63eb476afdd5fdc0461d1c95d619cfb557b1049e0a6a7afcb58ace021f54fcc4f51ea25d00f58b16d3d0ecd7a52261407ebc45017b5d70a2e986eeede4db51e988f44a95ae1b482d2ee6ed097e37c5742bc496af5ecc526d14493537a0ed94a6e1d100a5a9f8be484bb0da9de7344ea487428e84f5ea5589553701a9dafb3636b94d2aaae49ff8abbf1576725b9e8143ef77358fa1341294705f19d1e90492273aa4c9e19a006a0444b533b38716844a1f4199da5f99ac5188926a42f92c75e75ed87b466ef89dd42f449c9769e14559f92b2620ea7ae1bc425fc0be66d98321c998c2dea5a405c06f86b127538642e87c9f127bd7ed9abf86d650b7c9c548af030f5fd1a79bc3189af7a9676181e0a15175438c4bc03782719624a831413b24b93e0d852906f3b47bcf7e181b0feed31145068e5945abe8de69d6e10f1ffbef18432269b5fa5c1ac3b023c466b071b278eca87c1f4eb174be7de34c194504bac074278fd0a38509ea1ab8048ff17554a4a2bc5eb792a3a2b96cdd3fb3a346ed7d5113dd6d9c62778ac0e3288714352ba0d39c2041cf00e4dbb2d4504f37af0a379d7b5271778f9b54a942e1f3352bffd6bd1ca46b87eedda712d93375bf5d5fc68b2f5694b846f596d767890615f3a8c2f0bbbc2dbc8624370aa650f4a4c58650e7161df308e58ca014c4666bf25700d8914999d681f503d37c1a14206319f911a2db2a28c41b1c2e526de61b473696d2a9766df40d4268cef0b4733f0ddeb1b652d831e806885650ab60196e28c2c7193c56b88435d98e6dc9498bcc6c5c30927a554f28f0f7ce57ac61a3dfbe67c6144693f4b8d272808f59c41c6466d81b6f16f9444ffadc13f5cbee235a61d895d80cb0fd12141b5cf8ea7784dbbad306a7580084d719407c3bd5fafd2afddeea08a11212a0efc643132465efb4e3383ff263f1408b2f891ff2af8efb8416e87069e0673a831837a24e3f876a3208146ac73ebc23b80b677f819023384a058e1076f94266cf9395b2af044d04276d7c9bb245b0c901d6770b59fe9590ff923d5cac95d83228c6cb9c47a3fadcbca7bc3326c5e97db84a7c3002875fd8c2f4ea2c56bb867ad5e005727444b6d826f6e22aadb658ebd1fa0eee5eaad0e15e42c268aabcd82ea6a81dfbc5d2c4b54ffd0e18b8de750fda77f6ac733a5a2d975304b24bd3b4d39515103c488d44f4ac71d9e5ae9a1c593a633203e20b0ab20e5179b8ef2e78ac66ea2353be0cbc6ac921cc9a2bcf50565a9d7eedfcfebbbb085e449994a0cfdc8184d15bfee1c80347c1ae6915b7d4844882c182f95808c1109cf1b48809aa2d9501acae828f57b155270eda04e9178c075386b569135752e7b01fa80b7167d91b7ab67ad1af6dc8113cc9753f91ec1a180bf11d8057461d23c85b4eaf675a6a14b5ffae03dd0c752474f007548f68530739cdae8e5b924572a976214ed2b6b131fcffe579c426fa28abc586fb176bd9bdcf907c7afb6a9cef3b27453e852f50a150e4faca9cc5dad0ec0531492ba658ca0f10e4d958d31aae1c9ed22d22889d23a944297e4005caf1e3d341628d5dce35a502340a0f1f47616db15027dc0c452830c691cc1ceea8f4c84604283a4dd968f37e7629fb06f28d834e3523d4e0d3e3d5ce1456bf9bf4147225cf04d92d053e1ee6578a0a614017ef3ca5f54636550a6d461ffbc4d99bde6721febed92e23853276f8f5ae1e0c8358a79164ed5642c05eb184101ffeaef10e744f72210532411f83e765fbb743611a01ca17dbd19c20983fd840111266e2600df563b4149989948f5c255a692b9c9d694ff89bb12171d6579823268335b6eba7ccc5f6b2bb7d74f5b55a44ad6709f32f72a4c85bdd4aff9db98a5572026db7bdcfe4d3e1afb8c319e496844870e67054eacd251dca3debe06e980665795d2d6dc1575b9fdf67bce7d98f2d6198a2c7896905f3db07c4a6213f29486d09b75c19b3eb457e4ff074ff11f4aa5cadf6d064ed5b712e980af23351d057caea494e1d190ab0c0f562282b4f7408f7c6dd8ba973a8c2a3bb8b4637ca6c5c6d31d2832fdf6deb8a64465c00fff79068edffec309a609af77c27ce851784ff6bb0f59c61620bfa6387aec8550d1a0e2304530e5a5dd5b597aeb032fd96a6d602b6e42863517a6e0c47c86a654fedae233ec446344fb4febd13d671463251e1dfdc35042e3ead23ddd8736189f261ac22251e5a7faa24e227f5c3454b4a00b221ff2399b4ce1a93e1d9c95987216a170642d2cec5ab2de802f0e8af3e2bd010abe00ef34ac8acca9608329929b0394f5c84bc025372fbcb4c407d09e25ce1211233472d85fc92adfa3f0fca28aa271515a944a489780d13f5cd70eccf4e2977c603a1f8f06692d62a92aa0bcad5519b5140668ff2575c6c9c777fc00a61adc6204061031dd0b14ec4cd60bacd0cee58be5734354441a9ba0b0fe6eb2f2d5f1f00173b393e2a1f1cc41f8d06707d654ec3add8ec215e73a44544270d06ebdbfef4ad4832a5e16783151a3ae1cf8c1a3da721ada1af7b5b5dc08ebcec069e4dba5656ceda98a099544fa324a0f53094a55db585e793597867e35c88cc2438dd8bc39742abfe9de67fa1d9ab00681a3bc5fa165450d261d54423eca6cbf75e4535ba31d84852e5964deaf97b24220460cd3c8374fa97d537cee75f93ce37cc2918a34a9b94727102efff15e647714d04bdc6bb015dcd4a6e5a9ebcaab36b61b5c973f3f7225b73e2c7481b38779ba8cade1c2e6cec4098ef4c2eaaacb2e1969f610be6c31939528d0a7fce5c0dfcdc72a2cf52286b1e3ac7eb02f172400fd115bc0c1515429c0fefdb476b89daaf7e7ada5710fa7a1b6de0d1fcf9e29e0542ec076290e32315bc2f9af2ae5665fcf005578fad5ac8b9281cd96ad64cb7d07301017cb2824eff3535ca8b51276fc81bd498b5216dd4a5f394f02e115828f77f5617b908d96babbada133770c00cc943a024438a76532f01e146a9ed7c290538aaae2d229c796b2a11d222901cda433132fa89825f74b810008b1aa6732c915451c1224c5eb1d6cdf3ef67143e30622f5330e15baf9148ab5d992b19631043374840173ffe4bf844b5a5365c2beafd25898e89aa6b7dad9fa607ea01043770cdc71");
+    RangeProofInfo expected = {0, 36, 1, 68719476736};
+
+    RangeProofInfo actual;
+    EXPECT_NO_THROW(actual = ConfidentialTxOut::DecodeRangeProofInfo(range_proof));
+    EXPECT_EQ(expected.exponent, actual.exponent);
+    EXPECT_EQ(expected.mantissa, actual.mantissa);
+    EXPECT_EQ(expected.min_value, actual.min_value);
+    EXPECT_EQ(expected.max_value, actual.max_value);
+}
+
+TEST(ConfidentialTxOut, DecodeRangeProofInfoErrorTest) {  
+  // empty range_proof
+  {
+    ByteData range_proof("");
+    try {
+      EXPECT_THROW(ConfidentialTxOut::DecodeRangeProofInfo(range_proof), CfdException);
+    } catch (const CfdException &cfd_exception) {
+      EXPECT_EQ(cfd_exception.GetErrorCode(), CfdError::kCfdIllegalArgumentError);
+      EXPECT_STREQ(cfd_exception.what(), "Secp256k1 empty range proof Error.");
+    }
+  }
+  
+  // invalid range_proof
+  {
+    ByteData range_proof("0000");
+    try {
+      EXPECT_THROW(ConfidentialTxOut::DecodeRangeProofInfo(range_proof), CfdException);
+    } catch (const CfdException &cfd_exception) {
+      EXPECT_EQ(cfd_exception.GetErrorCode(), CfdError::kCfdIllegalArgumentError);
+      EXPECT_STREQ(cfd_exception.what(), "Secp256k1 empty range proof Error.");
+    }
+  }
 }
 
 #endif  // CFD_DISABLE_ELEMENTS

@@ -559,6 +559,83 @@ ByteData CryptoUtil::DecodeBase58Check(const std::string &str) {
   return ByteData(output);
 }
 
+ByteData256 CryptoUtil::ComputeFastMerkleRoot(
+    const std::vector<ByteData256> &hashes) {
+  static constexpr uint32_t kUintValue1 = 1;
+  ByteData256 result_hash;
+  if (hashes.size() == 0) return result_hash;
+
+  // inner is an array of eagerly computed subtree hashes, indexed by tree
+  // level (0 being the leaves).
+  // For example, when count is 25 (11001 in binary), inner[4] is the hash of
+  // the first 16 leaves, inner[3] of the next 8 leaves, and inner[0] equal to
+  // the last leaf. The other inner entries are undefined.
+  //
+  // First process all leaves into 'inner' values.
+  ByteData256 inner[33];
+  uint32_t count = 0;
+  int level;
+  while (count < hashes.size()) {
+    ByteData256 temp_hash = hashes[count];
+    ++count;
+    // For each of the lower bits in count that are 0, do 1 step. Each
+    // corresponds to an inner value that existed before processing the
+    // current leaf, and each needs a hash to combine it.
+    level = 0;
+    while ((count & (kUintValue1 << level)) == 0) {
+      temp_hash = MerkleHashSha256Midstate(inner[level], temp_hash);
+      ++level;
+    }
+    // Store the resulting hash at inner position level.
+    inner[level] = temp_hash;
+  }
+
+  // Do a final 'sweep' over the rightmost branch of the tree to process
+  // odd levels, and reduce everything to a single top value.
+  // Level is the level (counted from the bottom) up to which we've sweeped.
+  //
+  // As long as bit number level in count is zero, skip it. It means there
+  // is nothing left at this level.
+  level = 0;
+  while ((count & (kUintValue1 << level)) == 0) {
+    ++level;
+  }
+  result_hash = inner[level];
+
+  while (count != (kUintValue1 << level)) {
+    // If we reach this point, hash is an inner value that is not the top.
+    // We combine it with itself (Bitcoin's special rule for odd levels in
+    // the tree) to produce a higher level one.
+
+    // Increment count to the value it would have if two entries at this
+    // level had existed and propagate the result upwards accordingly.
+    count += (kUintValue1 << level);
+    ++level;
+    while ((count & (kUintValue1 << level)) == 0) {
+      result_hash = MerkleHashSha256Midstate(inner[level], result_hash);
+      ++level;
+    }
+  }
+  return result_hash;
+}
+
+ByteData256 CryptoUtil::MerkleHashSha256Midstate(
+    const ByteData256 &left, const ByteData256 &right) {
+  // CSHA256().Write(left.begin(), 32).Write(right.begin(), 32)
+  // .Midstate(output.begin(), NULL, NULL);
+  std::vector<uint8_t> output(32);
+  std::vector<uint8_t> buffer = left.GetBytes();
+  std::vector<uint8_t> right_buffer = right.GetBytes();
+  buffer.insert(buffer.end(), right_buffer.begin(), right_buffer.end());
+  int ret = wally_sha256_midstate(
+      buffer.data(), buffer.size(), output.data(), output.size());
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "wally_sha256_midstate NG[{}].", ret);
+    throw CfdException(kCfdIllegalStateError, "MerkleHash calc error.");
+  }
+  return ByteData256(output);
+}
+
 //////////////////////////////////
 /// RandomNumberUtil
 //////////////////////////////////

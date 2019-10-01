@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "cfdcore/cfdcore_bytedata.h"
+#include "cfdcore_secp256k1.h"  // NOLINT
 
 #include "wally_address.h"      // NOLINT
 #include "wally_bip32.h"        // NOLINT
@@ -86,6 +87,18 @@ class WallyUtil {
    * @return 加工後のPubkeyデータ
    */
   static ByteData NegatePubkey(const ByteData& pubkey);
+
+  /**
+   * @brief Decode range-proof and extract some information.
+   * @param[in]  range_proof  ByteData of range-proof
+   * @param[out] exponent     exponent value in the proof
+   * @param[out] mantissa     Number of bits covered by the proof
+   * @param[out] min_value    the minimum value that commit could have
+   * @param[out] max_value    the maximum value that commit could have
+   */
+  static void RangeProofInfo(
+      const ByteData& range_proof, int* exponent, int* mantissa,
+      uint64_t* min_value, uint64_t* max_value);
 
   /**
    * @brief Whitelist 証明情報生成処理

@@ -10,17 +10,10 @@
 #include <vector>
 #include "cfdcore/cfdcore_bytedata.h"
 
-namespace cfdcore {
-
 /**
- * @brief RangeProofの範囲値情報構造体
+ * @brief cfdcore名前空間
  */
-struct RangeProofInfo {
-  int exponent;        //!< 指数
-  int mantissa;        //!< 仮数
-  uint64_t min_value;  //!< 最小値
-  uint64_t max_value;  //!< 最大値
-};
+namespace cfdcore {
 
 /**
  * @brief secp256k1クラス.
@@ -67,11 +60,17 @@ class Secp256k1 {
   ByteData NegatePubkeySecp256k1Ec(const ByteData& pubkey);
 
   /**
-   * @brief rangeproof情報からの範囲値取得
-   * @param[in] range_proof     range proof
-   * @return 範囲値情報
+   * @brief Decode range-proof and extract some information.
+   * @param[in]  range_proof  ByteData of range-proof
+   * @param[out] exponent     exponent value in the proof
+   * @param[out] mantissa     Number of bits covered by the proof
+   * @param[out] min_value    the minimum value that commit could have
+   * @param[out] max_value    the maximum value that commit could have
+   * @throws CfdException if invalid range_proof data passed.
    */
-  RangeProofInfo RangeProofInfoSecp256k1Ec(const ByteData& range_proof);
+  void RangeProofInfoSecp256k1(
+      const ByteData& range_proof, int* exponent, int* mantissa,
+      uint64_t* min_value, uint64_t* max_value);
 
   /**
    * @brief Whitelist 証明情報生成処理

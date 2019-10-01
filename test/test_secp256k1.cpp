@@ -7,7 +7,6 @@
 using cfdcore::ByteData;
 using cfdcore::CfdError;
 using cfdcore::CfdException;
-using cfdcore::RangeProofInfo;
 using cfdcore::Secp256k1;
 
 typedef struct {
@@ -273,30 +272,36 @@ const std::vector<RangeProofInfoTestVector> range_proof_info_test_vectors = {
 };
 // @formatter:on
 
-TEST(Secp256k1, RangeProofInfoSecp256k1EcTest) {
+TEST(Secp256k1, RangeProofInfoSecp256k1Test) {
   struct secp256k1_context_struct *ctx = wally_get_secp_context();
   Secp256k1 secp = Secp256k1(ctx);
   
   for (const RangeProofInfoTestVector test_vector : range_proof_info_test_vectors) {
-    RangeProofInfo actual;
-    EXPECT_NO_THROW(actual = 
-      secp.RangeProofInfoSecp256k1Ec(test_vector.range_proof));
-    EXPECT_EQ(test_vector.expect_exp, actual.exponent);
-    EXPECT_EQ(test_vector.expect_mantissa, actual.mantissa);
-    EXPECT_EQ(test_vector.expect_minv, actual.min_value);
-    EXPECT_EQ(test_vector.expect_maxv, actual.max_value);
+    int exponent;
+    int mantissa;
+    uint64_t min_value;
+    uint64_t max_value;
+    EXPECT_NO_THROW(secp.RangeProofInfoSecp256k1(test_vector.range_proof, &exponent, &mantissa, &min_value, &max_value));
+    EXPECT_EQ(test_vector.expect_exp, exponent);
+    EXPECT_EQ(test_vector.expect_mantissa, mantissa);
+    EXPECT_EQ(test_vector.expect_minv, min_value);
+    EXPECT_EQ(test_vector.expect_maxv, max_value);
   }
 }
 
-TEST(Secp256k1, RangeProofInfoSecp256k1EcErrorTest) {
+TEST(Secp256k1, RangeProofInfoSecp256k1ErrorTest) {
   struct secp256k1_context_struct *ctx = wally_get_secp_context();
   Secp256k1 secp = Secp256k1(ctx);
   
+  int exponent;
+  int mantissa;
+  uint64_t min_value;
+  uint64_t max_value;
   // empty range_proof
   {
     ByteData range_proof("");
     try {
-      EXPECT_THROW(secp.RangeProofInfoSecp256k1Ec(range_proof), CfdException);
+      EXPECT_THROW(secp.RangeProofInfoSecp256k1(range_proof, &exponent, &mantissa, &min_value, &max_value), CfdException);
     } catch (const CfdException &cfd_exception) {
       EXPECT_EQ(cfd_exception.GetErrorCode(), CfdError::kCfdIllegalArgumentError);
       EXPECT_STREQ(cfd_exception.what(), "Secp256k1 empty range proof Error.");
@@ -307,7 +312,7 @@ TEST(Secp256k1, RangeProofInfoSecp256k1EcErrorTest) {
   {
     ByteData range_proof("0000");
     try {
-      EXPECT_THROW(secp.RangeProofInfoSecp256k1Ec(range_proof), CfdException);
+      EXPECT_THROW(secp.RangeProofInfoSecp256k1(range_proof, &exponent, &mantissa, &min_value, &max_value), CfdException);
     } catch (const CfdException &cfd_exception) {
       EXPECT_EQ(cfd_exception.GetErrorCode(), CfdError::kCfdIllegalArgumentError);
       EXPECT_STREQ(cfd_exception.what(), "Secp256k1 empty range proof Error.");

@@ -11,6 +11,7 @@
 
 // TEST(test_suite_name, test_name)
 
+using cfdcore::ByteData;
 using cfdcore::ByteData256;
 
 TEST(ByteData256, DefaultConstructor) {
@@ -19,6 +20,13 @@ TEST(ByteData256, DefaultConstructor) {
   EXPECT_STREQ(
       byte_data.GetHex().c_str(),
       "0000000000000000000000000000000000000000000000000000000000000000");
+  EXPECT_FALSE(byte_data.Empty());
+  EXPECT_STREQ(
+    byte_data.Serialize().GetHex().c_str(),
+    "200000000000000000000000000000000000000000000000000000000000000000");
+  ByteData byte_class_data;
+  EXPECT_NO_THROW(byte_class_data = byte_data.GetData());
+  EXPECT_EQ(byte_data.GetBytes(), byte_class_data.GetBytes());
 }
 
 TEST(ByteData256, HexConstructor) {
@@ -27,6 +35,13 @@ TEST(ByteData256, HexConstructor) {
   ByteData256 byte_data = ByteData256(target);
 
   EXPECT_STREQ(byte_data.GetHex().c_str(), target.c_str());
+  EXPECT_FALSE(byte_data.Empty());
+  EXPECT_STREQ(
+    byte_data.Serialize().GetHex().c_str(),
+    "201234567890123456789012345678901234567890123456789012345678901234");
+  ByteData byte_class_data;
+  EXPECT_NO_THROW(byte_class_data = byte_data.GetData());
+  EXPECT_EQ(byte_data.GetBytes(), byte_class_data.GetBytes());
 }
 
 TEST(ByteData256, BytesConstructor) {

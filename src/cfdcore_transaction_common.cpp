@@ -19,7 +19,6 @@
 
 namespace cfdcore {
 
-using logger::info;
 using logger::warn;
 
 // -----------------------------------------------------------------------------
@@ -51,6 +50,24 @@ void ScriptWitness::SetWitnessStack(uint32_t index, const ByteData &data) {
     throw CfdException(kCfdOutOfRangeError, "vin out_of_range error.");
   }
   witness_stack_[index] = data;
+}
+
+bool ScriptWitness::Empty() const { return (witness_stack_.size() == 0); }
+
+ByteData ScriptWitness::Serialize() const {
+  std::vector<ByteData> buffer_array;
+  ByteData stack_count = ByteData::GetVariableInt(witness_stack_.size());
+  buffer_array.push_back(stack_count);
+  for (const ByteData &stack : witness_stack_) {
+    buffer_array.push_back(stack.Serialize());
+  }
+
+  std::vector<uint8_t> result;
+  for (const ByteData &buffer : buffer_array) {
+    std::vector<uint8_t> work_buffer = buffer.GetBytes();
+    result.insert(result.end(), work_buffer.begin(), work_buffer.end());
+  }
+  return ByteData(result);
 }
 
 // -----------------------------------------------------------------------------
@@ -109,6 +126,16 @@ ScriptWitness AbstractTxIn::SetScriptWitnessStack(
 
 void AbstractTxIn::RemoveScriptWitnessStackAll() {
   script_witness_ = ScriptWitness();
+}
+
+bool AbstractTxIn::IsCoinBase() const {
+  bool is_coinbase = false;
+  std::vector<uint8_t> empty_txid(kByteData256Length);
+  if ((vout_ == std::numeric_limits<uint32_t>::max()) &&
+      (txid_.GetData().GetBytes() == empty_txid)) {
+    is_coinbase = true;
+  }
+  return is_coinbase;
 }
 
 // -----------------------------------------------------------------------------
@@ -518,6 +545,19 @@ std::string AbstractTransaction::GetHex() const { return GetData().GetHex(); }
 Txid AbstractTransaction::GetTxid() const {
   ByteData256 bytedata = GetHash();
   return Txid(bytedata);
+}
+
+bool AbstractTransaction::IsCoinBase() const {
+  bool is_coinbase = false;
+  struct wally_tx *tx = static_cast<struct wally_tx *>(wally_tx_pointer_);
+  if (tx != nullptr) {
+    size_t coinbase = 0;
+    int ret = wally_tx_is_coinbase(tx, &coinbase);
+    if ((ret == WALLY_OK) && (coinbase != 0)) {
+      is_coinbase = true;
+    }
+  }
+  return is_coinbase;
 }
 
 bool AbstractTransaction::GetVariableInt(

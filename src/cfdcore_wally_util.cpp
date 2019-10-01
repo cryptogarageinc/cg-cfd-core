@@ -101,6 +101,16 @@ ByteData WallyUtil::NegatePubkey(const ByteData& pubkey) {
   return secp256k1.NegatePubkeySecp256k1Ec(pubkey);
 }
 
+void WallyUtil::RangeProofInfo(
+    const ByteData& bytes, int* exponent, int* mantissa, uint64_t* min_value,
+    uint64_t* max_value) {
+  struct secp256k1_context_struct* context = wally_get_secp_context();
+
+  Secp256k1 secp256k1(context);
+  secp256k1.RangeProofInfoSecp256k1(
+      bytes, exponent, mantissa, min_value, max_value);
+}
+
 ByteData WallyUtil::SignWhitelist(
     const ByteData& offline_pubkey, const ByteData256& online_privkey,
     const ByteData256& tweak_sum, const std::vector<ByteData>& online_keys,
