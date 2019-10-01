@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include <map>
 #include <vector>
 
 #include "cfdcore/cfdcore_common.h"
@@ -69,4 +70,65 @@ TEST(StringUtil, ByteToStringEmpty) {
   std::string result = StringUtil::ByteToString(bytes);
 
   EXPECT_STREQ(result.c_str(), "");
+}
+
+TEST(StringUtil, SplitTest) {
+  std::vector<std::string> expect_vec = {
+    "The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog"
+  };
+  std::map<std::string, char> test_vector = {
+    {
+      "The quick brown fox jumps over the lazy dog",
+      ' '
+    },
+    {
+      "The_quick_brown_fox_jumps_over_the_lazy_dog",
+      '_'
+    },
+    {
+      "The%quick%brown%fox%jumps%over%the%lazy%dog",
+      '%'
+    },
+    {
+      "The%quick%brown%fox%jumps%over%the%lazy%dog%",
+      '%'
+    }
+  };
+
+  std::vector<std::string> actual;
+  for (auto vec : test_vector) {
+    EXPECT_NO_THROW(actual = StringUtil::Split(vec.first, vec.second));
+    EXPECT_EQ(actual, expect_vec);
+  }
+}
+
+TEST(StringUtil, SplitEmptyStringTest) {
+  struct TestVector {
+    std::string str;
+    char delimiter;
+    std::vector<std::string> expect;
+  };
+  std::vector<TestVector> test_vector = {
+    {
+      " ",
+      '*',
+      {" "}
+    },
+    {
+      "**",
+      '*',
+      {"", ""}
+    },
+    {
+      "",
+      '*',
+      {}
+    }
+  };
+
+  std::vector<std::string> actual;
+  for (auto vec : test_vector) {
+    EXPECT_NO_THROW(actual = StringUtil::Split(vec.str, vec.delimiter));
+    EXPECT_EQ(actual, vec.expect);
+  }
 }

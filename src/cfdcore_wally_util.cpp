@@ -5,12 +5,15 @@
  * @brief libwally internal utility.
  *
  */
+#include <algorithm>
 #include <exception>
 #include <string>
+#include <vector>
 
 #include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_logger.h"
+#include "cfdcore/cfdcore_util.h"
 #include "cfdcore_secp256k1.h"   // NOLINT
 #include "cfdcore_wally_util.h"  // NOLINT
 
@@ -26,6 +29,13 @@
 namespace cfdcore {
 
 using logger::warn;
+
+//////////////////////////////////
+/// inner definitions
+//////////////////////////////////
+
+/// length of bip39 wordlist array.
+static constexpr size_t kWordlistLength = BIP39_WORDLIST_LEN;
 
 //////////////////////////////////
 /// WallyUtil
@@ -120,6 +130,71 @@ ByteData WallyUtil::SignWhitelist(
   return secp256k1.SignWhitelistSecp256k1Ec(
       offline_pubkey, online_privkey, tweak_sum, online_keys, offline_keys,
       whitelist_index);
+}
+
+std::vector<std::string> WallyUtil::Bip39GetWordlist(
+    const std::string& language) {
+  std::vector<std::string> slangs = Bip39GetSupportedLanguages();
+  if (std::find(slangs.cbegin(), slangs.cend(), language) == slangs.cend()) {
+    warn(
+        CFD_LOG_SOURCE, "BIP39 not support language passed. language=[{}]",
+        language);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "BIP39 not support language passed.");
+  }
+
+  words* wally_wordlist[1];
+  int ret = bip39_get_wordlist(language.data(), wally_wordlist);
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "BIP39 get wordlist error. ret=[{}]", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "BIP39 get wordlist error.");
+  }
+
+  std::vector<std::string> wordlist;
+  wordlist.reserve(kWordlistLength);
+  for (size_t i = 0; i < kWordlistLength; ++i) {
+    std::string word = Bip39GetWord(wally_wordlist[0], i);
+    wordlist.push_back(word);
+  }
+
+  return wordlist;
+}
+
+std::vector<std::string> WallyUtil::Bip39GetSupportedLanguages() {
+  char* wally_lang = NULL;
+  int ret = bip39_get_languages(&wally_lang);
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "BIP39 get languages error. ret=[{}]", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "BIP39 get languages error.");
+  }
+
+  // free and get string
+  std::string lang = ConvertStringAndFree(wally_lang);
+  return StringUtil::Split(std::string(lang), ' ');
+}
+
+std::string WallyUtil::Bip39GetWord(
+    const words* wordlist, const size_t index) {
+  if (kWordlistLength <= index) {
+    warn(
+        CFD_LOG_SOURCE, "Bip39GetWord invalid index error. index=[{}]", index);
+    throw CfdException(
+        CfdError::kCfdOutOfRangeError, "Bip39GetWord invalid index error.");
+  }
+
+  char* wally_word = NULL;
+  int ret = bip39_get_word(wordlist, index, &wally_word);
+  if (ret != WALLY_OK) {
+    warn(CFD_LOG_SOURCE, "BIP39 get languages error. ret=[{}]", ret);
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError, "BIP39 get languages error.");
+  }
+
+  std::string word = ConvertStringAndFree(wally_word);
+  return word;
 }
 
 }  // namespace cfdcore

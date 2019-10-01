@@ -7,6 +7,7 @@ CFDCORE_ELEMENTS_PKGINCLUDE_FILES = \
 
 CFDCORE_PKGINCLUDE_FILES = \
   cfdcore_common.h \
+  cfdcore_hdwallet.h \
   cfdcore_json_mapping_base.h \
   cfdcore_json_writer.h \
   cfdcore_bytedata.h \

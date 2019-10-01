@@ -12,6 +12,7 @@ CFDCORE_SOURCES = \
   cfdcore_script.cpp \
   cfdcore_transaction_common.cpp \
   cfdcore_transaction.cpp \
+  cfdcore_hdwallet.cpp \
   cfdcore_key.cpp \
   cfdcore_amount.cpp \
   cfdcore_coin.cpp \

@@ -7,6 +7,7 @@
 
 #include <random>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "wally_core.h"  // NOLINT
@@ -733,6 +734,18 @@ std::string StringUtil::ByteToString(const std::vector<uint8_t> &bytes) {
     }
   }
   return byte_str;
+}
+
+std::vector<std::string> StringUtil::Split(
+    const std::string &str, const char delim) {
+  std::vector<std::string> results;
+
+  std::stringstream ss(str);
+  std::string item;
+  while (std::getline(ss, item, delim)) {
+    results.push_back(item);
+  }
+  return results;
 }
 
 }  // namespace cfdcore
