@@ -17,8 +17,8 @@ namespace cfdcore {
 
 using logger::warn;
 
-std::vector<std::string> HDWallet::Bip39GetWordlist(std::string language) {
-  return WallyUtil::Bip39GetWordlist(language);
+std::vector<std::string> HDWallet::GetMnemonicWordlist(std::string language) {
+  return WallyUtil::GetMnemonicWordlist(language);
 }
 
 }  // namespace cfdcore

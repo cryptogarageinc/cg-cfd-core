@@ -25,11 +25,11 @@ class CFD_CORE_EXPORT HDWallet {
   HDWallet();
 
   /**
-   * @brief BIP39 で利用できる Wordlist を取得する.
+   * @brief Mnemonic で利用できる Wordlist を取得する.
    * @param[in] language 取得するWordlistの言語
    * @return Wordlist vector
    */
-  static std::vector<std::string> Bip39GetWordlist(std::string language);
+  static std::vector<std::string> GetMnemonicWordlist(std::string language);
 
  private:
 };

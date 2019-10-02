@@ -132,43 +132,43 @@ ByteData WallyUtil::SignWhitelist(
       whitelist_index);
 }
 
-std::vector<std::string> WallyUtil::Bip39GetWordlist(
+std::vector<std::string> WallyUtil::GetMnemonicWordlist(
     const std::string& language) {
-  std::vector<std::string> slangs = Bip39GetSupportedLanguages();
+  std::vector<std::string> slangs = GetSupportedMnemonicLanguages();
   if (std::find(slangs.cbegin(), slangs.cend(), language) == slangs.cend()) {
     warn(
-        CFD_LOG_SOURCE, "BIP39 not support language passed. language=[{}]",
+        CFD_LOG_SOURCE, "Not support language passed. language=[{}]",
         language);
     throw CfdException(
         CfdError::kCfdIllegalArgumentError,
-        "BIP39 not support language passed.");
+        "Not support language passed.");
   }
 
   words* wally_wordlist[1];
   int ret = bip39_get_wordlist(language.data(), wally_wordlist);
   if (ret != WALLY_OK) {
-    warn(CFD_LOG_SOURCE, "BIP39 get wordlist error. ret=[{}]", ret);
+    warn(CFD_LOG_SOURCE, "Get wordlist error. ret=[{}]", ret);
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "BIP39 get wordlist error.");
+        CfdError::kCfdIllegalArgumentError, "Get wordlist error.");
   }
 
   std::vector<std::string> wordlist;
   wordlist.reserve(kWordlistLength);
   for (size_t i = 0; i < kWordlistLength; ++i) {
-    std::string word = Bip39GetWord(wally_wordlist[0], i);
+    std::string word = GetMnemonicWord(wally_wordlist[0], i);
     wordlist.push_back(word);
   }
 
   return wordlist;
 }
 
-std::vector<std::string> WallyUtil::Bip39GetSupportedLanguages() {
+std::vector<std::string> WallyUtil::GetSupportedMnemonicLanguages() {
   char* wally_lang = NULL;
   int ret = bip39_get_languages(&wally_lang);
   if (ret != WALLY_OK) {
-    warn(CFD_LOG_SOURCE, "BIP39 get languages error. ret=[{}]", ret);
+    warn(CFD_LOG_SOURCE, "Get languages error. ret=[{}]", ret);
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "BIP39 get languages error.");
+        CfdError::kCfdIllegalArgumentError, "Get languages error.");
   }
 
   // free and get string
@@ -176,21 +176,21 @@ std::vector<std::string> WallyUtil::Bip39GetSupportedLanguages() {
   return StringUtil::Split(std::string(lang), ' ');
 }
 
-std::string WallyUtil::Bip39GetWord(
+std::string WallyUtil::GetMnemonicWord(
     const words* wordlist, const size_t index) {
   if (kWordlistLength <= index) {
     warn(
-        CFD_LOG_SOURCE, "Bip39GetWord invalid index error. index=[{}]", index);
+        CFD_LOG_SOURCE, "GetMnemonicWord invalid index error. index=[{}]", index);
     throw CfdException(
-        CfdError::kCfdOutOfRangeError, "Bip39GetWord invalid index error.");
+        CfdError::kCfdOutOfRangeError, "GetMnemonicWord invalid index error.");
   }
 
   char* wally_word = NULL;
   int ret = bip39_get_word(wordlist, index, &wally_word);
   if (ret != WALLY_OK) {
-    warn(CFD_LOG_SOURCE, "BIP39 get languages error. ret=[{}]", ret);
+    warn(CFD_LOG_SOURCE, "Get languages error. ret=[{}]", ret);
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "BIP39 get languages error.");
+        CfdError::kCfdIllegalArgumentError, "Get languages error.");
   }
 
   std::string word = ConvertStringAndFree(wally_word);
