@@ -5,6 +5,7 @@
  * @brief Utility関連クラス定義
  */
 
+#include <iterator>
 #include <random>
 #include <set>
 #include <sstream>
@@ -737,15 +738,37 @@ std::string StringUtil::ByteToString(const std::vector<uint8_t> &bytes) {
 }
 
 std::vector<std::string> StringUtil::Split(
-    const std::string &str, const char delim) {
+    const std::string &str, const std::string &delim) {
   std::vector<std::string> results;
 
-  std::stringstream ss(str);
+  size_t pos = 0, prev = 0;
   std::string item;
-  while (std::getline(ss, item, delim)) {
+  while ((pos = str.find(delim, prev)) != std::string::npos) {
+    item = str.substr(prev, pos - prev);
     results.push_back(item);
+    prev = pos + std::char_traits<char>::length(delim.c_str());
   }
+  item = str.substr(prev);
+  results.push_back(item);
+
   return results;
+}
+
+std::string StringUtil::Join(
+    const std::vector<std::string> &str_list,
+    const std::string &separate_word) {
+  std::stringstream ss;
+  std::copy(
+      str_list.begin(), str_list.end(),
+      std::ostream_iterator<std::string>(ss, separate_word.c_str()));
+  std::string result = ss.str();
+
+  if (result.size() < std::char_traits<char>::length(separate_word.c_str()))
+    return result;
+
+  result.erase(
+      result.size() - std::char_traits<char>::length(separate_word.c_str()));
+  return result;
 }
 
 }  // namespace cfdcore
