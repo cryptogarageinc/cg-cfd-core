@@ -424,6 +424,14 @@ class CFD_CORE_EXPORT StringUtil {
    * @return HEX文字列
    */
   static std::string ByteToString(const std::vector<uint8_t> &bytes);
+  /**
+   * @brief 文字列を区切り文字で分割する.
+   * @param[in] str 分割対象文字列
+   * @param[in] delim 区切り文字
+   * @return 区切り文字で区切られた文字列vector
+   */
+  static std::vector<std::string> Split(
+      const std::string &str, const char delim);
 
  private:
   StringUtil();

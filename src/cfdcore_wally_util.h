@@ -115,11 +115,36 @@ class WallyUtil {
       const ByteData256& tweak_sum, const std::vector<ByteData>& online_keys,
       const std::vector<ByteData>& offline_keys, uint32_t whitelist_index);
 
+  /**
+   * @brief Mnemonic で利用できる Wordlist を取得する.
+   * @param[in] language  language to use.
+   * @return wordlist to use mnemonic which supported by bip39.
+   * @throws CfdException If invalid language passed.
+   */
+  static std::vector<std::string> GetMnemonicWordlist(
+      const std::string& language);
+
  private:
   /**
    * @brief default constructor.
    */
   WallyUtil();
+
+  /**
+   * @brief Mnemonic でサポートしている言語を取得する.
+   * @return languages to get wordlist by bip39.
+   */
+  static std::vector<std::string> GetSupportedMnemonicLanguages();
+
+  /**
+   * @brief Get the 'index'th word from passed BIP39 wordlist.
+   * @param[in] wardlist    the wordlist to get the word from.
+   * @param[in] index       target index number of wordlist.
+   * @return string of the word from wordlist.
+   * @throws CfdException If invalid arguments passed.
+   */
+  static std::string GetMnemonicWord(
+      const words* wardlist, const size_t index);
 };
 
 }  // namespace cfdcore
