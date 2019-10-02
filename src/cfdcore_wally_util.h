@@ -143,7 +143,8 @@ class WallyUtil {
    * @return string of the word from wordlist.
    * @throws CfdException If invalid arguments passed.
    */
-  static std::string GetMnemonicWord(const words* wardlist, const size_t index);
+  static std::string GetMnemonicWord(
+      const words* wardlist, const size_t index);
 };
 
 }  // namespace cfdcore

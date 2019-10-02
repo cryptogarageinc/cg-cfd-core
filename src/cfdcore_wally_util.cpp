@@ -140,8 +140,7 @@ std::vector<std::string> WallyUtil::GetMnemonicWordlist(
         CFD_LOG_SOURCE, "Not support language passed. language=[{}]",
         language);
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError,
-        "Not support language passed.");
+        CfdError::kCfdIllegalArgumentError, "Not support language passed.");
   }
 
   words* wally_wordlist[1];
@@ -180,7 +179,8 @@ std::string WallyUtil::GetMnemonicWord(
     const words* wordlist, const size_t index) {
   if (kWordlistLength <= index) {
     warn(
-        CFD_LOG_SOURCE, "GetMnemonicWord invalid index error. index=[{}]", index);
+        CFD_LOG_SOURCE, "GetMnemonicWord invalid index error. index=[{}]",
+        index);
     throw CfdException(
         CfdError::kCfdOutOfRangeError, "GetMnemonicWord invalid index error.");
   }
