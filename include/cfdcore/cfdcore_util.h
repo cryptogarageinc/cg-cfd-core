@@ -426,12 +426,21 @@ class CFD_CORE_EXPORT StringUtil {
   static std::string ByteToString(const std::vector<uint8_t> &bytes);
   /**
    * @brief 文字列を区切り文字で分割する.
-   * @param[in] str 分割対象文字列
-   * @param[in] delim 区切り文字
+   * @param[in] str     分割対象文字列
+   * @param[in] delim   区切り文字列
    * @return 区切り文字で区切られた文字列vector
    */
   static std::vector<std::string> Split(
-      const std::string &str, const char delim);
+      const std::string &str, const std::string &delim);
+  /**
+   * @brief 文字列配列を連結する.
+   * @param[in] str_list        文字列配列
+   * @param[in] separate_word   連結文字列
+   * @return 連結された文字列
+   */
+  static std::string Join(
+      const std::vector<std::string> &str_list,
+      const std::string &separate_word);
 
  private:
   StringUtil();
