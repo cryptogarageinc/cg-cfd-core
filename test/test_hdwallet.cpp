@@ -179,29 +179,41 @@ TEST(HDWallet, ConvertTest) {
   std::vector<std::string> actual_mnemonic;
   ByteData actual_seed;
   bool actual_is_valid;
+  HDWallet hd_wallet;
+
+  HDWallet copy_wallet;
+  ByteData copy_seed;
   for (Bip39TestVector test_vector : bip39_test_vectors) {
+    EXPECT_NO_THROW(hd_wallet = HDWallet(test_vector.mnemonic, test_passphrase));
+    EXPECT_NO_THROW(actual_seed = hd_wallet.GetSeed());
     EXPECT_NO_THROW(actual_entropy = HDWallet::ConvertMnemonicToEntropy(test_vector.mnemonic, language));
     EXPECT_NO_THROW(actual_mnemonic = HDWallet::ConvertEntropyToMnemonic(test_vector.entropy, language));
-    EXPECT_NO_THROW(actual_seed = HDWallet::ConvertMnemonicToSeed(test_vector.mnemonic, test_passphrase));
     EXPECT_NO_THROW(actual_is_valid = HDWallet::CheckValidMnemonic(test_vector.mnemonic, language));
     EXPECT_TRUE(actual_entropy.Equals(test_vector.entropy));
     EXPECT_EQ(actual_mnemonic, test_vector.mnemonic);
     EXPECT_TRUE(actual_seed.Equals(test_vector.seed));
     EXPECT_TRUE(actual_is_valid);
+
+    copy_wallet = HDWallet(actual_seed);
+    EXPECT_NO_THROW(copy_seed = copy_wallet.GetSeed());
+    EXPECT_TRUE(copy_seed.Equals(test_vector.seed));
   }
 }
 
 const std::vector<std::string> empty_mnemonic = {};
 const std::vector<std::string> invalid_words_mnemonic = {"aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","abort"};
 
-TEST(HDWallet, ConvertMnemonicToSeedAllowAnyTest) {
+TEST(HDWallet, AllowAnyMnemonicTest) {
   try {
+    HDWallet hd_wallet;
     ByteData actual_seed;
     // check empty mnemonic
-    EXPECT_NO_THROW(actual_seed = HDWallet::ConvertMnemonicToSeed(empty_mnemonic, test_passphrase));
+    EXPECT_NO_THROW(hd_wallet = HDWallet(empty_mnemonic, test_passphrase));
+    EXPECT_NO_THROW(actual_seed = hd_wallet.GetSeed());
 
     // check invalid mnemonic
-    EXPECT_NO_THROW(actual_seed = HDWallet::ConvertMnemonicToSeed(invalid_words_mnemonic, test_passphrase));
+    EXPECT_NO_THROW(hd_wallet = HDWallet(invalid_words_mnemonic, test_passphrase));
+    EXPECT_NO_THROW(actual_seed = hd_wallet.GetSeed());
   } catch (...) {
     // force to fail test
     EXPECT_TRUE(false);

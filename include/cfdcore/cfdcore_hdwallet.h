@@ -28,6 +28,28 @@ class CFD_CORE_EXPORT HDWallet {
   HDWallet();
 
   /**
+   * @brief コンストラクタ
+   * @param[in] seed シード値
+   */
+  explicit HDWallet(const ByteData& seed);
+
+  /**
+   * @brief コンストラクタ
+   * @param[in] mnemonic                ニーモニック文字列配列
+   * @param[in] passphrase              パスフレーズ
+   * @param[in] use_ideographic_space   全角スペース利用フラグ(default: false)
+   */
+  HDWallet(
+      std::vector<std::string> mnemonic, std::string passphrase,
+      bool use_ideographic_space = false);
+
+  /**
+   * @brief seedを取得する
+   * @return seed値ByteData
+   */
+  ByteData GetSeed() const;
+
+  /**
    * @brief Mnemonic で利用できる Wordlist を取得する.
    * @param[in] language 取得するWordlistの言語
    * @return Wordlist配列
@@ -35,17 +57,6 @@ class CFD_CORE_EXPORT HDWallet {
    */
   static std::vector<std::string> GetMnemonicWordlist(
       const std::string& language);
-
-  /**
-   * @brief mnemonic と passphrase から seed を生成する.
-   * @param[in] mnemonic                ニーモニック配列
-   * @param[in] passphrase              パスフレーズ
-   * @param[in] use_ideographic_space   全角スペースで区切るかのフラグ
-   * @return シード値バイトデータ
-   */
-  static ByteData ConvertMnemonicToSeed(
-      const std::vector<std::string>& mnemonic, const std::string& passphrase,
-      bool use_ideographic_space = false);
 
   /**
    * @brief Mnemonic で利用できる Wordlist を取得する.
@@ -81,6 +92,8 @@ class CFD_CORE_EXPORT HDWallet {
       bool use_ideographic_space = false);
 
  private:
+  ByteData seed_;  //!< seed
+
   /**
    * @brief Mnemonic でサポートしている言語であるかを判定する.
    * @param[in] language  language used by mnemonic.
@@ -88,6 +101,17 @@ class CFD_CORE_EXPORT HDWallet {
    * @retval false  If language is not supported.
    */
   static bool CheckSupportedLanguages(const std::string& language);
+
+  /**
+   * @brief mnemonic と passphrase から seed を生成する.
+   * @param[in] mnemonic                ニーモニック配列
+   * @param[in] passphrase              パスフレーズ
+   * @param[in] use_ideographic_space   全角スペースで区切るかのフラグ
+   * @return シード値バイトデータ
+   */
+  static ByteData ConvertMnemonicToSeed(
+      const std::vector<std::string>& mnemonic, const std::string& passphrase,
+      bool use_ideographic_space = false);
 };
 
 }  // namespace cfdcore

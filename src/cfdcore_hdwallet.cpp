@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_hdwallet.h"
 #include "cfdcore/cfdcore_logger.h"
@@ -16,6 +17,26 @@
 namespace cfdcore {
 
 using logger::warn;
+
+/// empty seed string (64byte)
+static const std::string kEmptySeedStr = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";  // NOLINT
+
+HDWallet::HDWallet() : seed_(ByteData(kEmptySeedStr)) {
+  // do nothing
+}
+
+HDWallet::HDWallet(const ByteData& seed) : seed_(seed) {
+  // do nothing
+}
+
+HDWallet::HDWallet(
+    std::vector<std::string> mnemonic, std::string passphrase,
+    bool use_ideographic_space)
+    : seed_(ByteData(kEmptySeedStr)) {
+  seed_ = ConvertMnemonicToSeed(mnemonic, passphrase, use_ideographic_space);
+}
+
+ByteData HDWallet::GetSeed() const { return seed_; }
 
 std::vector<std::string> HDWallet::GetMnemonicWordlist(
     const std::string& language) {
@@ -28,13 +49,6 @@ std::vector<std::string> HDWallet::GetMnemonicWordlist(
   }
 
   return WallyUtil::GetMnemonicWordlist(language);
-}
-
-ByteData HDWallet::ConvertMnemonicToSeed(
-    const std::vector<std::string>& mnemonic, const std::string& passphrase,
-    bool use_ideographic_space) {
-  return WallyUtil::ConvertMnemonicToSeed(
-      mnemonic, passphrase, use_ideographic_space);
 }
 
 std::vector<std::string> HDWallet::ConvertEntropyToMnemonic(
@@ -82,6 +96,13 @@ bool HDWallet::CheckSupportedLanguages(const std::string& language) {
   std::vector<std::string> slangs = WallyUtil::GetSupportedMnemonicLanguages();
   return (
       std::find(slangs.cbegin(), slangs.cend(), language) != slangs.cend());
+}
+
+ByteData HDWallet::ConvertMnemonicToSeed(
+    const std::vector<std::string>& mnemonic, const std::string& passphrase,
+    bool use_ideographic_space) {
+  return WallyUtil::ConvertMnemonicToSeed(
+      mnemonic, passphrase, use_ideographic_space);
 }
 
 }  // namespace cfdcore
