@@ -174,8 +174,8 @@ target_link_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-static-libgcc>
-  PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-static-libstdc++>
+  PRIVATE $<$<BOOL:$<CXX_COMPILER_ID:GNU>>:-static-libgcc>
+  PRIVATE $<$<BOOL:$<CXX_COMPILER_ID:GNU>>:-static-libstdc++>
   PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:pthread>
   PRIVATE
     ${LIBWALLY_LIBRARY}
