@@ -172,14 +172,11 @@ class WallyUtil {
    * @brief Verify mnemonic is valid 
    * @param[in] mnemonic                mnemonic vector to check valid
    * @param[in] language                language to verify
-   * @param[in] use_ideographic_space   flag of using ideographic space
-   *     for mnemonic separator
    * @retval true   mnemonic checksum is valid
    * @retval true   mnemonic checksum is invalid
    */
   static bool CheckValidMnemonic(
-      const std::vector<std::string>& mnemonic, const std::string& language,
-      bool use_ideographic_space = false);
+      const std::vector<std::string>& mnemonic, const std::string& language);
 
  private:
   /**

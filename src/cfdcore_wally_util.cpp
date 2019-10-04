@@ -262,15 +262,10 @@ std::vector<std::string> WallyUtil::GetSupportedMnemonicLanguages() {
 }
 
 bool WallyUtil::CheckValidMnemonic(
-    const std::vector<std::string>& mnemonic, const std::string& language,
-    bool use_ideographic_space) {
+    const std::vector<std::string>& mnemonic, const std::string& language) {
   words* wally_wordlist = Bip39GetWordlist(language);
-
-  std::string delimitor = kMnemonicDelimiter;
-  if (use_ideographic_space) {
-    delimitor = kMnemonicIdeographicDelimiter;
-  }
-  std::string mnemonic_sentence = StringUtil::Join(mnemonic, delimitor);
+  std::string mnemonic_sentence =
+      StringUtil::Join(mnemonic, kMnemonicDelimiter);
 
   int ret = bip39_mnemonic_validate(wally_wordlist, mnemonic_sentence.c_str());
   if (ret != WALLY_OK) return false;

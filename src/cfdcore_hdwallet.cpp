@@ -19,7 +19,9 @@ namespace cfdcore {
 using logger::warn;
 
 /// empty seed string (64byte)
-static const std::string kEmptySeedStr = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";  // NOLINT
+static const std::string kEmptySeedStr =
+    "0000000000000000000000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000";  // NOLINT
 
 HDWallet::HDWallet() : seed_(ByteData(kEmptySeedStr)) {
   // do nothing
@@ -78,8 +80,7 @@ ByteData HDWallet::ConvertMnemonicToEntropy(
 }
 
 bool HDWallet::CheckValidMnemonic(
-    const std::vector<std::string>& mnemonic, const std::string& language,
-    bool use_ideographic_space) {
+    const std::vector<std::string>& mnemonic, const std::string& language) {
   if (!CheckSupportedLanguages(language)) {
     warn(
         CFD_LOG_SOURCE, "Not support language passed. language=[{}]",
@@ -88,8 +89,7 @@ bool HDWallet::CheckValidMnemonic(
         CfdError::kCfdIllegalArgumentError, "Not support language passed.");
   }
 
-  return WallyUtil::CheckValidMnemonic(
-      mnemonic, language, use_ideographic_space);
+  return WallyUtil::CheckValidMnemonic(mnemonic, language);
 }
 
 bool HDWallet::CheckSupportedLanguages(const std::string& language) {
