@@ -2179,7 +2179,7 @@ ByteData256 ConfidentialTransaction::GetElementsSignatureHash(
   return ByteData256(buffer);
 }
 
-void ConfidentialTransaction::RandomizeTxOut() {
+void ConfidentialTransaction::RandomSortTxOut() {
   const std::vector<ConfidentialTxOutReference> &txout_list = GetTxOutList();
   // blind check
   for (size_t index = 0; index < txout_list.size(); ++index) {

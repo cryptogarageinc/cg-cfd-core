@@ -1155,10 +1155,10 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
       uint32_t txin_index, const ByteData& script_data,
       SigHashType sighash_type, const ByteData& value, bool is_witness);
   /**
-   * @brief TxOutの順序をランダム化する.
+   * @brief TxOutの順序をランダムソートする.
    * @details ブラインド前のみ実施可能.
    */
-  void RandomizeTxOut();
+  void RandomSortTxOut();
 
   /**
    * @brief witness情報のみのHashを取得する.
