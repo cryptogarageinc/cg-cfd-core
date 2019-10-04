@@ -264,7 +264,8 @@ std::vector<std::string> WallyUtil::GetSupportedMnemonicLanguages() {
 bool WallyUtil::CheckValidMnemonic(
     const std::vector<std::string>& mnemonic, const std::string& language) {
   words* wally_wordlist = Bip39GetWordlist(language);
-  std::string mnemonic_sentence = StringUtil::Join(mnemonic, kMnemonicDelimiter);
+  std::string mnemonic_sentence =
+      StringUtil::Join(mnemonic, kMnemonicDelimiter);
 
   int ret = bip39_mnemonic_validate(wally_wordlist, mnemonic_sentence.c_str());
   if (ret != WALLY_OK) return false;
