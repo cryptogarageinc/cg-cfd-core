@@ -78,8 +78,7 @@ ByteData HDWallet::ConvertMnemonicToEntropy(
 }
 
 bool HDWallet::CheckValidMnemonic(
-    const std::vector<std::string>& mnemonic, const std::string& language,
-    bool use_ideographic_space) {
+    const std::vector<std::string>& mnemonic, const std::string& language) {
   if (!CheckSupportedLanguages(language)) {
     warn(
         CFD_LOG_SOURCE, "Not support language passed. language=[{}]",
@@ -88,8 +87,7 @@ bool HDWallet::CheckValidMnemonic(
         CfdError::kCfdIllegalArgumentError, "Not support language passed.");
   }
 
-  return WallyUtil::CheckValidMnemonic(
-      mnemonic, language, use_ideographic_space);
+  return WallyUtil::CheckValidMnemonic(mnemonic, language);
 }
 
 bool HDWallet::CheckSupportedLanguages(const std::string& language) {

@@ -281,9 +281,6 @@ TEST(HDWallet, CheckInvalidMnemonicTest) {
   // check invalid mnemonic
   EXPECT_FALSE(HDWallet::CheckValidMnemonic(invalid_words_mnemonic, language));
 
-  // check use_ideographic space separator mnemonic
-  EXPECT_FALSE(HDWallet::CheckValidMnemonic(bip39_test_vectors[0].mnemonic, language, true));
-
   try {
     EXPECT_THROW(HDWallet::CheckValidMnemonic(bip39_test_vectors[0].mnemonic, "zz"), CfdException);
   } catch (CfdException &e) {
