@@ -15,7 +15,8 @@
 #include "secp256k1_rangeproof.h"  // NOLINT
 #include "secp256k1_whitelist.h"   // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -417,4 +418,5 @@ ByteData Secp256k1::SignWhitelistSecp256k1Ec(
   return ByteData(output);
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

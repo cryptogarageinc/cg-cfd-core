@@ -4,11 +4,11 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_script.h"
 
-using cfdcore::ByteData;
-using cfdcore::ScriptElement;
-using cfdcore::ScriptElementType;
-using cfdcore::ScriptOperator;
-using cfdcore::ScriptType;
+using cfd::core::ByteData;
+using cfd::core::ScriptElement;
+using cfd::core::ScriptElementType;
+using cfd::core::ScriptOperator;
+using cfd::core::ScriptType;
 
 TEST(ScriptElement, OpTypeConstructor) {
   ScriptElement op_elem = ScriptElement(ScriptOperator::OP_CHECKSIG);

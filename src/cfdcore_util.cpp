@@ -18,7 +18,8 @@
 #include "cfdcore/cfdcore_util.h"
 #include "cfdcore_wally_util.h"  // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 using logger::warn;
@@ -771,4 +772,5 @@ std::string StringUtil::Join(
   return result;
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

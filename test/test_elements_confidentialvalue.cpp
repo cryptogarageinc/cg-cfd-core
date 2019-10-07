@@ -8,10 +8,10 @@
 #include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_coin.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::ConfidentialValue;
-using cfdcore::Amount;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::ConfidentialValue;
+using cfd::core::Amount;
 
 TEST(ConfidentialValue, Constractor) {
   ConfidentialValue value;

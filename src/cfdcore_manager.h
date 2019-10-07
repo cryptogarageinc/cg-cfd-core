@@ -14,10 +14,8 @@
 
 #include "cfdcore/cfdcore_common.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief cfdcore管理クラス。
@@ -57,6 +55,7 @@ class CfdCoreManager {
   std::mutex mutex_;               ///< 排他制御用オブジェクト
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_SRC_CFDCORE_MANAGER_H_

@@ -15,7 +15,8 @@
 #include "cfdcore_wally_util.h"  // NOLINT
 #include "univalue.h"            // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 using logger::warn;
@@ -964,4 +965,5 @@ Script Address::GetLockingScript() const {
   return builder.Build();
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

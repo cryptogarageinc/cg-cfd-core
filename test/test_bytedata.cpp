@@ -12,7 +12,7 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::ByteData;
+using cfd::core::ByteData;
 
 TEST(ByteData, DefaultConstructor) {
   ByteData byte_data;

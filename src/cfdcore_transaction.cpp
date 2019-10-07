@@ -16,7 +16,8 @@
 #include "cfdcore_wally_util.h"  // NOLINT
 #include "wally_script.h"        // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 using logger::warn;
@@ -776,4 +777,5 @@ void Transaction::CheckTxOutIndex(
   }
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

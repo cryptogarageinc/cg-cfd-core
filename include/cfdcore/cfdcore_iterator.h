@@ -15,7 +15,8 @@
 #include "cfdcore/cfdcore_logger.h"
 #include "cfdcore/cfdcore_script.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief IteratorのWrapperクラス
@@ -74,7 +75,7 @@ class IteratorWrapper {
    */
   T next() {
     if (!hasNext()) {
-      cfdcore::logger::warn(
+      cfd::core::logger::warn(
           CFD_LOG_SOURCE,
           "Iterator reference out of range."
           " error_message={}.",
@@ -92,7 +93,7 @@ class IteratorWrapper {
    */
   T back() {
     if (!hasBack()) {
-      cfdcore::logger::warn(
+      cfd::core::logger::warn(
           CFD_LOG_SOURCE,
           "Iterator reference out of range."
           " error_message={}.",
@@ -119,6 +120,7 @@ class IteratorWrapper {
   bool reverse_;               ///< reverse iterator flag
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ITERATOR_H_

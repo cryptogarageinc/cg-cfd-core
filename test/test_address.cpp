@@ -7,25 +7,25 @@
 #include "cfdcore/cfdcore_address.h"
 #include "cfdcore/cfdcore_elements_address.h"
 
-using cfdcore::Address;
-using cfdcore::NetType;
-using cfdcore::WitnessVersion;
-using cfdcore::AddressType;
-using cfdcore::Pubkey;
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::HashUtil;
-using cfdcore::Script;
-using cfdcore::ScriptBuilder;
-using cfdcore::ScriptOperator;
-using cfdcore::CfdException;
-using cfdcore::AddressFormatData;
+using cfd::core::Address;
+using cfd::core::NetType;
+using cfd::core::WitnessVersion;
+using cfd::core::AddressType;
+using cfd::core::Pubkey;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::HashUtil;
+using cfd::core::Script;
+using cfd::core::ScriptBuilder;
+using cfd::core::ScriptOperator;
+using cfd::core::CfdException;
+using cfd::core::AddressFormatData;
 #ifndef CFD_DISABLE_ELEMENTS
-using cfdcore::GetElementsAddressFormatList;
-using cfdcore::ElementsConfidentialAddress;
-using cfdcore::ElementsNetType;
-using cfdcore::ElementsAddressType;
+using cfd::core::GetElementsAddressFormatList;
+using cfd::core::ElementsConfidentialAddress;
+using cfd::core::ElementsNetType;
+using cfd::core::ElementsAddressType;
 #endif  // CFD_DISABLE_ELEMENTS
 
 TEST(Address, EmptyAddressTest) {

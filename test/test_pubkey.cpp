@@ -5,9 +5,9 @@
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_exception.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::Pubkey;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::Pubkey;
 
 typedef struct {
   std::string hex;

@@ -16,10 +16,8 @@
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_script.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 //! key: nettype
 constexpr const char* const kNettype = "nettype";
@@ -576,6 +574,7 @@ class CFD_CORE_EXPORT Address {
   AddressFormatData format_data_;
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ADDRESS_H_

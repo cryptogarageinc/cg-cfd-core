@@ -26,7 +26,8 @@
 #include "wally_script.h"       // NOLINT
 #include "wally_transaction.h"  // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -294,4 +295,5 @@ std::string WallyUtil::GetMnemonicWord(
   return word;
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

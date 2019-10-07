@@ -18,7 +18,8 @@
 #include "cfdcore/cfdcore_util.h"
 #include "cfdcore_wally_util.h"  // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 using logger::trace;
@@ -332,6 +333,7 @@ Script ElementsConfidentialAddress::GetLockingScript() const {
   return unblinded_address_.GetLockingScript();
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_DISABLE_ELEMENTS

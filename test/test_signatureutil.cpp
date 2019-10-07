@@ -6,13 +6,13 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_bytedata.h"
 
-using cfdcore::SignatureUtil;
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::ByteData256;
-using cfdcore::Pubkey;
-using cfdcore::Script;
-using cfdcore::Privkey;
+using cfd::core::SignatureUtil;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::ByteData256;
+using cfd::core::Pubkey;
+using cfd::core::Script;
+using cfd::core::Privkey;
 
 TEST(SignatureUtil, CreateWitnessProgramWPKH) {
   Pubkey pubkey(

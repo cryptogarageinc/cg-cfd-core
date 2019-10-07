@@ -25,7 +25,8 @@
 
 #include "wally_core.h"  // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -956,4 +957,5 @@ Script ScriptBuilder::Build() {
   return Script(data);
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

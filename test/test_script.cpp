@@ -11,15 +11,15 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::Script;
-using cfdcore::ScriptBuilder;
-using cfdcore::ScriptOperator;
-using cfdcore::ScriptHash;
-using cfdcore::ScriptElement;
-using cfdcore::ByteData;
-using cfdcore::Privkey;
-using cfdcore::Pubkey;
-using cfdcore::NetType;
+using cfd::core::Script;
+using cfd::core::ScriptBuilder;
+using cfd::core::ScriptOperator;
+using cfd::core::ScriptHash;
+using cfd::core::ScriptElement;
+using cfd::core::ByteData;
+using cfd::core::Privkey;
+using cfd::core::Pubkey;
+using cfd::core::NetType;
 
 TEST(Script, Script) {
   size_t size = 0;
@@ -44,7 +44,7 @@ TEST(Script, Script_hex_exception) {
   try {
     std::string hex("xxxx");
     Script script(hex);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "hex to byte convert error.");
     return;
   }
@@ -192,7 +192,7 @@ TEST(Script, SetStackData_kOpPushData1_error) {
     std::vector<uint8_t> bytes(2, 0xff);
     bytes[0] = 0x4c;
     Script script(bytes);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "OP_PUSHDATA1 is incorrect size.");
     return;
   }
@@ -204,7 +204,7 @@ TEST(Script, SetStackData_kOpPushData2_error) {
     std::vector<uint8_t> bytes(2, 0xff);
     bytes[0] = 0x4d;
     Script script(bytes);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "OP_PUSHDATA2 is incorrect size.");
     return;
   }
@@ -216,7 +216,7 @@ TEST(Script, SetStackData_kOpPushData4_error) {
     std::vector<uint8_t> bytes(2, 0xff);
     bytes[0] = 0x4e;
     Script script(bytes);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "OP_PUSHDATA4 is incorrect size.");
     return;
   }
@@ -228,7 +228,7 @@ TEST(Script, SetStackData_size_error) {
     std::vector<uint8_t> bytes(10, 0x1);
     bytes[0] = 0x4e;
     Script script(bytes);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "buffer is incorrect size.");
     return;
   }

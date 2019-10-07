@@ -13,7 +13,8 @@
 #include "cfdcore/cfdcore_logger.h"
 #include "cfdcore/cfdcore_logger_interface.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 
@@ -141,4 +142,5 @@ CfdCoreManager::~CfdCoreManager() {
   }
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

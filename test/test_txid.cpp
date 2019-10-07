@@ -11,9 +11,9 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::Txid;
-using cfdcore::ByteData256;
-using cfdcore::CfdException;
+using cfd::core::Txid;
+using cfd::core::ByteData256;
+using cfd::core::CfdException;
 
 TEST(Txid, TxidEmpty) {
   Txid txid;

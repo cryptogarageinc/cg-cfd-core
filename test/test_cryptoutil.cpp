@@ -7,12 +7,12 @@
 #include "cfdcore/cfdcore_script.h"
 #include "cfdcore/cfdcore_exception.h"
 
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::CryptoUtil;
-using cfdcore::SigHashType;
-using cfdcore::SigHashAlgorithm;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::CryptoUtil;
+using cfd::core::SigHashType;
+using cfd::core::SigHashAlgorithm;
 
 // AES256 tool
 // http://extranet.cryptomathic.com/aescalc/index
@@ -41,7 +41,7 @@ TEST(CryptoUtil, EncryptAes256KeyEmpty) {
   try {
     std::vector<uint8_t> key;
     ByteData byte_data = CryptoUtil::EncryptAes256(key, "test test test test");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256 key size error.");
     return;
   }
@@ -53,7 +53,7 @@ TEST(CryptoUtil, EncryptAes256DataEmpty) {
     ByteData key(
         "616975656F616975656F616975656F616975656F616975656F616975656F6169");
     ByteData byte_data = CryptoUtil::EncryptAes256(key.GetBytes(), "");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256 error.");
     return;
   }
@@ -65,7 +65,7 @@ TEST(CryptoUtil, EncryptAes256KeyLengthError) {
     ByteData key("0123456789abcdef");
     ByteData byte_data = CryptoUtil::EncryptAes256(
         key.GetBytes(), "aiueoaiueoaiueoaiueoaiueoaiueoai");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256 key size error.");
     return;
   }
@@ -99,7 +99,7 @@ TEST(CryptoUtil, DecryptAes256ToStringKeyEmpty) {
     ByteData data(
         "752fe203af4a4d427997e5d2c8b246530e0546b66d2982a49e333e77295dccea");
     std::string result = CryptoUtil::DecryptAes256ToString(key, data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "DecryptAes256 key size error.");
     return;
   }
@@ -113,7 +113,7 @@ TEST(CryptoUtil, DecryptAes256ToStringDataEmpty) {
     ByteData data("");
     std::string result = CryptoUtil::DecryptAes256ToString(key.GetBytes(),
                                                            data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "DecryptAes256 error.");
     return;
   }
@@ -127,7 +127,7 @@ TEST(CryptoUtil, DecryptAes256ToStringKeyLengthError) {
         "2b0094f5b8ef347d59e502ce123f308fae6cd6dc11567fbf013687620c4135b4");
     std::string result = CryptoUtil::DecryptAes256ToString(key.GetBytes(),
                                                            data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "DecryptAes256 key size error.");
     return;
   }
@@ -166,7 +166,7 @@ TEST(CryptoUtil, EncryptAes256CbcKeyEmpty) {
     ByteData iv("33343536373839303132333435363738");
     ByteData byte_data = CryptoUtil::EncryptAes256Cbc(
         key, iv.GetBytes(), "aiueoaiueoaiueoaiueoaiueoaiueoai");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256Cbc key size error.");
     return;
   }
@@ -180,7 +180,7 @@ TEST(CryptoUtil, EncryptAes256CbcIvEmpty) {
     std::vector<uint8_t> iv;
     ByteData byte_data = CryptoUtil::EncryptAes256Cbc(
         key.GetBytes(), iv, "aiueoaiueoaiueoaiueoaiueoaiueoai");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256Cbc error.");
     return;
   }
@@ -195,7 +195,7 @@ TEST(CryptoUtil, EncryptAes256CbcDataEmpty) {
     std::string data;
     ByteData byte_data = CryptoUtil::EncryptAes256Cbc(key.GetBytes(),
                                                       iv.GetBytes(), data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256Cbc data isEmpty.");
     return;
   }
@@ -208,7 +208,7 @@ TEST(CryptoUtil, EncryptAes256CbcKeyLengthError) {
     ByteData iv("33343536373839303132333435363738");
     ByteData byte_data = CryptoUtil::EncryptAes256Cbc(
         key.GetBytes(), iv.GetBytes(), "aiueoaiueoaiueoaiueoaiueoaiueoai");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256Cbc key size error.");
     return;
   }
@@ -222,7 +222,7 @@ TEST(CryptoUtil, EncryptAes256CbcIvLengthError) {
     ByteData iv("1234");
     ByteData byte_data = CryptoUtil::EncryptAes256Cbc(
         key.GetBytes(), iv.GetBytes(), "aiueoaiueoaiueoaiueoaiueoaiueoai");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "EncryptAes256Cbc error.");
     return;
   }
@@ -265,7 +265,7 @@ TEST(CryptoUtil, DecryptAes256CbcToStringKeyEmpty) {
     std::string result = CryptoUtil::DecryptAes256CbcToString(key,
                                                               iv.GetBytes(),
                                                               data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "DecryptAes256Cbc key size error.");
     return;
   }
@@ -281,7 +281,7 @@ TEST(CryptoUtil, DecryptAes256CbcToStringIvEmpty) {
         "2ef199bb7d160f94fc17fa5f01b220c630d6b19a5973f4b313868c921fc10d22");
     std::string result = CryptoUtil::DecryptAes256CbcToString(key.GetBytes(),
                                                               iv, data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "DecryptAes256Cbc error.");
     return;
   }
@@ -297,7 +297,7 @@ TEST(CryptoUtil, DecryptAes256CbcToStringDataEmpty) {
     std::string result = CryptoUtil::DecryptAes256CbcToString(key.GetBytes(),
                                                               iv.GetBytes(),
                                                               data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "DecryptAes256Cbc error.");
     return;
   }
@@ -314,7 +314,7 @@ TEST(CryptoUtil, DecryptAes256CbcToStringDataSizeError) {
     std::string result = CryptoUtil::DecryptAes256CbcToString(key.GetBytes(),
                                                               iv.GetBytes(),
                                                               data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "DecryptAes256Cbc error.");
     return;
   }
@@ -341,7 +341,7 @@ TEST(CryptoUtil, HmacSha256KeyEmpty) {
     ByteData data(
         "2ef199bb7d160f94fc17fa5f01b220c630d6b19a5973f4b313868c921fc10d22");
     ByteData256 byte_data = CryptoUtil::HmacSha256(key, data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "HmacSha256 error.");
     return;
   }
@@ -354,7 +354,7 @@ TEST(CryptoUtil, HmacSha256DataEmpty) {
         "616975656F616975656F616975656F616975656F616975656F616975656F6169");
     ByteData data;
     ByteData256 byte_data = CryptoUtil::HmacSha256(key.GetBytes(), data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "HmacSha256 error.");
     return;
   }
@@ -381,7 +381,7 @@ TEST(CryptoUtil, HmacSha512KeyEmpty) {
     ByteData data(
         "2ef199bb7d160f94fc17fa5f01b220c630d6b19a5973f4b313868c921fc10d22");
     ByteData byte_data = CryptoUtil::HmacSha512(key, data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "HmacSha512 error.");
     return;
   }
@@ -394,7 +394,7 @@ TEST(CryptoUtil, HmacSha512DataEmpty) {
         "616975656F616975656F616975656F616975656F616975656F616975656F6169");
     ByteData data;
     ByteData byte_data = CryptoUtil::HmacSha512(key.GetBytes(), data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "HmacSha512 error.");
     return;
   }
@@ -418,7 +418,7 @@ TEST(CryptoUtil, ConvertSignatureToDerHexEmpty) {
     std::string hex_sig;
     SigHashType sig_type(SigHashAlgorithm::kSigHashAll);
     ByteData byte_data = CryptoUtil::ConvertSignatureToDer(hex_sig, sig_type);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "der encode error.");
     return;
   }
@@ -474,7 +474,7 @@ TEST(CryptoUtil, DecodeBase58CheckDataEmpty) {
   try {
     std::string data;
     ByteData byte_data = CryptoUtil::DecodeBase58Check(data);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "Decode base58 error.");
     return;
   }
