@@ -19,7 +19,7 @@ namespace cfdcore {
 using logger::warn;
 
 /// empty seed string (64byte)
-static const std::string kEmptySeedStr =
+static constexpr char kEmptySeedStr[] =
     "0000000000000000000000000000000000000000000000000000000000000000000000000"
     "0000000000000000000000000000000000000000000000000000000";  // NOLINT
 
