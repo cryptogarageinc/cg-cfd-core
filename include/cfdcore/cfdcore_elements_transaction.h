@@ -9,8 +9,10 @@
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ELEMENTS_TRANSACTION_H_
 #ifndef CFD_DISABLE_ELEMENTS
 
+#include <cstddef>
 #include <string>
 #include <vector>
+
 #include "cfdcore/cfdcore_elements_address.h"
 #include "cfdcore/cfdcore_transaction_common.h"
 

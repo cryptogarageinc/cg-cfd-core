@@ -5,6 +5,7 @@
  */
 #ifndef CFD_CORE_INCLUDE_CFDCORE_CFDCORE_COMMON_H_
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_COMMON_H_
+#include <cstddef>
 #include <cstdint>
 
 /**

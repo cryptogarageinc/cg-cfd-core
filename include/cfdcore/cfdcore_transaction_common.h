@@ -8,8 +8,10 @@
 #ifndef CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_COMMON_H_
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_COMMON_H_
 
+#include <cstddef>
 #include <string>
 #include <vector>
+
 #include "cfdcore/cfdcore_address.h"
 #include "cfdcore/cfdcore_amount.h"
 #include "cfdcore/cfdcore_bytedata.h"
