@@ -40,11 +40,11 @@ uint64_t GetSupportedFunction() {
 void CfdCoreManager::Initialize(CfdCoreHandle* handle_address) {
   if (handle_address == nullptr) {
     throw CfdException(
-        kCfdIllegalArgumentError, "cfdcore::Initialize parameter NULL.");
+        kCfdIllegalArgumentError, "cfd::core::Initialize parameter NULL.");
   }
   if (finalized_) {
     throw CfdException(
-        kCfdIllegalStateError, "cfdcore::Initialize already finalized.");
+        kCfdIllegalStateError, "cfd::core::Initialize already finalized.");
   }
 
   {
@@ -60,7 +60,7 @@ void CfdCoreManager::Initialize(CfdCoreHandle* handle_address) {
       int wally_ret = wally_init(0);
       if (wally_ret != WALLY_OK) {
         throw CfdException(kCfdInternalError,
-                           "cfdcore::Initialize parameter NULL.");
+                           "cfd::core::Initialize parameter NULL.");
       }
 #endif
 
