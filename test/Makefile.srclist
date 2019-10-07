@@ -16,6 +16,7 @@ TEST_CFDCORE_SOURCES= \
     test_bytedata160.cpp \
     test_bytedata256.cpp \
     test_hashutil.cpp \
+    test_hdwallet.cpp \
     test_cryptoutil.cpp \
     test_stringutil.cpp \
     test_amount.cpp \

@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include <map>
 #include <vector>
 
 #include "cfdcore/cfdcore_common.h"
@@ -69,4 +70,76 @@ TEST(StringUtil, ByteToStringEmpty) {
   std::string result = StringUtil::ByteToString(bytes);
 
   EXPECT_STREQ(result.c_str(), "");
+}
+
+TEST(StringUtil, SplitAndJoinTest) {
+  std::vector<std::string> expect_vec = {
+    "The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog"
+  };
+  std::map<std::string, std::string> test_vector = {
+    {
+      "The quick brown fox jumps over the lazy dog",
+      " "
+    },
+    {
+      "The_quick_brown_fox_jumps_over_the_lazy_dog",
+      "_"
+    },
+    {
+      "The%quick%brown%fox%jumps%over%the%lazy%dog",
+      "%"
+    },
+    {
+      "The=>quick=>brown=>fox=>jumps=>over=>the=>lazy=>dog",
+      "=>"
+    }
+  };
+
+  std::vector<std::string> actual_split_word;
+  std::string actual_join_str;
+  for (auto vec : test_vector) {
+    EXPECT_NO_THROW(actual_split_word = StringUtil::Split(vec.first, vec.second));
+    EXPECT_EQ(actual_split_word, expect_vec);
+    EXPECT_NO_THROW(actual_join_str = StringUtil::Join(actual_split_word, vec.second));
+    EXPECT_STREQ(actual_join_str.c_str(), vec.first.c_str());
+  }
+}
+
+TEST(StringUtil, SplitAndJoinEmptyStringTest) {
+  struct TestVector {
+    std::string str;
+    std::string delimiter;
+    std::vector<std::string> expect;
+  };
+  std::vector<TestVector> test_vector = {
+    {
+      " ",
+      "*",
+      {" "}
+    },
+    {
+      "**",
+      "**",
+      {"", ""}
+    },
+    {
+      "**",
+      "*",
+      {"", "", ""}
+    },
+    {
+      "",
+      "*",
+      {""}
+    }
+  };
+
+  std::vector<std::string> actual_split_word;
+  std::string actual_join_str;
+  for (auto vec : test_vector) {
+    EXPECT_NO_THROW(actual_split_word = StringUtil::Split(vec.str, vec.delimiter));
+    EXPECT_EQ(actual_split_word, vec.expect);
+    EXPECT_NO_THROW(actual_join_str = StringUtil::Join(actual_split_word, vec.delimiter));
+    EXPECT_STREQ(actual_join_str.c_str(), vec.str.c_str());
+  }
 }
