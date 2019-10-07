@@ -7,10 +7,10 @@
 
 #include "cfdcore/cfdcore_transaction.h"
 
-using cfdcore::Txid;
-using cfdcore::TxIn;
-using cfdcore::Script;
-using cfdcore::TxInReference;
+using cfd::core::Txid;
+using cfd::core::TxIn;
+using cfd::core::Script;
+using cfd::core::TxInReference;
 
 static const Script exp_script = Script(
     "76a914b0f196804dc7584977ff016b3022fac24cf125b688ac");

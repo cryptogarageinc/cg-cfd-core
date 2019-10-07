@@ -20,10 +20,8 @@
 #include "cfdcore/cfdcore_transaction_common.h"
 #include "cfdcore/cfdcore_util.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief TxOut情報を保持するクラス
@@ -436,6 +434,7 @@ class CFD_CORE_EXPORT Transaction : public AbstractTransaction {
       std::vector<TxOut>* txout_list = nullptr);
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_H_

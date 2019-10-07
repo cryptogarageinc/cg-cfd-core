@@ -15,7 +15,8 @@
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_key.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /// P2PKHのScriptサイズ（WALLY_SCRIPTPUBKEY_P2PKH_LEN）
 constexpr size_t kScriptHashP2pkhLength = 25;
@@ -858,6 +859,7 @@ class CFD_CORE_EXPORT ScriptBuilder {
   std::vector<uint8_t> script_byte_array_;  ///< byte array
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_SCRIPT_H_

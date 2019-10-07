@@ -7,9 +7,9 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_bytedata.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::ConfidentialAssetId;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::ConfidentialAssetId;
 
 TEST(ConfidentialAssetId, Constractor) {
   ConfidentialAssetId assetid;

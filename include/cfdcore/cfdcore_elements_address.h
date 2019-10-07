@@ -17,7 +17,8 @@
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_script.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief ConfidentialKey(= Pubkey)の型定義
@@ -170,7 +171,8 @@ class CFD_CORE_EXPORT ElementsConfidentialAddress {
   std::string address_;
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_DISABLE_ELEMENTS
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ELEMENTS_ADDRESS_H_

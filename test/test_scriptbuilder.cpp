@@ -8,16 +8,16 @@
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_script.h"
 
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::CfdException;
-using cfdcore::Pubkey;
-using cfdcore::Script;
-using cfdcore::ScriptBuilder;
-using cfdcore::ScriptElement;
-using cfdcore::ScriptOperator;
-using cfdcore::ScriptType;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::CfdException;
+using cfd::core::Pubkey;
+using cfd::core::Script;
+using cfd::core::ScriptBuilder;
+using cfd::core::ScriptElement;
+using cfd::core::ScriptOperator;
+using cfd::core::ScriptType;
 
 typedef struct {
   std::vector<ScriptElement> inputs;

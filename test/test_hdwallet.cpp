@@ -10,9 +10,9 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::ByteData;
-using cfdcore::CfdException;
-using cfdcore::HDWallet;
+using cfd::core::ByteData;
+using cfd::core::CfdException;
+using cfd::core::HDWallet;
 
 TEST(HDWallet, GetMnemonicWordlistTest) {
   // ref: https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt

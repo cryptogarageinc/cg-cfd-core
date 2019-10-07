@@ -4,13 +4,13 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_script.h"
 
-using cfdcore::ByteData;
-using cfdcore::CfdException;
-using cfdcore::Script;
-using cfdcore::ScriptBuilder;
-using cfdcore::ScriptElement;
-using cfdcore::ScriptHash;
-using cfdcore::ScriptType;
+using cfd::core::ByteData;
+using cfd::core::CfdException;
+using cfd::core::Script;
+using cfd::core::ScriptBuilder;
+using cfd::core::ScriptElement;
+using cfd::core::ScriptHash;
+using cfd::core::ScriptType;
 
 TEST(ScriptHash, ScriptHash_hex) {
   ScriptHash script_hash(
@@ -31,7 +31,7 @@ TEST(ScriptHash, ScriptHash_hex_exception) {
   try {
     std::string hex("xxxx");
     ScriptHash script_hash(hex);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "hex to byte convert error.");
     return;
   }

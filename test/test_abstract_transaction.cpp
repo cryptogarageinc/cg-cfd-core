@@ -7,17 +7,17 @@
 #include "cfdcore/cfdcore_transaction_common.h"
 #include "cfdcore/cfdcore_transaction.h"
 
-using cfdcore::AbstractTransaction;
-using cfdcore::Transaction;
-using cfdcore::Script;
-using cfdcore::Txid;
-using cfdcore::TxInReference;
-using cfdcore::TxOutReference;
-using cfdcore::ByteData;
-using cfdcore::Amount;
-using cfdcore::CfdException;
-using cfdcore::ByteData256;
-using cfdcore::StringUtil;
+using cfd::core::AbstractTransaction;
+using cfd::core::Transaction;
+using cfd::core::Script;
+using cfd::core::Txid;
+using cfd::core::TxInReference;
+using cfd::core::TxOutReference;
+using cfd::core::ByteData;
+using cfd::core::Amount;
+using cfd::core::CfdException;
+using cfd::core::ByteData256;
+using cfd::core::StringUtil;
 
 class TestTransaction : public AbstractTransaction {
  public:

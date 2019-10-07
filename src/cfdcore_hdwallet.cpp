@@ -14,7 +14,8 @@
 #include "cfdcore/cfdcore_logger.h"
 #include "cfdcore_wally_util.h"  // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -105,4 +106,5 @@ ByteData HDWallet::ConvertMnemonicToSeed(
       mnemonic, passphrase, use_ideographic_space);
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

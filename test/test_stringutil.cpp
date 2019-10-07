@@ -12,8 +12,8 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::StringUtil;
-using cfdcore::ByteData;
+using cfd::core::StringUtil;
+using cfd::core::ByteData;
 
 TEST(StringUtil, StringToByte) {
   std::string target(
@@ -36,7 +36,7 @@ TEST(StringUtil, StringToByteLengthError) {
     std::string target(
         "6af0d7adef48de1e90dde0423d4b1ecc72b60ec0a33c716c397bc50f9662b58");
     std::vector<uint8_t> bytes = StringUtil::StringToByte(target);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "hex to byte convert error.");
     return;
   }
@@ -47,7 +47,7 @@ TEST(StringUtil, StringToByteError) {
   try {
     std::string target("hello!");
     std::vector<uint8_t> bytes = StringUtil::StringToByte(target);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "hex to byte convert error.");
     return;
   }

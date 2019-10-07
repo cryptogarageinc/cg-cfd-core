@@ -11,8 +11,8 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
 
 TEST(ByteData160, DefaultConstructor) {
   ByteData160 byte_data;
@@ -64,7 +64,7 @@ TEST(ByteData160, HexConstructorException) {
   try {
     ByteData160 byte_data = ByteData160(
         "123456789012345678901234567890123456789000");
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "ByteData160 size unmatch.");
     return;
   }
@@ -75,7 +75,7 @@ TEST(ByteData160, BytesConstructorException) {
   try {
     std::vector<uint8_t> target(25);
     ByteData160 byte_data = ByteData160(target);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "ByteData160 size unmatch.");
     return;
   }

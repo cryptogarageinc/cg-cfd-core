@@ -46,9 +46,13 @@
 #endif
 
 /**
- * @brief cfdcore名前空間
+ * @brief cfd名前空間
  */
-namespace cfdcore {
+namespace cfd {
+/**
+ * @brief cfd::core名前空間
+ */
+namespace core {
 
 /// cfdcoreのハンドル値。
 using CfdCoreHandle = void*;
@@ -80,6 +84,7 @@ CFD_CORE_API void Initialize(CfdCoreHandle* handle);
 CFD_CORE_API void Finalize(
     const CfdCoreHandle handle, bool is_finish_process = false);
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_COMMON_H_

@@ -8,19 +8,19 @@
 #include "cfdcore/cfdcore_script.h"
 #include "cfdcore/cfdcore_bytedata.h"
 
-using cfdcore::Transaction;
-using cfdcore::Txid;
-using cfdcore::TxInReference;
-using cfdcore::TxOutReference;
-using cfdcore::Script;
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::Amount;
-using cfdcore::SigHashType;
-using cfdcore::HashType;
-using cfdcore::SigHashAlgorithm;
-using cfdcore::CfdException;
+using cfd::core::Transaction;
+using cfd::core::Txid;
+using cfd::core::TxInReference;
+using cfd::core::TxOutReference;
+using cfd::core::Script;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::Amount;
+using cfd::core::SigHashType;
+using cfd::core::HashType;
+using cfd::core::SigHashAlgorithm;
+using cfd::core::CfdException;
 
 static const int32_t exp_version = 2;
 static const uint32_t exp_locktime = 0;

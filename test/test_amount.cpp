@@ -12,9 +12,9 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::Amount;
-using cfdcore::ByteData;
-using cfdcore::CfdException;
+using cfd::core::Amount;
+using cfd::core::ByteData;
+using cfd::core::CfdException;
 
 //! bitcoinとsatoshi単位の変換に用いる因数(10^8)
 static const int64_t kCoinBase = 100000000;

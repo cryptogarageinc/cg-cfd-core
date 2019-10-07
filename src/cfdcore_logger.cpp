@@ -29,22 +29,23 @@
 // 公開API
 // -----------------------------------------------------------------------------
 /// ロガーインスタンス
-static cfdcore::logger::CfdLogger logger_instance;
+static cfd::core::logger::CfdLogger logger_instance;
 
-void cfdcore::InitializeLogger(void) { logger_instance.Initialize(); }
+void cfd::core::InitializeLogger(void) { logger_instance.Initialize(); }
 
-void cfdcore::FinalizeLogger(bool is_finish_process) {
+void cfd::core::FinalizeLogger(bool is_finish_process) {
   logger_instance.Finalize(is_finish_process);
 }
 
-void cfdcore::SetLogger(void* function_address) {
+void cfd::core::SetLogger(void* function_address) {
   logger_instance.SetLogger(function_address);
 }
 
 // -----------------------------------------------------------------------------
 // 内部API
 // -----------------------------------------------------------------------------
-namespace cfdcore {
+namespace cfd {
+namespace core {
 namespace logger {
 
 /// デバッグフラグ
@@ -54,7 +55,7 @@ static bool cfdcore_logger_is_debug = true;
 static bool cfdcore_logger_is_debug = false;
 #endif
 
-bool IsEnableLogLevel(cfdcore::logger::CfdLogLevel level) {
+bool IsEnableLogLevel(cfd::core::logger::CfdLogLevel level) {
   return logger_instance.IsEnableLogLevel(level);
 }
 void WriteLog(const spdlog::details::log_msg& log_message) {
@@ -64,13 +65,13 @@ void WriteLog(const spdlog::details::log_msg& log_message) {
 // -----------------------------------------------------------------------------
 // CfdLogger
 // -----------------------------------------------------------------------------
-cfdcore::logger::CfdLogger::CfdLogger(void) {
+cfd::core::logger::CfdLogger::CfdLogger(void) {
   // do nothing
 }
 
-cfdcore::logger::CfdLogger::~CfdLogger(void) { Finalize(true); }
+cfd::core::logger::CfdLogger::~CfdLogger(void) { Finalize(true); }
 
-cfdcore::CfdError cfdcore::logger::CfdLogger::Initialize(void) {
+cfd::core::CfdError cfd::core::logger::CfdLogger::Initialize(void) {
   const size_t kRotateFileSize = 1024 * 1024 * 256;
 
   if (is_initialized_) {
@@ -108,7 +109,7 @@ cfdcore::CfdError cfdcore::logger::CfdLogger::Initialize(void) {
   return kCfdSuccess;
 }
 
-void cfdcore::logger::CfdLogger::Finalize(bool is_finish_process) {
+void cfd::core::logger::CfdLogger::Finalize(bool is_finish_process) {
   if (is_alive_) {
     is_alive_ = false;
     if (is_use_default_logger_ && (!is_finish_process)) {
@@ -122,19 +123,19 @@ void cfdcore::logger::CfdLogger::Finalize(bool is_finish_process) {
   }
 }
 
-void cfdcore::logger::CfdLogger::SetLogger(void* function_address) {
+void cfd::core::logger::CfdLogger::SetLogger(void* function_address) {
   this->function_address_ = function_address;
   is_extend_log_ = true;
 }
 
-bool cfdcore::logger::CfdLogger::IsEnableLogLevel(CfdLogLevel level) {
+bool cfd::core::logger::CfdLogger::IsEnableLogLevel(CfdLogLevel level) {
   if (is_initialized_ && is_alive_ && (level >= log_level_)) {
     return true;
   }
   return false;
 }
 
-void cfdcore::logger::CfdLogger::WriteLog(
+void cfd::core::logger::CfdLogger::WriteLog(
     const spdlog::details::log_msg& log_message) {
   if (is_initialized_ && is_alive_) {
     if (function_address_ != nullptr) {
@@ -156,4 +157,5 @@ void cfdcore::logger::CfdLogger::WriteLog(
 }
 
 }  // namespace logger
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

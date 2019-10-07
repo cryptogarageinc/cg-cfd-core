@@ -13,9 +13,10 @@
 #include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_common.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
-using cfdcore::ByteData;
+using cfd::core::ByteData;
 
 /**
  * @brief HDWalletを表現するデータクラス
@@ -79,7 +80,7 @@ class CFD_CORE_EXPORT HDWallet {
       const std::vector<std::string>& mnemonic, const std::string& language);
 
   /**
-   * @brief Verify mnemonic is valid 
+   * @brief Verify mnemonic is valid
    * @param[in] mnemonic                mnemonic vector to check valid
    * @param[in] language                language to verify
    * @retval true   mnemonic checksum is valid
@@ -111,6 +112,7 @@ class CFD_CORE_EXPORT HDWallet {
       bool use_ideographic_space = false);
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_HDWALLET_H_

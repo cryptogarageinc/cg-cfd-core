@@ -4,13 +4,13 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_script.h"
 
-using cfdcore::ByteData;
-using cfdcore::CfdException;
-using cfdcore::Script;
-using cfdcore::ScriptBuilder;
-using cfdcore::ScriptElement;
-using cfdcore::ScriptOperator;
-using cfdcore::ScriptType;
+using cfd::core::ByteData;
+using cfd::core::CfdException;
+using cfd::core::Script;
+using cfd::core::ScriptBuilder;
+using cfd::core::ScriptElement;
+using cfd::core::ScriptOperator;
+using cfd::core::ScriptType;
 
 TEST(ScriptOperator, GetDataType) {
   ScriptType scriptType = ScriptOperator::OP_DUP.GetDataType();

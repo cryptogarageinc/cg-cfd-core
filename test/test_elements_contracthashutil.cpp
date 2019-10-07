@@ -8,9 +8,9 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_logger.h"
 
-using cfdcore::Script;
-using cfdcore::ContractHashUtil;
-using cfdcore::CfdException;
+using cfd::core::Script;
+using cfd::core::ContractHashUtil;
+using cfd::core::CfdException;
 
 TEST(ContractHashUtil, GetContractScriptMultisig1of1) {
   Script claim_script("0014fd1cd5452a43ca210ba7153d64227dc32acf6dbb");
