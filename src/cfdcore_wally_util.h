@@ -26,7 +26,8 @@
 //#include "wally_script.h"       // NOLINT
 #endif  // CFDCORE_NOT_USE_LIBWALLY_SCRIPT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief libwally utility.
@@ -195,7 +196,8 @@ class WallyUtil {
       const words* wardlist, const size_t index);
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // __cplusplus
 #endif  // CFD_CORE_SRC_CFDCORE_WALLY_UTIL_H_

@@ -16,7 +16,8 @@
 #include "cfdcore_wally_util.h"  // NOLINT
 #include "wally_address.h"       // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -451,4 +452,5 @@ ByteData256 ExtKey::GetDerivePubkeyTweak(uint32_t child_num) const {
   return ByteData256(tweak);
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

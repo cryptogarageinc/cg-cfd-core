@@ -10,13 +10,13 @@
 
 #include "cfdcore/cfdcore_transaction_common.h"
 
-using cfdcore::AbstractTxIn;
-using cfdcore::ByteData;
-using cfdcore::ByteData256;
-using cfdcore::CfdException;
-using cfdcore::Script;
-using cfdcore::ScriptWitness;
-using cfdcore::Txid;
+using cfd::core::AbstractTxIn;
+using cfd::core::ByteData;
+using cfd::core::ByteData256;
+using cfd::core::CfdException;
+using cfd::core::Script;
+using cfd::core::ScriptWitness;
+using cfd::core::Txid;
 
 const Txid expect_txid = Txid(
     "0d2a5386ec4fe2afb6fbf31b5d51781645ba8bd4a56daa1e7645bd4c4c4646d9");

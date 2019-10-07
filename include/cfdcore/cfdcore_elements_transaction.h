@@ -14,10 +14,8 @@
 #include "cfdcore/cfdcore_elements_address.h"
 #include "cfdcore/cfdcore_transaction_common.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief nonce情報を保持するクラス
@@ -1404,7 +1402,8 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
       const std::string& bitcoin_descriptor, const ByteData& prefix);
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_DISABLE_ELEMENTS
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ELEMENTS_TRANSACTION_H_

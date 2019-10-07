@@ -5,10 +5,10 @@
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_exception.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::ByteData256;
-using cfdcore::ExtKey;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::ByteData256;
+using cfd::core::ExtKey;
 
 TEST(ExtKey, DefaultConstructorTest) {
   ExtKey extkey = ExtKey();

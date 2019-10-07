@@ -10,21 +10,21 @@
 #include "cfdcore/cfdcore_coin.h"
 #include "cfdcore/cfdcore_util.h"
 
-using cfdcore::Amount;
-using cfdcore::BlindFactor;
-using cfdcore::ByteData;
-using cfdcore::ByteData256;
-using cfdcore::CfdError;
-using cfdcore::CfdException;
-using cfdcore::ConfidentialAssetId;
-using cfdcore::ConfidentialNonce;
-using cfdcore::ConfidentialTxOut;
-using cfdcore::ConfidentialTxOutReference;
-using cfdcore::ConfidentialValue;
-using cfdcore::RangeProofInfo;
-using cfdcore::Script;
-using cfdcore::ScriptWitness;
-using cfdcore::Txid;
+using cfd::core::Amount;
+using cfd::core::BlindFactor;
+using cfd::core::ByteData;
+using cfd::core::ByteData256;
+using cfd::core::CfdError;
+using cfd::core::CfdException;
+using cfd::core::ConfidentialAssetId;
+using cfd::core::ConfidentialNonce;
+using cfd::core::ConfidentialTxOut;
+using cfd::core::ConfidentialTxOutReference;
+using cfd::core::ConfidentialValue;
+using cfd::core::RangeProofInfo;
+using cfd::core::Script;
+using cfd::core::ScriptWitness;
+using cfd::core::Txid;
 
 static const Script exp_script("0014fd1cd5452a43ca210ba7153d64227dc32acf6dbb");
 static const ConfidentialAssetId exp_asset(

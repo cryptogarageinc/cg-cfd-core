@@ -13,7 +13,8 @@
 #include "cfdcore/cfdcore_logger.h"
 #include "cfdcore/cfdcore_util.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -83,4 +84,5 @@ const std::string BlockHash::GetHex() const {
 
 const ByteData BlockHash::GetData() const { return data_; }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

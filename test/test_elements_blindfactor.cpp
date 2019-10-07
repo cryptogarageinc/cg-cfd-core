@@ -7,9 +7,9 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_bytedata.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData256;
-using cfdcore::BlindFactor;
+using cfd::core::CfdException;
+using cfd::core::ByteData256;
+using cfd::core::BlindFactor;
 
 TEST(BlindFactor, Constractor) {
   BlindFactor blind_factor;

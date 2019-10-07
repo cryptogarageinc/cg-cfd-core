@@ -4,10 +4,10 @@
 #include "cfdcore_secp256k1.h"
 #include "cfdcore/cfdcore_exception.h"
 
-using cfdcore::ByteData;
-using cfdcore::CfdError;
-using cfdcore::CfdException;
-using cfdcore::Secp256k1;
+using cfd::core::ByteData;
+using cfd::core::CfdError;
+using cfd::core::CfdException;
+using cfd::core::Secp256k1;
 
 typedef struct {
   std::vector<ByteData> pubkeys;
@@ -275,7 +275,7 @@ const std::vector<RangeProofInfoTestVector> range_proof_info_test_vectors = {
 TEST(Secp256k1, RangeProofInfoSecp256k1Test) {
   struct secp256k1_context_struct *ctx = wally_get_secp_context();
   Secp256k1 secp = Secp256k1(ctx);
-  
+
   for (const RangeProofInfoTestVector test_vector : range_proof_info_test_vectors) {
     int exponent;
     int mantissa;
@@ -292,7 +292,7 @@ TEST(Secp256k1, RangeProofInfoSecp256k1Test) {
 TEST(Secp256k1, RangeProofInfoSecp256k1ErrorTest) {
   struct secp256k1_context_struct *ctx = wally_get_secp_context();
   Secp256k1 secp = Secp256k1(ctx);
-  
+
   int exponent;
   int mantissa;
   uint64_t min_value;
@@ -307,7 +307,7 @@ TEST(Secp256k1, RangeProofInfoSecp256k1ErrorTest) {
       EXPECT_STREQ(cfd_exception.what(), "Secp256k1 empty range proof Error.");
     }
   }
-  
+
   // invalid range_proof
   {
     ByteData range_proof("0000");

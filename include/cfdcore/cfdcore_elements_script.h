@@ -13,7 +13,8 @@
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_script.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @class ContractHashUtil
@@ -72,7 +73,8 @@ class CFD_CORE_EXPORT ContractHashUtil {
   ContractHashUtil();
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_DISABLE_ELEMENTS
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ELEMENTS_SCRIPT_H_

@@ -15,7 +15,8 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_logger.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -162,4 +163,5 @@ Amount operator/(const Amount& amount, const int64_t value) {
   return Amount::CreateBySatoshiAmount(amount.GetSatoshiValue()) /= value;
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

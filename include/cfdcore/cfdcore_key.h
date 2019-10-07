@@ -12,7 +12,8 @@
 #include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_common.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @typedef NetType
@@ -355,6 +356,7 @@ class CFD_CORE_EXPORT ExtKey {
   ByteData256 GetDerivePubkeyTweak(uint32_t child_num) const;
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_KEY_H_
