@@ -8,9 +8,11 @@
 #ifndef CFD_CORE_INCLUDE_CFDCORE_CFDCORE_SCRIPT_H_
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_SCRIPT_H_
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_key.h"

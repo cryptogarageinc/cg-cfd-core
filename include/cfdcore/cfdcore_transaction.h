@@ -8,6 +8,7 @@
 #ifndef CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_H_
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_H_
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
