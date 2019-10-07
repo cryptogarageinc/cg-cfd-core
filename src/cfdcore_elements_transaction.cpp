@@ -33,9 +33,6 @@ using logger::warn;
 // -----------------------------------------------------------------------------
 /// ElementsTransactionの最小サイズ
 static constexpr size_t kElementsTransactionMinimumSize = 11;
-/// Transactionの最小Hexサイズ
-static constexpr size_t kTransactionMinimumHexSize =
-    kElementsTransactionMinimumSize * 2;
 /// ConfidentialCommitmentのVersion1(unblind)定義
 static constexpr uint8_t kConfidentialVersion_1 = 1;
 /// TransactionのWitness非対応バージョン定義

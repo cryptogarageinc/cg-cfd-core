@@ -115,11 +115,84 @@ class WallyUtil {
       const ByteData256& tweak_sum, const std::vector<ByteData>& online_keys,
       const std::vector<ByteData>& offline_keys, uint32_t whitelist_index);
 
+  /**
+   * @brief Mnemonic で利用できる Wordlist を取得する.
+   * @param[in] language    language to use.
+   * @return wordlist to use mnemonic which supported by bip39.
+   * @throws CfdException   If invalid argument passed.
+   */
+  static std::vector<std::string> GetMnemonicWordlist(
+      const std::string& language);
+
+  /**
+   * @brief mnemonic と passphrase から seed を生成する.
+   * @details This function doesn't check mnemonic words strictly.
+   *     If you need to check mnemonic is valid, may use CheckValidMnemonic.
+   * @param[in] mnemonic    mnemonic words list.
+   * @param[in] passphrase  passphrase used as a solt.
+   * @param[in] use_ideographic_space   flag of using ideographic space
+   *     for mnemonic separator
+   * @return binary seed to use hdwallet.
+   * @throws CfdException   If invalid argument passed.
+   */
+  static ByteData ConvertMnemonicToSeed(
+      const std::vector<std::string>& mnemonic, const std::string& passphrase,
+      bool use_ideographic_space = false);
+
+  /**
+   * @brief Entropy から Mnemonic を生成する.
+   * @param[in] entropy     entropy to generate mnemonic.
+   * @param[in] language    language to use mnemonic.
+   * @return mnemonic which is generated from entropy.
+   * @throws CfdException   If invalid argument passed.
+   */
+  static std::vector<std::string> ConvertEntropyToMnemonic(
+      const ByteData& entropy, const std::string& language);
+
+  /**
+   * @brief Mnemonic から Entropy へ変換する.
+   * @param[in] mnemonic    mnemonic to derive entropy.
+   * @param[in] language    language used by mnemonic.
+   * @param[in] use_ideographic_space   flag of using ideographic space
+   *     for mnemonic separator
+   * @return binary entropy.
+   * @throws CfdException   If invalid argument passed.
+   */
+  static ByteData ConvertMnemonicToEntropy(
+      const std::vector<std::string>& mnemonic, const std::string& language,
+      bool use_ideographic_space = false);
+
+  /**
+   * @brief Mnemonic でサポートしている言語を取得する.
+   * @return supported language vector.
+   */
+  static std::vector<std::string> GetSupportedMnemonicLanguages();
+
+  /**
+   * @brief Verify mnemonic is valid 
+   * @param[in] mnemonic                mnemonic vector to check valid
+   * @param[in] language                language to verify
+   * @retval true   mnemonic checksum is valid
+   * @retval true   mnemonic checksum is invalid
+   */
+  static bool CheckValidMnemonic(
+      const std::vector<std::string>& mnemonic, const std::string& language);
+
  private:
   /**
    * @brief default constructor.
    */
   WallyUtil();
+
+  /**
+   * @brief Get the 'index'th word from passed BIP39 wordlist.
+   * @param[in] wardlist    the wordlist to get the word from.
+   * @param[in] index       target index number of wordlist.
+   * @return string of the word from wordlist.
+   * @throws CfdException   If invalid arguments passed.
+   */
+  static std::string GetMnemonicWord(
+      const words* wardlist, const size_t index);
 };
 
 }  // namespace cfdcore
