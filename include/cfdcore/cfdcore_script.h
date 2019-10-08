@@ -876,7 +876,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * <pubkey> OP_CHECKSIG
    * @endcode
    */
-  static Script CreateP2pkLockingScript(const Pubkey& pubkey);
+  static Script CreateP2pkLockingScript(const Pubkey &pubkey);
   /**
    * @brief P2PKHのlocking scriptを作成する.
    * @param[in] pubkey_hash pubkey hashが格納されたByteData160インスタンス
@@ -886,7 +886,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_DUP OP_HASH160 <hash160(pubkey)> OP_EQUALVERIFY OP_CHECKSIG
    * @endcode
    */
-  static Script CreateP2pkhLockingScript(const ByteData160& pubkey_hash);
+  static Script CreateP2pkhLockingScript(const ByteData160 &pubkey_hash);
   /**
    * @brief P2PKHのlocking scriptを作成する.
    * @param[in] pubkey Pubkeyインスタンス
@@ -896,7 +896,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_DUP OP_HASH160 <hash160(pubkey)> OP_EQUALVERIFY OP_CHECKSIG
    * @endcode
    */
-  static Script CreateP2pkhLockingScript(const Pubkey& pubkey);
+  static Script CreateP2pkhLockingScript(const Pubkey &pubkey);
   /**
    * @brief P2SHのlocking scriptを作成する.
    * @param[in] script_hash script hashが格納されたByteData160インスタンス
@@ -906,7 +906,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_HASH160 <hash160(redeemScript)> OP_EQUAL
    * @endcode
    */
-  static Script CreateP2shLockingScript(const ByteData160& script_hash);
+  static Script CreateP2shLockingScript(const ByteData160 &script_hash);
   /**
    * @brief P2SHのlocking scriptを作成する.
    * @param[in] redeem_script redeem scriptのScriptインスタンス
@@ -916,7 +916,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_HASH160 <hash160(redeemScript)> OP_EQUAL
    * @endcode
    */
-  static Script CreateP2shLockingScript(const Script& redeem_script);
+  static Script CreateP2shLockingScript(const Script &redeem_script);
   /**
    * @brief P2WPKHのlocking scriptを作成する.
    * @param[in] pubkey_hash pubkey hashが格納されたByteData160インスタンス
@@ -926,7 +926,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_0 <hash160(pubkey)>
    * @endcode
    */
-  static Script CreateP2wpkhLockingScript(const ByteData160& pubkey_hash);
+  static Script CreateP2wpkhLockingScript(const ByteData160 &pubkey_hash);
   /**
    * @brief P2WPKHのlocking scriptを作成する.
    * @param[in] pubkey Pubkeyインスタンス
@@ -936,7 +936,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_0 <hash160(pubkey)>
    * @endcode
    */
-  static Script CreateP2wpkhLockingScript(const Pubkey& pubkey);
+  static Script CreateP2wpkhLockingScript(const Pubkey &pubkey);
   /**
    * @brief P2WSHのlocking scriptを作成する.
    * @param[in] script_hash script hashのByteData256インスタンス
@@ -946,7 +946,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_0 <sha256(redeemScript)>
    * @endcode
    */
-  static Script CreateP2wshLockingScript(const ByteData256& script_hash);
+  static Script CreateP2wshLockingScript(const ByteData256 &script_hash);
   /**
    * @brief P2WSHのlocking scriptを作成する.
    * @param[in] redeem_script redeem scriptのScriptインスタンス
@@ -956,14 +956,14 @@ class CFD_CORE_EXPORT ScriptUtil {
    * OP_0 <sha256(redeemScript)>
    * @endcode
    */
-  static Script CreateP2wshLockingScript(const Script& redeem_script);
+  static Script CreateP2wshLockingScript(const Script &redeem_script);
   /**
    * @brief RedeemScriptが有効なものであるかをチェックする.
    * @param[in] redeem_script redeem script
    * @retval true 有効なredeem script
    * @retval false 有効でないredeem script
    */
-  static bool IsValidRedeemScript(const Script& redeem_script);
+  static bool IsValidRedeemScript(const Script &redeem_script);
   /**
    * @brief M-of-N Multisigのredeem scriptを作成する.
    * @param[in] require_sig_num unlockingに必要なSignature数（Mに相当）
@@ -975,7 +975,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * @endcode
    */
   static Script CreateMultisigRedeemScript(
-      uint32_t require_sig_num, const std::vector<Pubkey>& pubkeys);
+      uint32_t require_sig_num, const std::vector<Pubkey> &pubkeys);
 #ifndef CFD_DISABLE_ELEMENTS
   /**
    * @brief Pegoutのlocking scriptを作成する.
@@ -989,8 +989,8 @@ class CFD_CORE_EXPORT ScriptUtil {
    * @endcode
    */
   static Script CreatePegoutLogkingScript(
-      const BlockHash& genesisblock_hash, const Script& parent_locking_script,
-      const Pubkey& btc_pubkey_bytes, const ByteData& whitelist_proof);
+      const BlockHash &genesisblock_hash, const Script &parent_locking_script,
+      const Pubkey &btc_pubkey_bytes, const ByteData &whitelist_proof);
 #endif  // CFD_DISABLE_ELEMENTS
 
  private:
