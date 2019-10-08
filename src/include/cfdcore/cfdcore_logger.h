@@ -92,7 +92,8 @@ void log(
  */
 template <typename... Args>
 void log(
-    cfd::core::logger::CfdLogLevel lvl, const char *fmt, const Args &... args) {
+    cfd::core::logger::CfdLogLevel lvl, const char *fmt,
+    const Args &... args) {
   log(spdlog::source_loc{}, lvl, fmt, args...);
 }
 
@@ -170,7 +171,8 @@ void critical(
  */
 template <typename... Args>
 void trace(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelTrace, fmt, args...);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelTrace, fmt,
+      args...);
 }
 
 /**
@@ -180,7 +182,8 @@ void trace(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void debug(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelDebug, fmt, args...);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelDebug, fmt,
+      args...);
 }
 
 /**
@@ -211,7 +214,8 @@ void warn(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void error(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelError, fmt, args...);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelError, fmt,
+      args...);
 }
 
 /**
