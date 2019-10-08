@@ -301,10 +301,10 @@ TEST(AbstractTransaction, CopyVariableBuffer) {
 }
 
 TEST(AbstractTransaction, TxSizeByException) {
-  TestTransaction tx;
-  EXPECT_THROW(tx.GetTotalSize(), CfdException);
-  EXPECT_THROW(tx.GetVsize(), CfdException);
-  EXPECT_THROW(tx.GetWeight(), CfdException);
+  Transaction tx;
+  EXPECT_EQ(tx.GetTotalSize(), 10);
+  EXPECT_EQ(tx.GetVsize(), 10);
+  EXPECT_EQ(tx.GetWeight(), 40);
 }
 
 TEST(AbstractTransaction, TxArray) {

@@ -563,7 +563,11 @@ TEST(Address, ElementsNoSegwitAddressFromStringTest) {
   EXPECT_NO_THROW((address = Address("2dnmekh8NBmNX3Ckwte5CArjcsHLYdthCg3", params)));
   EXPECT_STREQ("2dnmekh8NBmNX3Ckwte5CArjcsHLYdthCg3",
                address.GetAddress().c_str());
+#ifndef CFD_DISABLE_ELEMENTS
   EXPECT_EQ(NetType::kElementsRegtest, address.GetNetType());
+#else
+  EXPECT_EQ(NetType::kNetTypeNum, address.GetNetType());
+#endif  // CFD_DISABLE_ELEMENTS
   EXPECT_EQ(AddressType::kP2pkhAddress, address.GetAddressType());
   EXPECT_EQ(WitnessVersion::kVersionNone, address.GetWitnessVersion());
   EXPECT_STREQ("925d4028880bd0c9d68fbc7fc7dfee976698629c",
@@ -574,7 +578,11 @@ TEST(Address, ElementsNoSegwitAddressFromStringTest) {
   EXPECT_NO_THROW((address = Address("XUiq7kxdkiB3AXNkKW9YaWLLGb1WBo9xcA", params)));
   EXPECT_STREQ("XUiq7kxdkiB3AXNkKW9YaWLLGb1WBo9xcA",
                address.GetAddress().c_str());
+#ifndef CFD_DISABLE_ELEMENTS
   EXPECT_EQ(NetType::kElementsRegtest, address.GetNetType());
+#else
+  EXPECT_EQ(NetType::kNetTypeNum, address.GetNetType());
+#endif  // CFD_DISABLE_ELEMENTS
   EXPECT_EQ(AddressType::kP2shAddress, address.GetAddressType());
 
   // analyze fail data
@@ -591,7 +599,11 @@ TEST(Address, ElementsSegwitAddressFromStringTest) {
   EXPECT_NO_THROW((address = Address("ert1qjfw5q2ygp0gvn450h3lu0hlwjanfsc5udafvh6", params)));
   EXPECT_STREQ("ert1qjfw5q2ygp0gvn450h3lu0hlwjanfsc5udafvh6",
                address.GetAddress().c_str());
+#ifndef CFD_DISABLE_ELEMENTS
   EXPECT_EQ(NetType::kElementsRegtest, address.GetNetType());
+#else
+  EXPECT_EQ(NetType::kNetTypeNum, address.GetNetType());
+#endif  // CFD_DISABLE_ELEMENTS
   EXPECT_EQ(AddressType::kP2wpkhAddress, address.GetAddressType());
   EXPECT_EQ(WitnessVersion::kVersion0, address.GetWitnessVersion());
   EXPECT_STREQ("925d4028880bd0c9d68fbc7fc7dfee976698629c",
@@ -602,7 +614,11 @@ TEST(Address, ElementsSegwitAddressFromStringTest) {
   EXPECT_NO_THROW((address = Address("ert1qcc5c9wnzly8zj2dcsvxv83kupsu0uamx69u0y9lsmw7shuns2gqsflana4", params)));
   EXPECT_STREQ("ert1qcc5c9wnzly8zj2dcsvxv83kupsu0uamx69u0y9lsmw7shuns2gqsflana4",
                address.GetAddress().c_str());
+#ifndef CFD_DISABLE_ELEMENTS
   EXPECT_EQ(NetType::kElementsRegtest, address.GetNetType());
+#else
+  EXPECT_EQ(NetType::kNetTypeNum, address.GetNetType());
+#endif  // CFD_DISABLE_ELEMENTS
   EXPECT_EQ(AddressType::kP2wshAddress, address.GetAddressType());
   EXPECT_EQ(WitnessVersion::kVersion0, address.GetWitnessVersion());
 }
