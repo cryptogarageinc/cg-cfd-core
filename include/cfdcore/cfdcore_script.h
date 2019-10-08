@@ -977,13 +977,16 @@ class CFD_CORE_EXPORT ScriptUtil {
   /**
    * @brief Pegoutのlocking scriptを作成する.
    * @param[in] genesisblock_hash mainchainのgenesisblock hash
-   * @param[in] script_pubkey 送り先のscript pubkey
+   * @param[in] parent_locking_script 送り先 bitcoin address の locking script
    * @param[in] btc_pubkey_bytes DerivePubTweak関数で作られたpubkey情報
    * @param[in] whitelist_proof whitelistの証明
+   * @code{.unparse}
+   * OP_RETURN <genesis block hash> <bitcoin address lockingScript>
+   *     <tweaked pubkey bytes> <whitelistproof>
    * @return Scriptインスタンス
    */
   static Script CreatePegoutLogkingScript(
-      const BlockHash& genesisblock_hash, const Script& script_pubkey,
+      const BlockHash& genesisblock_hash, const Script& parent_locking_script,
       const Pubkey& btc_pubkey_bytes, const ByteData& whitelist_proof);
 
  private:

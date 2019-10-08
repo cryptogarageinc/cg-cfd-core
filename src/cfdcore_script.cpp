@@ -1108,13 +1108,13 @@ Script ScriptUtil::CreateMultisigRedeemScript(
 }
 
 Script ScriptUtil::CreatePegoutLogkingScript(
-    const BlockHash& genesisblock_hash, const Script& script_pubkey,
+    const BlockHash& genesisblock_hash, const Script& parent_locking_script,
     const Pubkey& btc_pubkey_bytes, const ByteData& whitelist_proof) {
   // script作成
   ScriptBuilder builder;
   builder.AppendOperator(ScriptOperator::OP_RETURN);
   builder.AppendData(genesisblock_hash.GetData());
-  builder.AppendData(script_pubkey);
+  builder.AppendData(parent_locking_script);
   if (btc_pubkey_bytes.IsValid() && (whitelist_proof.GetDataSize() > 0)) {
     builder.AppendData(btc_pubkey_bytes);
     builder.AppendData(whitelist_proof);
