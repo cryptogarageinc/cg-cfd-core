@@ -19,13 +19,14 @@ using cfd::core::Pubkey;
 using cfd::core::Script;
 using cfd::core::ScriptUtil;
 
-struct PubkeyTestVector {
+// ファイルごとに構造体の名前を変えること
+struct ScriptUtil_PubkeyTestVector {
   Pubkey input_pubkey;
   Script expect_locking_script;
 };
 
 TEST(ScriptUtil, GetP2pkLockingScriptTest) {
-  const std::vector<PubkeyTestVector> test_vectors = {
+  const std::vector<ScriptUtil_PubkeyTestVector> test_vectors = {
     {
       Pubkey("02522952c3fc2a53a8651b08ce10988b7506a3b40a5c26f9648a911be33e73e1a0"),
       Script("2102522952c3fc2a53a8651b08ce10988b7506a3b40a5c26f9648a911be33e73e1a0ac")
@@ -41,14 +42,14 @@ TEST(ScriptUtil, GetP2pkLockingScriptTest) {
   };
 
   Script actual;
-  for (PubkeyTestVector test_vector : test_vectors) {
+  for (const ScriptUtil_PubkeyTestVector& test_vector : test_vectors) {
     EXPECT_NO_THROW((actual = ScriptUtil::CreateP2pkLockingScript(test_vector.input_pubkey)));
     EXPECT_STREQ(actual.GetHex().c_str(), test_vector.expect_locking_script.GetHex().c_str());
   }
 }
 
 TEST(ScriptUtil, GetP2pkhLockingScriptTest) {
-  const std::vector<PubkeyTestVector> test_vectors = {
+  const std::vector<ScriptUtil_PubkeyTestVector> test_vectors = {
     {
       Pubkey("02522952c3fc2a53a8651b08ce10988b7506a3b40a5c26f9648a911be33e73e1a0"),
       Script("76a914edaf2414751239b72b653ea004adc310a3522e3788ac")
@@ -64,7 +65,7 @@ TEST(ScriptUtil, GetP2pkhLockingScriptTest) {
   };
 
   Script actual;
-  for (PubkeyTestVector test_vector : test_vectors) {
+  for (const ScriptUtil_PubkeyTestVector& test_vector : test_vectors) {
     EXPECT_NO_THROW((actual = ScriptUtil::CreateP2pkhLockingScript(test_vector.input_pubkey)));
     EXPECT_STREQ(actual.GetHex().c_str(), test_vector.expect_locking_script.GetHex().c_str());
     ByteData160 pubkey_hash = HashUtil::Hash160(test_vector.input_pubkey);
@@ -74,7 +75,7 @@ TEST(ScriptUtil, GetP2pkhLockingScriptTest) {
 }
 
 TEST(ScriptUtil, GetP2wpkhLockingScriptTest) {
-  const std::vector<PubkeyTestVector> test_vectors = {
+  const std::vector<ScriptUtil_PubkeyTestVector> test_vectors = {
     {
       Pubkey("02522952c3fc2a53a8651b08ce10988b7506a3b40a5c26f9648a911be33e73e1a0"),
       Script("0014edaf2414751239b72b653ea004adc310a3522e37")
@@ -90,7 +91,7 @@ TEST(ScriptUtil, GetP2wpkhLockingScriptTest) {
   };
 
   Script actual;
-  for (PubkeyTestVector test_vector : test_vectors) {
+  for (const ScriptUtil_PubkeyTestVector& test_vector : test_vectors) {
     EXPECT_NO_THROW((actual = ScriptUtil::CreateP2wpkhLockingScript(test_vector.input_pubkey)));
     EXPECT_STREQ(actual.GetHex().c_str(), test_vector.expect_locking_script.GetHex().c_str());
     ByteData160 pubkey_hash = HashUtil::Hash160(test_vector.input_pubkey);
@@ -99,13 +100,14 @@ TEST(ScriptUtil, GetP2wpkhLockingScriptTest) {
   }
 }
 
-struct ScriptTestVector {
+// ファイルごとに構造体の名前を変えること
+struct ScriptUtil_ScriptTestVector {
   Script input_redeem_script;
   Script expect_locking_script;
 };
 
 TEST(ScriptUtil, GetP2shLockingScriptTest) {
-  const std::vector<ScriptTestVector> test_vectors = {
+  const std::vector<ScriptUtil_ScriptTestVector> test_vectors = {
     {
       // 00 11 2222 333333 4444 55 6666 777777 8888 99
       Script("01000111022222033333330244440155026666037777770288880199"),
@@ -124,7 +126,7 @@ TEST(ScriptUtil, GetP2shLockingScriptTest) {
   };
 
   Script actual;
-  for (ScriptTestVector test_vector : test_vectors) {
+  for (const ScriptUtil_ScriptTestVector& test_vector : test_vectors) {
     EXPECT_NO_THROW((actual = ScriptUtil::CreateP2shLockingScript(test_vector.input_redeem_script)));
     EXPECT_STREQ(actual.GetHex().c_str(), test_vector.expect_locking_script.GetHex().c_str());
     ByteData160 script_hash = HashUtil::Hash160(test_vector.input_redeem_script);
@@ -134,7 +136,7 @@ TEST(ScriptUtil, GetP2shLockingScriptTest) {
 }
 
 TEST(ScriptUtil, GetP2wshLockingScriptTest) {
-  const std::vector<ScriptTestVector> test_vectors = {
+  const std::vector<ScriptUtil_ScriptTestVector> test_vectors = {
     {
       // 00 11 2222 333333 4444 55 6666 777777 8888 99
       Script("01000111022222033333330244440155026666037777770288880199"),
@@ -153,7 +155,7 @@ TEST(ScriptUtil, GetP2wshLockingScriptTest) {
   };
 
   Script actual;
-  for (ScriptTestVector test_vector : test_vectors) {
+  for (const ScriptUtil_ScriptTestVector& test_vector : test_vectors) {
     EXPECT_NO_THROW((actual = ScriptUtil::CreateP2wshLockingScript(test_vector.input_redeem_script)));
     EXPECT_STREQ(actual.GetHex().c_str(), test_vector.expect_locking_script.GetHex().c_str());
     ByteData256 script_hash = HashUtil::Sha256(test_vector.input_redeem_script);

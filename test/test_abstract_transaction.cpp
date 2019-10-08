@@ -311,14 +311,29 @@ TEST(AbstractTransaction, CopyVariableBuffer) {
 
 TEST(AbstractTransaction, TxSizeByException) {
   TestTransaction tx;
+  // input/output共に0個の場合、libwallyがElementsTransactionと誤認してしまう。
+  // そのためElementsの有効無効に合わせてテスト結果を変えてチェックする。
+#ifndef CFD_DISABLE_ELEMENTS
+  EXPECT_EQ(tx.GetTotalSize(), 11);
+  EXPECT_EQ(tx.GetVsize(), 11);
+  EXPECT_EQ(tx.GetWeight(), 44);
+#else
   EXPECT_EQ(tx.GetTotalSize(), 10);
   EXPECT_EQ(tx.GetVsize(), 10);
   EXPECT_EQ(tx.GetWeight(), 40);
+#endif  // CFD_DISABLE_ELEMENTS
 }
 
 TEST(AbstractTransaction, TxArray) {
   std::vector<AbstractTransaction*> vector_info;
   TestTransaction tx;
   EXPECT_NO_THROW((vector_info.push_back(&tx)));
+}
+
+TEST(AbstractTransaction, IsCoinBase) {
+  TestTransaction tx;
+  bool is_coinbase = false;
+  EXPECT_NO_THROW((is_coinbase = tx.IsCoinBase()));
+  EXPECT_FALSE(is_coinbase);
 }
 
