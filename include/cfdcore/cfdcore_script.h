@@ -968,12 +968,12 @@ class CFD_CORE_EXPORT ScriptUtil {
    * @return Scriptインスタンス
    * @details 下記の内容のScriptを作成する.
    * @code{.unparse}
-   * OP_n <pubkey> ... OP_<requireSigNum> OP_CHECKMULTISIG
+   * OP_<requireSigNum> <pubkey> ... OP_n OP_CHECKMULTISIG
    * @endcode
    */
   static Script CreateMultisigRedeemScript(
       uint32_t require_sig_num, const std::vector<Pubkey>& pubkeys);
-
+#ifndef CFD_DISABLE_ELEMENTS
   /**
    * @brief Pegoutのlocking scriptを作成する.
    * @param[in] genesisblock_hash mainchainのgenesisblock hash
@@ -988,6 +988,7 @@ class CFD_CORE_EXPORT ScriptUtil {
   static Script CreatePegoutLogkingScript(
       const BlockHash& genesisblock_hash, const Script& parent_locking_script,
       const Pubkey& btc_pubkey_bytes, const ByteData& whitelist_proof);
+#endif  // CFD_DISABLE_ELEMENTS
 
  private:
   ScriptUtil();

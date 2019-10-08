@@ -957,6 +957,10 @@ Script ScriptBuilder::Build() {
   return Script(data);
 }
 
+// -----------------------------------------------------------------------------
+// ScriptUtil
+// -----------------------------------------------------------------------------
+
 // <pubkey> OP_CHECKSIG
 Script ScriptUtil::CreateP2pkLockingScript(const Pubkey& pubkey) {
   // script作成
@@ -1107,6 +1111,7 @@ Script ScriptUtil::CreateMultisigRedeemScript(
   return redeem_script;
 }
 
+#ifndef CFD_DISABLE_ELEMENTS
 Script ScriptUtil::CreatePegoutLogkingScript(
     const BlockHash& genesisblock_hash, const Script& parent_locking_script,
     const Pubkey& btc_pubkey_bytes, const ByteData& whitelist_proof) {
@@ -1122,6 +1127,7 @@ Script ScriptUtil::CreatePegoutLogkingScript(
   Script locking_script = builder.Build();
   return locking_script;
 }
+#endif  // CFD_DISABLE_ELEMENTS
 
 }  // namespace core
 }  // namespace cfd
