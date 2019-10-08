@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
 #include <vector>
 
+#include "wally_core.h"
+#include "wally_transaction.h"
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_util.h"
@@ -16,13 +18,20 @@ using cfd::core::TxOutReference;
 using cfd::core::ByteData;
 using cfd::core::Amount;
 using cfd::core::CfdException;
+using cfd::core::CfdError;
 using cfd::core::ByteData256;
 using cfd::core::StringUtil;
 
 class TestTransaction : public AbstractTransaction {
  public:
   TestTransaction() {
-    // do nothing
+    struct wally_tx *tx_pointer = NULL;
+    int ret = wally_tx_init_alloc(2, 0, 0, 0, &tx_pointer);
+    if (ret != WALLY_OK) {
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError, "transaction data generate error.");
+    }
+    wally_tx_pointer_ = tx_pointer;
   }
   virtual ~TestTransaction() {
     // do nothing
@@ -301,7 +310,7 @@ TEST(AbstractTransaction, CopyVariableBuffer) {
 }
 
 TEST(AbstractTransaction, TxSizeByException) {
-  Transaction tx;
+  TestTransaction tx;
   EXPECT_EQ(tx.GetTotalSize(), 10);
   EXPECT_EQ(tx.GetVsize(), 10);
   EXPECT_EQ(tx.GetWeight(), 40);
