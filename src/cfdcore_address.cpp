@@ -925,15 +925,11 @@ AddressFormatData Address::GetTargetFormatData(
 }
 
 Script Address::GetLockingScript() const {
-  ScriptBuilder builder;
+  Script locking_script;
   switch (addr_type_) {
     case AddressType::kP2pkhAddress: {
       ByteData160 pubkey_hash(hash_.GetBytes());
-      builder.AppendOperator(ScriptOperator::OP_DUP);
-      builder.AppendOperator(ScriptOperator::OP_HASH160);
-      builder.AppendData(pubkey_hash);
-      builder.AppendOperator(ScriptOperator::OP_EQUALVERIFY);
-      builder.AppendOperator(ScriptOperator::OP_CHECKSIG);
+      locking_script = ScriptUtil::CreateP2pkhLockingScript(pubkey_hash);
       break;
     }
     case AddressType::kP2shP2wpkhAddress:
@@ -942,27 +938,23 @@ Script Address::GetLockingScript() const {
       // fall-through
     case AddressType::kP2shAddress: {
       ByteData160 script_hash(hash_.GetBytes());
-      builder.AppendOperator(ScriptOperator::OP_HASH160);
-      builder.AppendData(script_hash);
-      builder.AppendOperator(ScriptOperator::OP_EQUAL);
+      locking_script = ScriptUtil::CreateP2shLockingScript(script_hash);
       break;
     }
     case AddressType::kP2wpkhAddress: {
       ByteData160 pubkey_hash(hash_.GetBytes());
-      builder.AppendOperator(ScriptOperator::OP_0);
-      builder.AppendData(pubkey_hash);
+      locking_script = ScriptUtil::CreateP2wpkhLockingScript(pubkey_hash);
       break;
     }
     case AddressType::kP2wshAddress: {
       ByteData256 script_hash(hash_.GetBytes());
-      builder.AppendOperator(ScriptOperator::OP_0);
-      builder.AppendData(script_hash);
+      locking_script = ScriptUtil::CreateP2wshLockingScript(script_hash);
       break;
     }
     default:
       break;
   }
-  return builder.Build();
+  return locking_script;
 }
 
 }  // namespace core
