@@ -862,6 +862,9 @@ class CFD_CORE_EXPORT ScriptBuilder {
   std::vector<uint8_t> script_byte_array_;  ///< byte array
 };
 
+/**
+ * @brief Scriptを作成する関数群クラス
+ */
 class CFD_CORE_EXPORT ScriptUtil {
  public:
   /**
@@ -980,10 +983,10 @@ class CFD_CORE_EXPORT ScriptUtil {
    * @param[in] parent_locking_script 送り先 bitcoin address の locking script
    * @param[in] btc_pubkey_bytes DerivePubTweak関数で作られたpubkey情報
    * @param[in] whitelist_proof whitelistの証明
-   * @code{.unparse}
-   * OP_RETURN <genesis block hash> <bitcoin address lockingScript>
-   *     <tweaked pubkey bytes> <whitelistproof>
    * @return Scriptインスタンス
+   * @code{.unparse}
+   * OP_RETURN <genesis block hash> <bitcoin address lockingScript> <tweaked pubkey bytes> <whitelistproof>
+   * @endcode
    */
   static Script CreatePegoutLogkingScript(
       const BlockHash& genesisblock_hash, const Script& parent_locking_script,
