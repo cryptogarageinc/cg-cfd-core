@@ -255,6 +255,16 @@ class CFD_CORE_EXPORT ConfidentialTxIn : public AbstractTxIn {
  public:
   /**
    * @brief コンストラクタ.
+   */
+  ConfidentialTxIn();
+  /**
+   * @brief コンストラクタ.
+   * @param[in] txid        txid
+   * @param[in] index       txidのトランザクションのTxOutのIndex情報(vout)
+   */
+  ConfidentialTxIn(const Txid& txid, uint32_t index);
+  /**
+   * @brief コンストラクタ.
    * @param[in] txid        txid
    * @param[in] index       txidのトランザクションのTxOutのIndex情報(vout)
    * @param[in] sequence    sequence情報

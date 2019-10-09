@@ -396,6 +396,30 @@ std::string BlindFactor::GetHex() const {
 // -----------------------------------------------------------------------------
 // ConfidentialTxIn
 // -----------------------------------------------------------------------------
+ConfidentialTxIn::ConfidentialTxIn()
+    : AbstractTxIn(Txid(), 0, 0),
+      blinding_nonce_(),
+      asset_entropy_(),
+      issuance_amount_(),
+      inflation_keys_(),
+      issuance_amount_rangeproof_(),
+      inflation_keys_rangeproof_(),
+      pegin_witness_() {
+  // do nothing
+}
+
+ConfidentialTxIn::ConfidentialTxIn(const Txid &txid, uint32_t index)
+    : AbstractTxIn(txid, index, 0),
+      blinding_nonce_(),
+      asset_entropy_(),
+      issuance_amount_(),
+      inflation_keys_(),
+      issuance_amount_rangeproof_(),
+      inflation_keys_rangeproof_(),
+      pegin_witness_() {
+  // do nothing
+}
+
 ConfidentialTxIn::ConfidentialTxIn(
     const Txid &txid, uint32_t index, uint32_t sequence)
     : AbstractTxIn(txid, index, sequence),
