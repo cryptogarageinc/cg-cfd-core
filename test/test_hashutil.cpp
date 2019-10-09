@@ -13,12 +13,12 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::HashUtil;
-using cfdcore::Pubkey;
-using cfdcore::Script;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::HashUtil;
+using cfd::core::Pubkey;
+using cfd::core::Script;
 
 // Hash tool
 // https://bc-2.jp/tools/txeditor2.html
@@ -48,7 +48,7 @@ TEST(HashUtil, Hash160BytesException) {
   try {
     std::vector<uint8_t> target;
     ByteData160 byte_data = HashUtil::Hash160(target);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "hash160 calc error.");
     return;
   }
@@ -116,7 +116,7 @@ TEST(HashUtil, Sha256BytesException) {
   try {
     std::vector<uint8_t> target;
     ByteData256 byte_data = HashUtil::Sha256(target);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "sha256 calc error.");
     return;
   }
@@ -189,7 +189,7 @@ TEST(HashUtil, Sha256DBytesException) {
   try {
     std::vector<uint8_t> target;
     ByteData256 byte_data = HashUtil::Sha256D(target);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "sha256d calc error.");
     return;
   }
@@ -262,7 +262,7 @@ TEST(HashUtil, Sha512BytesException) {
   try {
     std::vector<uint8_t> target;
     ByteData byte_data = HashUtil::Sha512(target);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "sha512 calc error.");
     return;
   }

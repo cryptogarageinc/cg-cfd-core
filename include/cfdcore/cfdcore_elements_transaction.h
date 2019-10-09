@@ -9,15 +9,15 @@
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ELEMENTS_TRANSACTION_H_
 #ifndef CFD_DISABLE_ELEMENTS
 
+#include <cstddef>
 #include <string>
 #include <vector>
+
 #include "cfdcore/cfdcore_elements_address.h"
 #include "cfdcore/cfdcore_transaction_common.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief nonce情報を保持するクラス
@@ -1155,10 +1155,10 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
       uint32_t txin_index, const ByteData& script_data,
       SigHashType sighash_type, const ByteData& value, bool is_witness);
   /**
-   * @brief TxOutの順序をランダム化する.
+   * @brief TxOutの順序をランダムソートする.
    * @details ブラインド前のみ実施可能.
    */
-  void RandomizeTxOut();
+  void RandomSortTxOut();
 
   /**
    * @brief witness情報のみのHashを取得する.
@@ -1404,7 +1404,8 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
       const std::string& bitcoin_descriptor, const ByteData& prefix);
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_DISABLE_ELEMENTS
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_ELEMENTS_TRANSACTION_H_

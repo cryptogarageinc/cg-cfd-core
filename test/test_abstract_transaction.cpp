@@ -1,28 +1,37 @@
 #include "gtest/gtest.h"
 #include <vector>
 
+#include "wally_core.h"
+#include "wally_transaction.h"
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_util.h"
 #include "cfdcore/cfdcore_transaction_common.h"
 #include "cfdcore/cfdcore_transaction.h"
 
-using cfdcore::AbstractTransaction;
-using cfdcore::Transaction;
-using cfdcore::Script;
-using cfdcore::Txid;
-using cfdcore::TxInReference;
-using cfdcore::TxOutReference;
-using cfdcore::ByteData;
-using cfdcore::Amount;
-using cfdcore::CfdException;
-using cfdcore::ByteData256;
-using cfdcore::StringUtil;
+using cfd::core::AbstractTransaction;
+using cfd::core::Transaction;
+using cfd::core::Script;
+using cfd::core::Txid;
+using cfd::core::TxInReference;
+using cfd::core::TxOutReference;
+using cfd::core::ByteData;
+using cfd::core::Amount;
+using cfd::core::CfdException;
+using cfd::core::CfdError;
+using cfd::core::ByteData256;
+using cfd::core::StringUtil;
 
 class TestTransaction : public AbstractTransaction {
  public:
   TestTransaction() {
-    // do nothing
+    struct wally_tx *tx_pointer = NULL;
+    int ret = wally_tx_init_alloc(2, 0, 0, 0, &tx_pointer);
+    if (ret != WALLY_OK) {
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError, "transaction data generate error.");
+    }
+    wally_tx_pointer_ = tx_pointer;
   }
   virtual ~TestTransaction() {
     // do nothing
@@ -302,14 +311,29 @@ TEST(AbstractTransaction, CopyVariableBuffer) {
 
 TEST(AbstractTransaction, TxSizeByException) {
   TestTransaction tx;
-  EXPECT_THROW(tx.GetTotalSize(), CfdException);
-  EXPECT_THROW(tx.GetVsize(), CfdException);
-  EXPECT_THROW(tx.GetWeight(), CfdException);
+  // input/output共に0個の場合、libwallyがElementsTransactionと誤認してしまう。
+  // そのためElementsの有効無効に合わせてテスト結果を変えてチェックする。
+#ifndef CFD_DISABLE_ELEMENTS
+  EXPECT_EQ(tx.GetTotalSize(), 11);
+  EXPECT_EQ(tx.GetVsize(), 11);
+  EXPECT_EQ(tx.GetWeight(), 44);
+#else
+  EXPECT_EQ(tx.GetTotalSize(), 10);
+  EXPECT_EQ(tx.GetVsize(), 10);
+  EXPECT_EQ(tx.GetWeight(), 40);
+#endif  // CFD_DISABLE_ELEMENTS
 }
 
 TEST(AbstractTransaction, TxArray) {
   std::vector<AbstractTransaction*> vector_info;
   TestTransaction tx;
   EXPECT_NO_THROW((vector_info.push_back(&tx)));
+}
+
+TEST(AbstractTransaction, IsCoinBase) {
+  TestTransaction tx;
+  bool is_coinbase = false;
+  EXPECT_NO_THROW((is_coinbase = tx.IsCoinBase()));
+  EXPECT_FALSE(is_coinbase);
 }
 

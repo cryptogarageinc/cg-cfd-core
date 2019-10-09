@@ -9,10 +9,8 @@
 
 #include "cfdcore/cfdcore_common.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief ログ出力用の関数ポインタを設定する。
@@ -31,6 +29,7 @@ CFD_CORE_API void InitializeLogger(void);
  */
 CFD_CORE_API void FinalizeLogger(bool is_finish_process = false);
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_LOGGER_INTERFACE_H_

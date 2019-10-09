@@ -8,36 +8,36 @@
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_util.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::BlindFactor;
-using cfdcore::Amount;
-using cfdcore::Txid;
-using cfdcore::Pubkey;
-using cfdcore::Privkey;
-using cfdcore::NetType;
-using cfdcore::SigHashType;
-using cfdcore::SigHashAlgorithm;
-using cfdcore::HashUtil;
-using cfdcore::Script;
-using cfdcore::ScriptOperator;
-using cfdcore::ScriptBuilder;
-using cfdcore::ScriptWitness;
-using cfdcore::ConfidentialValue;
-using cfdcore::ConfidentialAssetId;
-using cfdcore::ConfidentialNonce;
-using cfdcore::ConfidentialTxIn;
-using cfdcore::ConfidentialTxInReference;
-using cfdcore::ConfidentialTxOut;
-using cfdcore::ConfidentialTxOutReference;
-using cfdcore::ConfidentialTransaction;
-using cfdcore::IssuanceParameter;
-using cfdcore::IssuanceBlindingKeyPair;
-using cfdcore::BlindParameter;
-using cfdcore::UnblindParameter;
-using cfdcore::PegoutKeyData;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::BlindFactor;
+using cfd::core::Amount;
+using cfd::core::Txid;
+using cfd::core::Pubkey;
+using cfd::core::Privkey;
+using cfd::core::NetType;
+using cfd::core::SigHashType;
+using cfd::core::SigHashAlgorithm;
+using cfd::core::HashUtil;
+using cfd::core::Script;
+using cfd::core::ScriptOperator;
+using cfd::core::ScriptBuilder;
+using cfd::core::ScriptWitness;
+using cfd::core::ConfidentialValue;
+using cfd::core::ConfidentialAssetId;
+using cfd::core::ConfidentialNonce;
+using cfd::core::ConfidentialTxIn;
+using cfd::core::ConfidentialTxInReference;
+using cfd::core::ConfidentialTxOut;
+using cfd::core::ConfidentialTxOutReference;
+using cfd::core::ConfidentialTransaction;
+using cfd::core::IssuanceParameter;
+using cfd::core::IssuanceBlindingKeyPair;
+using cfd::core::BlindParameter;
+using cfd::core::UnblindParameter;
+using cfd::core::PegoutKeyData;
 
 static const std::string exp_tx_hex =
     "020000000001319bff5f4311e6255ecf4dd472650a6ef85fde7d11cd10d3e6ba5974174aeb560100000000ffffffff0201f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f0100000bd2cc1584c002deb65cc52301e1622f482a2f588b9800d2b8386ffabf74d6b2d73d17503a2f921976a9146a98a3f2935718df72518c00768ec67c589e0b2888ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f0100000000004c4b40000000000000";
@@ -866,12 +866,12 @@ TEST(ConfidentialTransaction, SetAssetReissuanceTest) {
   }
 }
 
-TEST(ConfidentialTransaction, RandomizeTxOutTest) {
+TEST(ConfidentialTransaction, RandomSortTxOutTest) {
   // out: value, fee
   ConfidentialTransaction tx(
       "0200000001017f3da365db9401a4d3facf68d2ccb6372bb714491987e5d035d2b474721078c601000000171600149a417c11cb67e1dc522997f07e1ff89e960d5ff1fdffffff020135e7a177b434ee0799be6dcffc945a1d892f2e0fdfc5975ba0f80d3bdbab9c84010000000002f9c1ec0017a914c9cbab5b0f3430e824b1961bf8e876be43d3fee0870135e7a177b434ee0799be6dcffc945a1d892f2e0fdfc5975ba0f80d3bdbab9c8401000000000000e07400000000000000000247304402207ab059e55e3e4337e88e1a6db00b7549110065eb5770880b1081dcdcdcf1c9a402207a3a0bc7d0d40661f54eff63c67838260a489984138d24eeee04b689f393bf2e012103753cff6c6123d25d99a3d02dc050a2c6b3ea40bcc04029c4330a4d30cb5390770000000000");
 
-  EXPECT_NO_THROW((tx.RandomizeTxOut()));
+  EXPECT_NO_THROW((tx.RandomSortTxOut()));
 }
 
 TEST(ConfidentialTransaction, CalculateIssuanceValueTest) {

@@ -15,12 +15,10 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_logger_interface.h"
 
+namespace cfd {
+namespace core {
 /**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
-/**
- * @brief cfdcore::logger名前空間
+ * @brief cfd::core::logger名前空間
  */
 namespace logger {
 
@@ -53,7 +51,7 @@ typedef enum {
  * @retval true   有効
  * @retval false  無効
  */
-CFD_CORE_API bool IsEnableLogLevel(cfdcore::logger::CfdLogLevel level);
+CFD_CORE_API bool IsEnableLogLevel(cfd::core::logger::CfdLogLevel level);
 /**
  * @brief ログを書き込みます。
  * @param[in] log_message     ログ出力情報
@@ -69,9 +67,9 @@ CFD_CORE_API void WriteLog(const spdlog::details::log_msg &log_message);
  */
 template <typename... Args>
 void log(
-    spdlog::source_loc source, cfdcore::logger::CfdLogLevel lvl,
+    spdlog::source_loc source, cfd::core::logger::CfdLogLevel lvl,
     const char *fmt, const Args &... args) {
-  if (cfdcore::logger::IsEnableLogLevel(lvl)) {
+  if (cfd::core::logger::IsEnableLogLevel(lvl)) {
     using spdlog::details::fmt_helper::to_string_view;
     fmt::memory_buffer buf;
     fmt::format_to(buf, fmt, args...);
@@ -82,7 +80,7 @@ void log(
 
     // 書き込みは下回りで行う。
     // spdlogのヘッダを使うのは致し方なし
-    cfdcore::logger::WriteLog(log_msg);
+    cfd::core::logger::WriteLog(log_msg);
   }
 }
 
@@ -94,7 +92,8 @@ void log(
  */
 template <typename... Args>
 void log(
-    cfdcore::logger::CfdLogLevel lvl, const char *fmt, const Args &... args) {
+    cfd::core::logger::CfdLogLevel lvl, const char *fmt,
+    const Args &... args) {
   log(spdlog::source_loc{}, lvl, fmt, args...);
 }
 
@@ -117,7 +116,7 @@ void trace(spdlog::source_loc source, const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void debug(spdlog::source_loc source, const char *fmt, const Args &... args) {
-  log(source, cfdcore::logger::kCfdLogLevelDebug, fmt, args...);
+  log(source, cfd::core::logger::kCfdLogLevelDebug, fmt, args...);
 }
 
 /**
@@ -128,7 +127,7 @@ void debug(spdlog::source_loc source, const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void info(spdlog::source_loc source, const char *fmt, const Args &... args) {
-  log(source, cfdcore::logger::kCfdLogLevelInfo, fmt, args...);
+  log(source, cfd::core::logger::kCfdLogLevelInfo, fmt, args...);
 }
 
 /**
@@ -139,7 +138,7 @@ void info(spdlog::source_loc source, const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void warn(spdlog::source_loc source, const char *fmt, const Args &... args) {
-  log(source, cfdcore::logger::kCfdLogLevelWarning, fmt, args...);
+  log(source, cfd::core::logger::kCfdLogLevelWarning, fmt, args...);
 }
 
 /**
@@ -150,7 +149,7 @@ void warn(spdlog::source_loc source, const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void error(spdlog::source_loc source, const char *fmt, const Args &... args) {
-  log(source, cfdcore::logger::kCfdLogLevelError, fmt, args...);
+  log(source, cfd::core::logger::kCfdLogLevelError, fmt, args...);
 }
 
 /**
@@ -162,7 +161,7 @@ void error(spdlog::source_loc source, const char *fmt, const Args &... args) {
 template <typename... Args>
 void critical(
     spdlog::source_loc source, const char *fmt, const Args &... args) {
-  log(source, cfdcore::logger::kCfdLogLevelCritical, fmt, args...);
+  log(source, cfd::core::logger::kCfdLogLevelCritical, fmt, args...);
 }
 
 /**
@@ -172,7 +171,8 @@ void critical(
  */
 template <typename... Args>
 void trace(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelTrace, fmt, args...);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelTrace, fmt,
+      args...);
 }
 
 /**
@@ -182,7 +182,8 @@ void trace(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void debug(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelDebug, fmt, args...);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelDebug, fmt,
+      args...);
 }
 
 /**
@@ -192,7 +193,7 @@ void debug(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void info(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelInfo, fmt, args...);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelInfo, fmt, args...);
 }
 
 /**
@@ -202,7 +203,7 @@ void info(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void warn(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelWarning, fmt,
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelWarning, fmt,
       args...);
 }
 
@@ -213,7 +214,8 @@ void warn(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void error(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelError, fmt, args...);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelError, fmt,
+      args...);
 }
 
 /**
@@ -223,7 +225,7 @@ void error(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void critical(const char *fmt, const Args &... args) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelCritical, fmt,
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelCritical, fmt,
       args...);
 }
 
@@ -235,9 +237,9 @@ void critical(const char *fmt, const Args &... args) {
  */
 template <typename... Args>
 void log(
-    spdlog::source_loc source, cfdcore::logger::CfdLogLevel lvl,
+    spdlog::source_loc source, cfd::core::logger::CfdLogLevel lvl,
     const char *fmt) {
-  if (cfdcore::logger::IsEnableLogLevel(lvl)) {
+  if (cfd::core::logger::IsEnableLogLevel(lvl)) {
     using spdlog::details::fmt_helper::to_string_view;
     fmt::memory_buffer buf;
     fmt::format_to(buf, fmt);
@@ -248,7 +250,7 @@ void log(
 
     // 書き込みは下回りで行う。
     // spdlogのヘッダを使うのは致し方なし
-    cfdcore::logger::WriteLog(log_msg);
+    cfd::core::logger::WriteLog(log_msg);
   }
 }
 
@@ -259,7 +261,7 @@ void log(
  */
 template <typename T>
 void trace(spdlog::source_loc source, const T &msg) {
-  log(source, cfdcore::logger::kCfdLogLevelTrace, msg);
+  log(source, cfd::core::logger::kCfdLogLevelTrace, msg);
 }
 
 /**
@@ -269,7 +271,7 @@ void trace(spdlog::source_loc source, const T &msg) {
  */
 template <typename T>
 void debug(spdlog::source_loc source, const T &msg) {
-  log(source, cfdcore::logger::kCfdLogLevelDebug, msg);
+  log(source, cfd::core::logger::kCfdLogLevelDebug, msg);
 }
 
 /**
@@ -279,7 +281,7 @@ void debug(spdlog::source_loc source, const T &msg) {
  */
 template <typename T>
 void info(spdlog::source_loc source, const T &msg) {
-  log(source, cfdcore::logger::kCfdLogLevelInfo, msg);
+  log(source, cfd::core::logger::kCfdLogLevelInfo, msg);
 }
 
 /**
@@ -289,7 +291,7 @@ void info(spdlog::source_loc source, const T &msg) {
  */
 template <typename T>
 void warn(spdlog::source_loc source, const T &msg) {
-  log(source, cfdcore::logger::kCfdLogLevelWarning, msg);
+  log(source, cfd::core::logger::kCfdLogLevelWarning, msg);
 }
 
 /**
@@ -299,7 +301,7 @@ void warn(spdlog::source_loc source, const T &msg) {
  */
 template <typename T>
 void error(spdlog::source_loc source, const T &msg) {
-  log(source, cfdcore::logger::kCfdLogLevelError, msg);
+  log(source, cfd::core::logger::kCfdLogLevelError, msg);
 }
 
 /**
@@ -309,7 +311,7 @@ void error(spdlog::source_loc source, const T &msg) {
  */
 template <typename T>
 void critical(spdlog::source_loc source, const T &msg) {
-  log(source, cfdcore::logger::kCfdLogLevelCritical, msg);
+  log(source, cfd::core::logger::kCfdLogLevelCritical, msg);
 }
 
 /**
@@ -318,7 +320,7 @@ void critical(spdlog::source_loc source, const T &msg) {
  */
 template <typename T>
 void trace(const T &msg) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelTrace, msg);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelTrace, msg);
 }
 
 /**
@@ -327,7 +329,7 @@ void trace(const T &msg) {
  */
 template <typename T>
 void debug(const T &msg) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelDebug, msg);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelDebug, msg);
 }
 
 /**
@@ -336,7 +338,7 @@ void debug(const T &msg) {
  */
 template <typename T>
 void info(const T &msg) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelInfo, msg);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelInfo, msg);
 }
 
 /**
@@ -345,7 +347,7 @@ void info(const T &msg) {
  */
 template <typename T>
 void warn(const T &msg) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelWarning, msg);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelWarning, msg);
 }
 
 /**
@@ -354,7 +356,7 @@ void warn(const T &msg) {
  */
 template <typename T>
 void error(const T &msg) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelError, msg);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelError, msg);
 }
 
 /**
@@ -363,7 +365,7 @@ void error(const T &msg) {
  */
 template <typename T>
 void critical(const T &msg) {
-  log(spdlog::source_loc{}, cfdcore::logger::kCfdLogLevelCritical, msg);
+  log(spdlog::source_loc{}, cfd::core::logger::kCfdLogLevelCritical, msg);
 }
 
 /**
@@ -383,7 +385,7 @@ class CfdLogger {
    * @brief 初期化処理を行う。
    * @return エラーコード
    */
-  cfdcore::CfdError Initialize(void);
+  cfd::core::CfdError Initialize(void);
   /**
    * @brief 終了処理を行う。
    * @param[in] is_finish_process プロセス終了するかどうか
@@ -399,7 +401,7 @@ class CfdLogger {
    * @param[in] level ログレベル
    * @return ログ出力有無
    */
-  bool IsEnableLogLevel(cfdcore::logger::CfdLogLevel level);
+  bool IsEnableLogLevel(cfd::core::logger::CfdLogLevel level);
   /**
    * @brief ログを出力する。
    * @param[in] log_message ログメッセージ
@@ -411,7 +413,7 @@ class CfdLogger {
   bool is_alive_ = false;
 
   /// ログレベル
-  cfdcore::logger::CfdLogLevel log_level_ = kCfdLogLevelOff;
+  cfd::core::logger::CfdLogLevel log_level_ = kCfdLogLevelOff;
 
   /// 初期化済みかどうか
   bool is_initialized_ = false;
@@ -433,6 +435,7 @@ class CfdLogger {
 };
 
 }  // namespace logger
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_SRC_INCLUDE_CFDCORE_CFDCORE_LOGGER_H_

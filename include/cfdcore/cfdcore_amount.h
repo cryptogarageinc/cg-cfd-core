@@ -14,9 +14,13 @@
 #include "cfdcore/cfdcore_common.h"
 
 /**
- * @brief cfdcore名前空間
+ * @brief cfd名前空間
  */
-namespace cfdcore {
+namespace cfd {
+/**
+ * @brief cfd::core名前空間
+ */
+namespace core {
 
 /**
  * @brief BitcoinのAmountを表現するクラス
@@ -263,6 +267,7 @@ CFD_CORE_EXPORT Amount operator*(const int64_t value, const Amount &amount);
  */
 CFD_CORE_EXPORT Amount operator/(const Amount &amount, const int64_t value);
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_AMOUNT_H_

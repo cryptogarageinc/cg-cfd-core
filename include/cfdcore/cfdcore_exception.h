@@ -22,10 +22,8 @@
 #define _GLIBCXX_USE_NOEXCEPT noexcept
 #endif
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief エラーコード定義
@@ -162,7 +160,8 @@ class InvalidScriptException : public CfdException {
   }
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // __cplusplus
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_EXCEPTION_H_

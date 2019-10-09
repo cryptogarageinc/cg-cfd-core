@@ -18,7 +18,8 @@
 #include "cfdcore/cfdcore_util.h"
 #include "cfdcore_wally_util.h"  // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 using logger::warn;
@@ -214,6 +215,7 @@ bool ContractHashUtil::CheckLiquidV1Watchman(const Script& script) {
   }
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_DISABLE_ELEMENTS

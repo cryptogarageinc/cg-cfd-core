@@ -7,9 +7,9 @@
 
 #include "cfdcore/cfdcore_transaction_common.h"
 
-using cfdcore::Amount;
-using cfdcore::AbstractTxOut;
-using cfdcore::Script;
+using cfd::core::Amount;
+using cfd::core::AbstractTxOut;
+using cfd::core::Script;
 
 const Amount expect_value = Amount::CreateByCoinAmount(0.5);
 const std::string expect_script_hex =

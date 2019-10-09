@@ -23,7 +23,8 @@
 #include "wally_transaction.h"   // NOLINT
 // #include "wally_script.h" // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 using logger::warn;
@@ -2179,7 +2180,7 @@ ByteData256 ConfidentialTransaction::GetElementsSignatureHash(
   return ByteData256(buffer);
 }
 
-void ConfidentialTransaction::RandomizeTxOut() {
+void ConfidentialTransaction::RandomSortTxOut() {
   const std::vector<ConfidentialTxOutReference> &txout_list = GetTxOutList();
   // blind check
   for (size_t index = 0; index < txout_list.size(); ++index) {
@@ -2843,6 +2844,7 @@ void ConfidentialTransaction::CheckTxOutIndex(
   }
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_DISABLE_ELEMENTS

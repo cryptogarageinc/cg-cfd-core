@@ -7,10 +7,10 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_bytedata.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::ByteData256;
-using cfdcore::BlockHash;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::ByteData256;
+using cfd::core::BlockHash;
 
 TEST(BlockHash, Constractor_hex) {
   // empty

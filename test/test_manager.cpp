@@ -5,13 +5,13 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore_manager.h"   // NOLINT
 
-using cfdcore::CfdException;
-using cfdcore::CfdCoreHandle;
-using cfdcore::Initialize;
-using cfdcore::Finalize;
-using cfdcore::GetSupportedFunction;
-using cfdcore::CfdCoreManager;
-using cfdcore::LibraryFunction;
+using cfd::core::CfdException;
+using cfd::core::CfdCoreHandle;
+using cfd::core::Initialize;
+using cfd::core::Finalize;
+using cfd::core::GetSupportedFunction;
+using cfd::core::CfdCoreManager;
+using cfd::core::LibraryFunction;
 
 class CfdCoreManagerFinalizedTest : public CfdCoreManager {
  public:

@@ -4,13 +4,13 @@
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_logger.h"
 
-using cfdcore::logger::IsEnableLogLevel;
-using cfdcore::logger::WriteLog;
-using cfdcore::logger::CfdLogLevel;
-using cfdcore::logger::CfdLogger;
-using cfdcore::InitializeLogger;
-using cfdcore::FinalizeLogger;
-using cfdcore::SetLogger;
+using cfd::core::logger::IsEnableLogLevel;
+using cfd::core::logger::WriteLog;
+using cfd::core::logger::CfdLogLevel;
+using cfd::core::logger::CfdLogger;
+using cfd::core::InitializeLogger;
+using cfd::core::FinalizeLogger;
+using cfd::core::SetLogger;
 using spdlog::details::log_msg;
 
 TEST(CfdLogger, IsEnableLogLevel) {

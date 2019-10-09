@@ -8,8 +8,10 @@
 #ifndef CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_COMMON_H_
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_COMMON_H_
 
+#include <cstddef>
 #include <string>
 #include <vector>
+
 #include "cfdcore/cfdcore_address.h"
 #include "cfdcore/cfdcore_amount.h"
 #include "cfdcore/cfdcore_bytedata.h"
@@ -18,10 +20,8 @@
 #include "cfdcore/cfdcore_script.h"
 #include "cfdcore/cfdcore_util.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief ハッシュ種別定義
@@ -593,6 +593,7 @@ class CFD_CORE_EXPORT SignatureUtil {
   // constructor抑止
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_TRANSACTION_COMMON_H_

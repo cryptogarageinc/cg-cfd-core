@@ -7,10 +7,10 @@
 
 #include "cfdcore/cfdcore_transaction.h"
 
-using cfdcore::Amount;
-using cfdcore::TxOut;
-using cfdcore::Script;
-using cfdcore::TxOutReference;
+using cfd::core::Amount;
+using cfd::core::TxOut;
+using cfd::core::Script;
+using cfd::core::TxOutReference;
 
 static const Script exp_script = Script(
     "76a914b0f196804dc7584977ff016b3022fac24cf125b688ac");

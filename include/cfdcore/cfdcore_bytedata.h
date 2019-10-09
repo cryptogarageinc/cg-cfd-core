@@ -8,14 +8,14 @@
 #ifndef CFD_CORE_INCLUDE_CFDCORE_CFDCORE_BYTEDATA_H_
 #define CFD_CORE_INCLUDE_CFDCORE_CFDCORE_BYTEDATA_H_
 
+#include <cstddef>
 #include <string>
 #include <vector>
+
 #include "cfdcore/cfdcore_common.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @class ByteData
@@ -231,6 +231,7 @@ class CFD_CORE_EXPORT ByteData256 {
   std::vector<uint8_t> data_;
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_BYTEDATA_H_

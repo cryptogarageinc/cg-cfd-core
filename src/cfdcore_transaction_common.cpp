@@ -17,7 +17,8 @@
 #include "wally_script.h"        // NOLINT
 #include "wally_transaction.h"   // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
@@ -636,4 +637,5 @@ uint8_t *AbstractTransaction::CopyVariableBuffer(
   return bytes_out;
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

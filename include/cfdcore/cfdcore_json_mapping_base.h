@@ -25,10 +25,8 @@
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_logger.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 // -----------------------------------------------------------------------------
 // クラス定義
@@ -138,9 +136,9 @@ template <typename T>
 inline void ConvertFromUniValue(
     T& value, const UniValue& json_value) {  // NOLINT
   if (json_value.isNum()) {
-    using cfdcore::CfdError;
-    using cfdcore::CfdException;
-    using cfdcore::logger::warn;
+    using cfd::core::CfdError;
+    using cfd::core::CfdException;
+    using cfd::core::logger::warn;
     const int64_t num = json_value.get_int64();
     if (std::is_unsigned<T>::value) {
       uint64_t unsigned_num = static_cast<uint64_t>(num);
@@ -541,7 +539,8 @@ class JsonObjectVector : public JsonVector<TYPE> {
   }
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // __cplusplus
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_JSON_MAPPING_BASE_H_

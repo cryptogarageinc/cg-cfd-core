@@ -10,18 +10,18 @@
 #include "cfdcore/cfdcore_coin.h"
 #include "cfdcore/cfdcore_util.h"
 
-using cfdcore::CfdException;
-using cfdcore::ByteData;
-using cfdcore::ByteData256;
-using cfdcore::BlindFactor;
-using cfdcore::Txid;
-using cfdcore::Script;
-using cfdcore::ScriptWitness;
-using cfdcore::ConfidentialValue;
-using cfdcore::ConfidentialAssetId;
-using cfdcore::ConfidentialNonce;
-using cfdcore::ConfidentialTxIn;
-using cfdcore::ConfidentialTxInReference;
+using cfd::core::CfdException;
+using cfd::core::ByteData;
+using cfd::core::ByteData256;
+using cfd::core::BlindFactor;
+using cfd::core::Txid;
+using cfd::core::Script;
+using cfd::core::ScriptWitness;
+using cfd::core::ConfidentialValue;
+using cfd::core::ConfidentialAssetId;
+using cfd::core::ConfidentialNonce;
+using cfd::core::ConfidentialTxIn;
+using cfd::core::ConfidentialTxInReference;
 
 static const Txid exp_txid(
     "56eb4a177459bae6d310cd117dde5ff86e0a6572d44dcf5e25e611435fff9b31");

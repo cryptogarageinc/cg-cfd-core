@@ -13,12 +13,12 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::ByteData;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::RandomNumberUtil;
-using cfdcore::SigHashType;
-using cfdcore::SigHashAlgorithm;
+using cfd::core::ByteData;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::RandomNumberUtil;
+using cfd::core::SigHashType;
+using cfd::core::SigHashAlgorithm;
 
 // GetRandomBytes--------------------------------------------------------------
 TEST(RandomNumberUtil, GetRandomBytes4) {

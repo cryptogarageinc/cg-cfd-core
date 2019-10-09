@@ -16,7 +16,8 @@
 #include "cfdcore_wally_util.h"  // NOLINT
 #include "wally_script.h"        // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::info;
 using logger::warn;
@@ -335,19 +336,11 @@ uint32_t Transaction::GetTotalSize() const {
   size_t length = 0;
   struct wally_tx *tx_pointer =
       static_cast<struct wally_tx *>(wally_tx_pointer_);
+  // input/output共に0個の場合、libwallyがElementsTransactionと誤認してしまう。
   if ((tx_pointer->num_inputs == 0) && (tx_pointer->num_outputs == 0)) {
     length = static_cast<size_t>(kTransactionMinimumSize);
   } else {
-    uint32_t flag = 0;
-    if (HasWitness()) {
-      flag = GetWallyFlag() & WALLY_TX_FLAG_USE_WITNESS;
-    }
-    int ret = wally_tx_get_length(tx_pointer, flag, &length);
-    if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_tx_get_length NG[{}].", ret);
-      throw CfdException(
-          kCfdIllegalStateError, "transaction size calc error.");
-    }
+    length = AbstractTransaction::GetTotalSize();
   }
   return static_cast<uint32_t>(length);
 }
@@ -356,15 +349,11 @@ uint32_t Transaction::GetVsize() const {
   size_t vsize = 0;
   struct wally_tx *tx_pointer =
       static_cast<struct wally_tx *>(wally_tx_pointer_);
+  // input/output共に0個の場合、libwallyがElementsTransactionと誤認してしまう。
   if ((tx_pointer->num_inputs == 0) && (tx_pointer->num_outputs == 0)) {
     vsize = static_cast<size_t>(kTransactionMinimumSize);
   } else {
-    int ret = wally_tx_get_vsize(tx_pointer, &vsize);
-    if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_tx_get_vsize NG[{}].", ret);
-      throw CfdException(
-          kCfdIllegalStateError, "transaction vsize calc error.");
-    }
+    vsize = AbstractTransaction::GetVsize();
   }
   return static_cast<uint32_t>(vsize);
 }
@@ -373,15 +362,11 @@ uint32_t Transaction::GetWeight() const {
   size_t weight = 0;
   struct wally_tx *tx_pointer =
       static_cast<struct wally_tx *>(wally_tx_pointer_);
+  // input/output共に0個の場合、libwallyがElementsTransactionと誤認してしまう。
   if ((tx_pointer->num_inputs == 0) && (tx_pointer->num_outputs == 0)) {
     weight = static_cast<size_t>(kTransactionMinimumSize) * 4;
   } else {
-    int ret = wally_tx_get_weight(tx_pointer, &weight);
-    if (ret != WALLY_OK) {
-      warn(CFD_LOG_SOURCE, "wally_tx_get_weight NG[{}].", ret);
-      throw CfdException(
-          kCfdIllegalStateError, "transaction weight calc error.");
-    }
+    weight = AbstractTransaction::GetWeight();
   }
   return static_cast<uint32_t>(weight);
 }
@@ -776,4 +761,5 @@ void Transaction::CheckTxOutIndex(
   }
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd

@@ -10,10 +10,8 @@
 #include <vector>
 #include "cfdcore/cfdcore_bytedata.h"
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief secp256k1クラス.
@@ -94,5 +92,6 @@ class Secp256k1 {
   void* secp256k1_context_;
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 #endif  // CFD_CORE_SRC_CFDCORE_SECP256K1_H_

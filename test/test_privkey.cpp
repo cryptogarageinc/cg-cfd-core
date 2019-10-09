@@ -11,11 +11,11 @@
 
 // TEST(test_suite_name, test_name)
 
-using cfdcore::ByteData;
-using cfdcore::ByteData256;
-using cfdcore::Privkey;
-using cfdcore::Pubkey;
-using cfdcore::NetType;
+using cfd::core::ByteData;
+using cfd::core::ByteData256;
+using cfd::core::Privkey;
+using cfd::core::Pubkey;
+using cfd::core::NetType;
 
 TEST(Privkey, Privkey) {
   Privkey privkey;
@@ -45,7 +45,7 @@ TEST(Privkey, Privkey_ByteData_Error) {
     ByteData bytedata(
         "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f2701");
     Privkey privkey(bytedata);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "Invalid Privkey data.");
     return;
   }
@@ -66,7 +66,7 @@ TEST(Privkey, Privkey_HexString_Error) {
     std::string hex =
         "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f2701";
     Privkey privkey(hex);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "Invalid Privkey data.");
     return;
   }
@@ -113,7 +113,7 @@ TEST(Privkey, ConvertWif_error) {
   try {
     Privkey privkey;
     std::string wif = privkey.ConvertWif(NetType::kMainnet, false);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "Error Private key to WIF.");
     return;
   }
@@ -148,7 +148,7 @@ TEST(Privkey, FromWif_wif_error) {
   try {
     std::string wif = "91xDetrgFxon9rHyPGKg5U5Kjttn6JGiGZc";
     Privkey privkey = Privkey::FromWif(wif, NetType::kTestnet);
-  } catch (const cfdcore::CfdException &cfd_except) {
+  } catch (const cfd::core::CfdException &cfd_except) {
     EXPECT_STREQ(cfd_except.what(), "Error WIF to Private key.");
     return;
   }

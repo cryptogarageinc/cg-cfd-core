@@ -8,26 +8,26 @@
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_util.h"
 
-using cfdcore::CfdException;
-using cfdcore::ElementsConfidentialAddress;
-using cfdcore::Address;
-using cfdcore::ConfidentialKey;
-using cfdcore::ElementsNetType;
-using cfdcore::ElementsAddressType;
-using cfdcore::Pubkey;
-using cfdcore::ByteData160;
-using cfdcore::ByteData256;
-using cfdcore::ByteData;
-using cfdcore::Script;
-using cfdcore::ScriptOperator;
-using cfdcore::ScriptBuilder;
-using cfdcore::HashUtil;
-using cfdcore::AddressFormatData;
-using cfdcore::GetElementsAddressFormatList;
-using cfdcore::ElementsConfidentialAddress;
-using cfdcore::ElementsNetType;
-using cfdcore::ElementsAddressType;
-using cfdcore::WitnessVersion;
+using cfd::core::CfdException;
+using cfd::core::ElementsConfidentialAddress;
+using cfd::core::Address;
+using cfd::core::ConfidentialKey;
+using cfd::core::ElementsNetType;
+using cfd::core::ElementsAddressType;
+using cfd::core::Pubkey;
+using cfd::core::ByteData160;
+using cfd::core::ByteData256;
+using cfd::core::ByteData;
+using cfd::core::Script;
+using cfd::core::ScriptOperator;
+using cfd::core::ScriptBuilder;
+using cfd::core::HashUtil;
+using cfd::core::AddressFormatData;
+using cfd::core::GetElementsAddressFormatList;
+using cfd::core::ElementsConfidentialAddress;
+using cfd::core::ElementsNetType;
+using cfd::core::ElementsAddressType;
+using cfd::core::WitnessVersion;
 
 TEST(ElementsConfidentialAddress, EmptyAddressTest) {
   ElementsConfidentialAddress empty_address;

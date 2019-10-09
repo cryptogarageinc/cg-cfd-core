@@ -10,12 +10,11 @@
 
 #include <string>
 #include <vector>
-#include "cfdcore/cfdcore_address.h"
-#include "cfdcore/cfdcore_amount.h"
 #include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_common.h"
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief transaction idクラス
@@ -105,6 +104,7 @@ class CFD_CORE_EXPORT BlockHash {
   ByteData data_;  ///< byte data
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_COIN_H_

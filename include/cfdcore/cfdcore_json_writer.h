@@ -12,10 +12,8 @@
 
 #include "univalue.h"  // NOLINT
 
-/**
- * @brief cfdcore名前空間
- */
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 /**
  * @brief Json生成時に利用するクラス。
@@ -318,6 +316,7 @@ class JsonBuilder {
   UniValue root_;  ///< UniValueオブジェクト
 };
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
 
 #endif  // CFD_CORE_INCLUDE_CFDCORE_CFDCORE_JSON_WRITER_H_

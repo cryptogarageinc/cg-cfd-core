@@ -14,14 +14,15 @@
 #include "cfdcore/cfdcore_logger.h"
 #include "cfdcore_wally_util.h"  // NOLINT
 
-namespace cfdcore {
+namespace cfd {
+namespace core {
 
 using logger::warn;
 
 /// empty seed string (64byte)
-static constexpr char kEmptySeedStr[] =
-    "0000000000000000000000000000000000000000000000000000000000000000000000000"
-    "0000000000000000000000000000000000000000000000000000000";  // NOLINT
+static constexpr const char* kEmptySeedStr =
+    "00000000000000000000000000000000000000000000000000000000000000000000000"
+    "000000000000000000000000000000000000000000000000000000000";  // NOLINT
 
 HDWallet::HDWallet() : seed_(ByteData(kEmptySeedStr)) {
   // do nothing
@@ -105,4 +106,5 @@ ByteData HDWallet::ConvertMnemonicToSeed(
       mnemonic, passphrase, use_ideographic_space);
 }
 
-}  // namespace cfdcore
+}  // namespace core
+}  // namespace cfd
