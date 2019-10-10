@@ -164,6 +164,12 @@ AbstractTxOut::AbstractTxOut(const Amount &value, const Script &locking_script)
   // do nothing
 }
 
+AbstractTxOut::AbstractTxOut(const Script &locking_script)
+    : value_(Amount::CreateBySatoshiAmount(0)),
+      locking_script_(locking_script) {
+  // do nothing
+}
+
 const Amount AbstractTxOut::GetValue() const { return value_; }
 
 const Script AbstractTxOut::GetLockingScript() const {

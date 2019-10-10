@@ -56,6 +56,12 @@ static ScriptWitness GetExpectPeginWitnessStack() {
   return exp_pegin_witness;
 }
 
+TEST(ConfidentialTxIn, ConstractorEmpty) {
+  ConfidentialTxIn txin1;
+  EXPECT_EQ(txin1.GetVout(), 0);
+  EXPECT_EQ(txin1.GetSequence(), 0);
+}
+
 TEST(ConfidentialTxIn, Constractor1) {
   ConfidentialTxIn txin1(exp_txid, exp_index, exp_sequence);
   EXPECT_EQ(txin1.GetVout(), exp_index);
@@ -115,6 +121,13 @@ TEST(ConfidentialTxIn, Constractor2) {
   }
   EXPECT_STREQ(txin3.GetWitnessHash().GetHex().c_str(),
     "c91991b67af0a40f5d200ba356b02afd3ae2c37174d0d79707a6bd6f9c69ce8c");
+}
+
+TEST(ConfidentialTxIn, Constractor3) {
+  ConfidentialTxIn txin1(exp_txid, exp_index);
+  EXPECT_EQ(txin1.GetVout(), exp_index);
+  EXPECT_EQ(txin1.GetSequence(), 0);
+  EXPECT_STREQ(txin1.GetTxid().GetHex().c_str(), exp_txid.GetHex().c_str());
 }
 
 TEST(ConfidentialTxIn, SetIssuance) {
