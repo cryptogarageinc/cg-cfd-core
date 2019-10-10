@@ -39,6 +39,13 @@ SigHashType::SigHashType(
   // nothing
 }
 
+SigHashType &SigHashType::operator=(const SigHashType &object) {
+  hash_algorithm_ = object.hash_algorithm_;
+  is_anyone_can_pay_ = object.is_anyone_can_pay_;
+  is_fork_id_ = object.is_fork_id_;
+  return *this;
+}
+
 uint32_t SigHashType::GetSigHashFlag() {
   uint32_t flag = hash_algorithm_;
   if (is_anyone_can_pay_) {
