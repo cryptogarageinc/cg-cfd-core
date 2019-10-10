@@ -5,11 +5,13 @@
 #include "cfdcore/cfdcore_elements_transaction.h"
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_exception.h"
+#include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_bytedata.h"
 
 using cfd::core::CfdException;
 using cfd::core::ByteData;
 using cfd::core::ConfidentialNonce;
+using cfd::core::Pubkey;
 
 TEST(ConfidentialNonce, Constractor) {
   ConfidentialNonce nonce;
@@ -79,6 +81,18 @@ TEST(ConfidentialNonce, Constractor_bytedata33) {
   ByteData bytedata(
       "02c384a78ae89b9600a8d2b4ddb3090ba5dad224ff4b85e6868f2916ca64314ad9");
   ConfidentialNonce nonce(bytedata);
+  EXPECT_STREQ(
+      nonce.GetHex().c_str(),
+      "02c384a78ae89b9600a8d2b4ddb3090ba5dad224ff4b85e6868f2916ca64314ad9");
+  EXPECT_EQ(nonce.GetData().GetDataSize(), 33);
+  EXPECT_EQ(nonce.HasBlinding(), true);
+}
+
+TEST(ConfidentialNonce, Constractor_pubkey) {
+  // 33byte
+  Pubkey pubkey(
+      "02c384a78ae89b9600a8d2b4ddb3090ba5dad224ff4b85e6868f2916ca64314ad9");
+  ConfidentialNonce nonce(pubkey);
   EXPECT_STREQ(
       nonce.GetHex().c_str(),
       "02c384a78ae89b9600a8d2b4ddb3090ba5dad224ff4b85e6868f2916ca64314ad9");
