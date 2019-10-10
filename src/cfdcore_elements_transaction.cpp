@@ -73,10 +73,9 @@ ConfidentialNonce::ConfidentialNonce() : data_(), version_(0) {
 }
 
 ConfidentialNonce::ConfidentialNonce(const std::string &hex_string)
-    : data_(hex_string), version_(kConfidentialVersion_1) {
+    : data_(hex_string), version_(0) {
   switch (data_.GetDataSize()) {
     case 0:
-      // do nothing
       break;
     case kNonceSize: {
       std::vector<uint8_t> bytes;
@@ -128,6 +127,11 @@ ConfidentialNonce::ConfidentialNonce(const ByteData &byte_data)
       throw CfdException(
           CfdError::kCfdIllegalArgumentError, "Nonce size Invalid.");
   }
+}
+
+ConfidentialNonce::ConfidentialNonce(const Pubkey &pubkey)
+    : ConfidentialNonce(pubkey.GetData()) {
+  // do nothing
 }
 
 ByteData ConfidentialNonce::GetData() const { return data_; }
@@ -583,6 +587,41 @@ ConfidentialTxOut::ConfidentialTxOut(
       asset_(asset),
       confidential_value_(confidential_value),
       nonce_(),
+      surjection_proof_(),
+      range_proof_() {
+  // do nothing
+}
+
+ConfidentialTxOut::ConfidentialTxOut(
+    const ConfidentialAssetId &asset, const Amount &amount)
+    : AbstractTxOut(),
+      asset_(asset),
+      confidential_value_(ConfidentialValue(amount)),
+      nonce_(),
+      surjection_proof_(),
+      range_proof_() {
+  // do nothing
+}
+
+ConfidentialTxOut::ConfidentialTxOut(
+    const Address &address, const ConfidentialAssetId &asset,
+    const Amount &amount)
+    : AbstractTxOut(address.GetLockingScript()),
+      asset_(asset),
+      confidential_value_(ConfidentialValue(amount)),
+      nonce_(),
+      surjection_proof_(),
+      range_proof_() {
+  // do nothing
+}
+
+ConfidentialTxOut::ConfidentialTxOut(
+    const ElementsConfidentialAddress &confidential_address,
+    const ConfidentialAssetId &asset, const Amount &amount)
+    : AbstractTxOut(confidential_address.GetLockingScript()),
+      asset_(asset),
+      confidential_value_(ConfidentialValue(amount)),
+      nonce_(confidential_address.GetConfidentialKey()),
       surjection_proof_(),
       range_proof_() {
   // do nothing

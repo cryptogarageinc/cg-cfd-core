@@ -41,6 +41,11 @@ class CFD_CORE_EXPORT ConfidentialNonce {
    */
   explicit ConfidentialNonce(const ByteData& byte_data);
   /**
+   * @brief コンストラクタ.
+   * @param[in] pubkey          pubkey.
+   */
+  explicit ConfidentialNonce(const Pubkey& pubkey);
+  /**
    * @brief デストラクタ.
    */
   virtual ~ConfidentialNonce() {
@@ -544,6 +549,32 @@ class CFD_CORE_EXPORT ConfidentialTxOut : public AbstractTxOut {
   ConfidentialTxOut(
       const ConfidentialAssetId& asset,
       const ConfidentialValue& confidential_value);
+  /**
+   * @brief コンストラクタ.
+   *
+   * fee追加用.
+   * @param[in] asset               asset.
+   * @param[in] amount              amount.
+   */
+  ConfidentialTxOut(const ConfidentialAssetId& asset, const Amount& amount);
+  /**
+   * @brief コンストラクタ.
+   * @param[in] address             address.
+   * @param[in] asset               asset.
+   * @param[in] amount              amount.
+   */
+  ConfidentialTxOut(
+      const Address& address, const ConfidentialAssetId& asset,
+      const Amount& amount);
+  /**
+   * @brief コンストラクタ.
+   * @param[in] confidential_address  confidential address.
+   * @param[in] asset                 asset.
+   * @param[in] amount                amount.
+   */
+  ConfidentialTxOut(
+      const ElementsConfidentialAddress& confidential_address,
+      const ConfidentialAssetId& asset, const Amount& amount);
   /**
    * @brief デストラクタ
    */
