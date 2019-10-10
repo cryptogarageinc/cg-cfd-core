@@ -24,6 +24,13 @@ namespace core {
 using logger::info;
 using logger::warn;
 
+SigHashType::SigHashType()
+    : hash_algorithm_(SigHashAlgorithm::kSigHashAll),
+      is_anyone_can_pay_(false),
+      is_fork_id_(false) {
+  // nothing
+}
+
 SigHashType::SigHashType(
     SigHashAlgorithm algorithm, bool is_anyone_can_pay, bool is_fork_id)
     : hash_algorithm_(algorithm),

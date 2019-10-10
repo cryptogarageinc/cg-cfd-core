@@ -59,6 +59,11 @@ class CFD_CORE_EXPORT SigHashType {
   const uint8_t kSigHashAnyOneCanPay = 0x80;
 
   /**
+   * @brief デフォルトコンストラクタ
+   */
+  SigHashType();
+
+  /**
    * @brief コンストラクタ
    * @param algorithm Sighashアルゴリズム
    * @param is_anyone_can_pay SIGHASH_ANYONECANPAYフラグ有無
