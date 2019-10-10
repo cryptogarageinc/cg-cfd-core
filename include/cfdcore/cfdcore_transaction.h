@@ -40,6 +40,12 @@ class CFD_CORE_EXPORT TxOut : public AbstractTxOut {
    */
   TxOut(const Amount& value, const Script& locking_script);
   /**
+   * @brief コンストラクタ
+   * @param[in] value             amount value.
+   * @param[in] address           out address.
+   */
+  TxOut(const Amount& value, const Address& address);
+  /**
    * @brief デストラクタ
    */
   virtual ~TxOut() {

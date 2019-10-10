@@ -41,6 +41,10 @@ TxOut::TxOut(const Amount &value, const Script &locking_script)
   // do nothing
 }
 
+TxOut::TxOut(const Amount &value, const Address &address)
+    : AbstractTxOut(value, address.GetLockingScript()) {
+  // do nothing
+}
 // -----------------------------------------------------------------------------
 // TxOutReference
 // -----------------------------------------------------------------------------
