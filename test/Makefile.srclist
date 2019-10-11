@@ -39,6 +39,7 @@ TEST_CFDCORE_SOURCES= \
     test_scriptwitness.cpp \
     test_signatureutil.cpp \
     test_randomnumberutil.cpp \
+    test_sighashtype.cpp \
     ${TEST_CFDCORE_ELEMENTS_SOURCES}
 
 TEST_CFDCORE_STATIC_SOURCES= \
