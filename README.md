@@ -1,4 +1,4 @@
-# Crypto Finance Development Kit (CFD)
+# Crypto Finance Development Kit Core (CFD-CORE)
 
 core moduels for cfd libraries
 
