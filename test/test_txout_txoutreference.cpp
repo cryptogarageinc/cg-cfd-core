@@ -7,6 +7,7 @@
 
 #include "cfdcore/cfdcore_transaction.h"
 
+using cfd::core::Address;
 using cfd::core::Amount;
 using cfd::core::TxOut;
 using cfd::core::Script;
@@ -30,6 +31,16 @@ TEST(TxOut, Constractor) {
     EXPECT_EQ(txout.GetLockingScript().IsEmpty(), false);
     EXPECT_STREQ(txout.GetLockingScript().GetHex().c_str(),
                  exp_script.GetHex().c_str());
+  }
+
+  {
+    int64_t satoshi = 1000000;
+    Address address("mtrrfEAe9PusdTUCrcmg3Jz4pjPaSnTiCc");
+    TxOut txout;
+    EXPECT_NO_THROW((txout = TxOut(Amount::CreateBySatoshiAmount(satoshi), address)));
+    EXPECT_EQ(txout.GetValue().GetSatoshiValue(), satoshi);
+    EXPECT_EQ(txout.GetLockingScript().IsEmpty(), false);
+    EXPECT_STREQ(txout.GetLockingScript().GetHex().c_str(), address.GetLockingScript().GetHex().c_str());
   }
 }
 

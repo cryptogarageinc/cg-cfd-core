@@ -69,7 +69,7 @@ class CFD_CORE_EXPORT SigHashType {
    * @param is_anyone_can_pay SIGHASH_ANYONECANPAYフラグ有無
    * @param is_fork_id SIGHASH_FORKIDフラグ有無
    */
-  SigHashType(
+  explicit SigHashType(
       SigHashAlgorithm algorithm, bool is_anyone_can_pay = false,
       bool is_fork_id = false);
   /**
@@ -78,6 +78,13 @@ class CFD_CORE_EXPORT SigHashType {
    * @return SigHashType オブジェクト
    */
   SigHashType &operator=(const SigHashType &sighash_type);
+
+  /**
+   * @brief コピーコンストラクタ
+   * @param[in] object  コピー元オブジェクト
+   * @return オブジェクト
+   */
+  SigHashType &operator=(const SigHashType &object);
 
   /**
    * @brief SigHashフラグ取得
