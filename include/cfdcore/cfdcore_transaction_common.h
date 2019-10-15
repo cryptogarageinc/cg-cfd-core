@@ -258,6 +258,11 @@ class CFD_CORE_EXPORT AbstractTxOut {
    */
   AbstractTxOut(const Amount& value, const Script& locking_script);
   /**
+   * @brief コンストラクタ
+   * @param[in] locking_script    locking script.
+   */
+  explicit AbstractTxOut(const Script& locking_script);
+  /**
    * @brief デストラクタ
    */
   virtual ~AbstractTxOut() {

@@ -24,12 +24,26 @@ namespace core {
 using logger::info;
 using logger::warn;
 
+SigHashType::SigHashType()
+    : hash_algorithm_(SigHashAlgorithm::kSigHashAll),
+      is_anyone_can_pay_(false),
+      is_fork_id_(false) {
+  // nothing
+}
+
 SigHashType::SigHashType(
     SigHashAlgorithm algorithm, bool is_anyone_can_pay, bool is_fork_id)
     : hash_algorithm_(algorithm),
       is_anyone_can_pay_(is_anyone_can_pay),
       is_fork_id_(is_fork_id) {
   // nothing
+}
+
+SigHashType &SigHashType::operator=(const SigHashType &sighash_type) {
+  hash_algorithm_ = sighash_type.hash_algorithm_;
+  is_anyone_can_pay_ = sighash_type.is_anyone_can_pay_;
+  is_fork_id_ = sighash_type.is_fork_id_;
+  return *this;
 }
 
 uint32_t SigHashType::GetSigHashFlag() {
