@@ -284,4 +284,15 @@ TEST(ConfidentialTxOut, DecodeRangeProofInfoErrorTest) {
   }
 }
 
+TEST(ConfidentialTxOut, CreateDestroyAmountTxOutTest) {  
+  ConfidentialTxOut txout;
+  ConfidentialAssetId asset("1234567890123456789012345678901234567890123456789012345678901234");
+  Amount amount = Amount::CreateBySatoshiAmount(980000000);
+  EXPECT_NO_THROW((txout = ConfidentialTxOut::CreateDestroyAmountTxOut(asset, amount)));
+  EXPECT_STREQ(txout.GetAsset().GetHex().c_str(), asset.GetHex().c_str());
+  EXPECT_EQ(txout.GetConfidentialValue().GetAmount().GetSatoshiValue(),
+            amount.GetSatoshiValue());
+  EXPECT_STREQ(txout.GetLockingScript().ToString().c_str(), "OP_RETURN");
+}
+
 #endif  // CFD_DISABLE_ELEMENTS

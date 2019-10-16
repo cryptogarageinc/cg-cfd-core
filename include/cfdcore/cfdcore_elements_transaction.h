@@ -641,6 +641,15 @@ class CFD_CORE_EXPORT ConfidentialTxOut : public AbstractTxOut {
   ByteData256 GetWitnessHash() const;
 
   /**
+   * @brief Create ConfidentialTxOut object for the destroy amount.
+   * @param[in] asset               destroy asset.
+   * @param[in] amount              destroy amount.
+   * @return ConfidentialTxOut object.
+   */
+  static ConfidentialTxOut CreateDestroyAmountTxOut(
+      const ConfidentialAssetId& asset, const Amount& amount);
+
+  /**
    * @brief Decode range-proof and extract information.
    * @param[in] range_proof ByteData of range-proof value
    * @return struct RangeProofInfo including decoded range-proof information
