@@ -650,6 +650,13 @@ ByteData256 ConfidentialTxOut::GetWitnessHash() const {
   return result;
 }
 
+ConfidentialTxOut ConfidentialTxOut::CreateDestroyAmountTxOut(
+    const ConfidentialAssetId &asset, const Amount &amount) {
+  ScriptBuilder builder;
+  builder.AppendOperator(ScriptOperator::OP_RETURN);
+  return ConfidentialTxOut(builder.Build(), asset, ConfidentialValue(amount));
+}
+
 const RangeProofInfo ConfidentialTxOut::DecodeRangeProofInfo(
     const ByteData &range_proof) {
   RangeProofInfo range_proof_info;
