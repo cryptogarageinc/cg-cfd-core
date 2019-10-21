@@ -14,6 +14,11 @@ using cfd::core::ExtPubkey;
 using cfd::core::ExtPrivkey;
 using cfd::core::NetType;
 
+static const uint32_t extprivkey_kVersionMainnetPrivkey = ExtPrivkey::kVersionMainnetPrivkey;
+static const uint32_t extprivkey_kVersionTestnetPrivkey = ExtPrivkey::kVersionTestnetPrivkey;
+static const uint32_t extprivkey_kVersionMainnetPubkey = ExtPubkey::kVersionMainnetPubkey;
+static const uint32_t extprivkey_kVersionTestnetPubkey = ExtPubkey::kVersionTestnetPubkey;
+
 TEST(ExtPrivkey, DefaultConstructorTest) {
   ExtPrivkey extkey = ExtPrivkey();
 
@@ -28,7 +33,7 @@ TEST(ExtPrivkey, SeedConstructorTest_Privkey) {
 
   EXPECT_STREQ("0488ade4000000000000000000ef1d96024c1f0b9fd35356984cb6e347e901035f924f8af731fc2924b0ff72130059f40c9ff35a534bf02817c4c9b2a0eff6acc9b2e1e0c822dbbead73e4f69747", extkey.GetData().GetHex().c_str());
   EXPECT_STREQ("0488ade4", extkey.GetVersionData().GetHex().c_str());
-  EXPECT_EQ(ExtPrivkey::kVersionMainnetPrivkey, extkey.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionMainnetPrivkey, extkey.GetVersion());
   EXPECT_TRUE(extkey.IsValid());
   EXPECT_STREQ("xprv9s21ZrQH143K4SS9fUBooJcNan78y4SxCHjma2238tm8pGourqqBZh6pDJHEkksojBRQU4m4kgB1n1dK98tKHKPjxnLyLCUNRK7RgyqDZj7", extkey.ToString().c_str());
   EXPECT_EQ(0, extkey.GetDepth());
@@ -37,7 +42,7 @@ TEST(ExtPrivkey, SeedConstructorTest_Privkey) {
   extkey = ExtPrivkey(ByteData(ext_seed), NetType::kTestnet);
   EXPECT_STREQ("04358394000000000000000000ef1d96024c1f0b9fd35356984cb6e347e901035f924f8af731fc2924b0ff72130059f40c9ff35a534bf02817c4c9b2a0eff6acc9b2e1e0c822dbbead73e4f69747", extkey.GetData().GetHex().c_str());
   EXPECT_STREQ("04358394", extkey.GetVersionData().GetHex().c_str());
-  EXPECT_EQ(ExtPrivkey::kVersionTestnetPrivkey, extkey.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionTestnetPrivkey, extkey.GetVersion());
   EXPECT_TRUE(extkey.IsValid());
   EXPECT_STREQ("tprv8ZgxMBicQKsPfFfgL33JxxEMtuXMCaUxXqetSSSVcsFcbsYzrDAw5SUG8UStm8G86cxBUANpv2kpEsB4GMEG6NfLVRZGzZCRLQrr8deFcfZ", extkey.ToString().c_str());
   EXPECT_EQ(0, extkey.GetDepth());
@@ -49,7 +54,7 @@ TEST(ExtPrivkey, SerializeConstructorTest) {
   ExtPrivkey extkey = ExtPrivkey(ByteData(ext_serial));
 
   EXPECT_STREQ(ext_serial.c_str(), extkey.GetData().GetHex().c_str());
-  EXPECT_EQ(ExtPrivkey::kVersionMainnetPrivkey, extkey.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionMainnetPrivkey, extkey.GetVersion());
   EXPECT_STREQ("0488ade4", extkey.GetVersionData().GetHex().c_str());
   EXPECT_TRUE(extkey.IsValid());
   EXPECT_STREQ("xprv9zt1onyw8BdEf7SQ6wUVH3bQQdGD9iy9QzXveQQRhX7i5iUN7jZgLbqFEe491LfjozztYa6bJAGZ65GmDCNcbjMdjZcgmdisPJwVjcfcDhV", extkey.ToString().c_str());
@@ -67,7 +72,7 @@ TEST(ExtPrivkey, Base58ConstructorTest) {
   EXPECT_STREQ("0488ade4042da711a50000000028009126a24557d32ff2c5da21850dd06529f34faed53b4a3552b5ed4bda35d50073a2361673d25f998d1e9d94aabdeba8ac1ddd4628bc4f55341397d263bd560c", extkey.GetData().GetHex().c_str());
   EXPECT_STREQ(ext_base58.c_str(), extkey.ToString().c_str());
   EXPECT_TRUE(extkey.IsValid());
-  EXPECT_EQ(ExtPrivkey::kVersionMainnetPrivkey, extkey.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionMainnetPrivkey, extkey.GetVersion());
   EXPECT_STREQ("0488ade4", extkey.GetVersionData().GetHex().c_str());
   EXPECT_EQ(4, extkey.GetDepth());
   EXPECT_EQ(0, extkey.GetChildNum());
@@ -79,7 +84,7 @@ TEST(ExtPrivkey, Base58ConstructorTest) {
   EXPECT_STREQ("04358394000000000000000000a3fa8c983223306de0f0f65e74ebb1e98aba751633bf91d5fb56529aa5c132c100cbedc75b0d6412c85c79bc13875112ef912fd1e756631b5a00330866f22ff184", extkey.GetData().GetHex().c_str());
   EXPECT_STREQ(ext_base58.c_str(), extkey.ToString().c_str());
   EXPECT_TRUE(extkey.IsValid());
-  EXPECT_EQ(ExtPrivkey::kVersionTestnetPrivkey, extkey.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionTestnetPrivkey, extkey.GetVersion());
   EXPECT_STREQ("04358394", extkey.GetVersionData().GetHex().c_str());
   EXPECT_EQ(0, extkey.GetDepth());
   EXPECT_EQ(0, extkey.GetChildNum());
@@ -102,7 +107,7 @@ TEST(ExtPrivkey, DerivePrivkeyTest) {
   EXPECT_STREQ("0488ade40691fe4d290000002c368a8a370cc1f3e76cba08f13542e0dfb4e77dd08e8c70353f357a32b90be9d00005c52ec06dee7aa3249d9f8f3b930709967a43001fc8b9889eb22a850438ecc9", child.GetData().GetHex().c_str());
   EXPECT_STREQ("xprvA5P4YtgFjzqM4QpXJZ8Zr7Wkhng7ugTybA3KWMAqDfAamqu5nqJ3zKRhB29cxuqCc8hPagZcN5BsuoXx4Xn7iYHnQvEdyMwZRFgoJXs8CDN", child.ToString().c_str());
   EXPECT_TRUE(child.IsValid());
-  EXPECT_EQ(ExtPrivkey::kVersionMainnetPrivkey, child.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionMainnetPrivkey, child.GetVersion());
   EXPECT_EQ(6, child.GetDepth());
   EXPECT_EQ(44, child.GetChildNum());
 
@@ -110,7 +115,7 @@ TEST(ExtPrivkey, DerivePrivkeyTest) {
   EXPECT_STREQ("0488ade405ae05dbb7000000006abdc0ea6ae90c728659358371f9e576271ab7c2f0113e9128fa8b64b05a5a3f00d77115d2a8d35623ed755a2dd7c5cfd95256f7266dd3e55e3d8790d9758fe77a", child1.GetData().GetHex().c_str());
   EXPECT_STREQ("xprvA3hskUkqh1sEWhr726RLmGX7CwQ4jBHtY8ebnDijPhKNTiaCdBCdQe5UfvNFTZXwMm3vGktGpBWKZWCFbhQn5xYdHRPeaLpjCtVHSgoxS6E", child1.ToString().c_str());
   EXPECT_TRUE(child1.IsValid());
-  EXPECT_EQ(ExtPrivkey::kVersionMainnetPrivkey, child1.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionMainnetPrivkey, child1.GetVersion());
   EXPECT_EQ(5, child1.GetDepth());
   EXPECT_EQ(0, child1.GetChildNum());
 
@@ -146,11 +151,11 @@ TEST(ExtPrivkey, DerivePubkeyTest) {
 
   child = extkey.DerivePubkey(path);
   EXPECT_STREQ("xpub6JNQxQD9aNPeGttzQafaDFTVFpWcK9BpxNxvJjaSmzhZeeEELNcJY7kB2HZ7UE1cLJ16pLzJGntXTfmoAHbdRA57FkCcpAj4MD9k8hP6xSn", child.ToString().c_str());
-  EXPECT_EQ(ExtPubkey::kVersionMainnetPubkey, child.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionMainnetPubkey, child.GetVersion());
 
   child1 = extkey.DerivePubkey(0);
   EXPECT_STREQ("xpub6GhE9zHjXPRXjBva87xM8QTqkyEZ8e1juMaCac8Lx2rMLWuMAiWsxSPxXCohh1aqXTftiQP1RuSVWdYZDPHxBtLHxF11MFqhPUZfpcEcrdv", child1.ToString().c_str());
-  EXPECT_EQ(ExtPubkey::kVersionMainnetPubkey, child1.GetVersion());
+  EXPECT_EQ(extprivkey_kVersionMainnetPubkey, child1.GetVersion());
 
   child2 = child1.DerivePubkey(44);
   EXPECT_STREQ(child2.ToString().c_str(), child.ToString().c_str());
