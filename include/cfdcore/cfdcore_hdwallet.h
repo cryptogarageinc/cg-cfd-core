@@ -237,14 +237,14 @@ class CFD_CORE_EXPORT ExtPrivkey {
    */
   Privkey GetPrivkey() const;
   /**
-   * @brief 指定階層の拡張公開鍵を取得する。
+   * @brief 指定階層の拡張秘密鍵を取得する。
    * @param[in] child_num         child number
    * @return extended pubprivkeykey
    * @throws CfdException If invalid seed.
    */
   ExtPrivkey DerivePrivkey(uint32_t child_num) const;
   /**
-   * @brief 指定階層の拡張公開鍵を取得する。
+   * @brief 指定階層の拡張秘密鍵を取得する。
    * @param[in] path              child number path
    * @return extended privkey
    * @throws CfdException If invalid seed.
