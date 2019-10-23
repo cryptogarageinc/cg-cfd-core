@@ -418,8 +418,8 @@ ExtPubkey ExtPrivkey::DerivePubkey(uint32_t child_num) const {
 }
 
 ExtPubkey ExtPrivkey::DerivePubkey(const std::vector<uint32_t>& path) const {
-  ExtPubkey pubkey = GetExtPubkey();
-  return pubkey.DerivePubkey(path);
+  ExtPrivkey privkey = DerivePrivkey(path);
+  return privkey.GetExtPubkey();
 }
 
 bool ExtPrivkey::IsValid() const { return !privkey_.IsInvalid(); }
