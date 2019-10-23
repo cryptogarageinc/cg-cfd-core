@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "cfdcore/cfdcore_elements_address.h"
+#include "cfdcore/cfdcore_hdwallet.h"
 #include "cfdcore/cfdcore_transaction_common.h"
 
 namespace cfd {
@@ -1450,7 +1451,7 @@ class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
    * @param[in] prefix                extend pubkey prefix
    * @return extend key
    */
-  static ExtKey GenerateExtPubkeyFromDescriptor(
+  static ExtPubkey GenerateExtPubkeyFromDescriptor(
       const std::string& bitcoin_descriptor, const ByteData& prefix);
 };
 

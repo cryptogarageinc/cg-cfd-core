@@ -188,29 +188,6 @@ ByteData Secp256k1::AddTweakPubkeySecp256k1Ec(
   return ByteData(byte_data);
 }
 
-ByteData256 Secp256k1::AddTweakPrivkeySecp256k1Ec(
-    const ByteData256& privkey, const ByteData256& tweak) {
-  secp256k1_context* context =
-      static_cast<secp256k1_context*>(secp256k1_context_);
-  if (secp256k1_context_ == NULL) {
-    warn(CFD_LOG_SOURCE, "Secp256k1 context is NULL.");
-    throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Secp256k1 context is NULL.");
-  }
-
-  int ret;
-  std::vector<uint8_t> privkey_data = privkey.GetBytes();
-  std::vector<uint8_t> tweak_data = tweak.GetBytes();
-  ret = secp256k1_ec_privkey_tweak_add(
-      context, privkey_data.data(), tweak_data.data());
-  if (ret != 1) {
-    warn(CFD_LOG_SOURCE, "secp256k1_ec_privkey_tweak_add Error.({})", ret);
-    throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Secp256k1 privkey tweak Error.");
-  }
-  return ByteData256(privkey_data);
-}
-
 ByteData Secp256k1::NegatePubkeySecp256k1Ec(const ByteData& pubkey) {
   secp256k1_context* context =
       static_cast<secp256k1_context*>(secp256k1_context_);
