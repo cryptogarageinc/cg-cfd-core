@@ -42,15 +42,6 @@ class Secp256k1 {
       const ByteData& pubkey, const ByteData& tweak, bool is_tweak_check);
 
   /**
-   * @brief Privkey調整処理
-   * @param[in] privkey           Privkey
-   * @param[in] tweak             調整値
-   * @return 調整後のPrivkeyデータ
-   */
-  ByteData256 AddTweakPrivkeySecp256k1Ec(
-      const ByteData256& privkey, const ByteData256& tweak);
-
-  /**
    * @brief Pubkey negate処理
    * @param[in] pubkey            Pubkey
    * @return 加工後のPubkeyデータ

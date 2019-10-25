@@ -15,6 +15,7 @@
 #include "cfdcore/cfdcore_elements_address.h"
 #include "cfdcore/cfdcore_elements_transaction.h"
 #include "cfdcore/cfdcore_exception.h"
+#include "cfdcore/cfdcore_hdwallet.h"
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_logger.h"
 #include "cfdcore/cfdcore_util.h"
@@ -2365,7 +2366,7 @@ PegoutKeyData ConfidentialTransaction::GetPegoutPubkeyData(
   }
 
   // check descriptor
-  ExtKey xpub = GenerateExtPubkeyFromDescriptor(bitcoin_descriptor, prefix);
+  ExtPubkey xpub = GenerateExtPubkeyFromDescriptor(bitcoin_descriptor, prefix);
 
   std::string desc_str = bitcoin_descriptor;
   // TODO(k-matsuzawa): 一旦省略するが、実際は厳密なチェックが必要そう
@@ -2422,7 +2423,7 @@ PegoutKeyData ConfidentialTransaction::GetPegoutPubkeyData(
   return result;
 }
 
-ExtKey ConfidentialTransaction::GenerateExtPubkeyFromDescriptor(
+ExtPubkey ConfidentialTransaction::GenerateExtPubkeyFromDescriptor(
     const std::string &bitcoin_descriptor, const ByteData &prefix) {
   static auto starts_with = [](const std::string &text,
                                const std::string &check) -> bool {
@@ -2438,11 +2439,11 @@ ExtKey ConfidentialTransaction::GenerateExtPubkeyFromDescriptor(
          check));
   };
 
-  ExtKey xpub;
+  ExtPubkey xpub;
   try {
     // 指定キーチェック (ただのbase58check文字列)
-    ExtKey check_key(bitcoin_descriptor);
-    if (check_key.GetPrefix().Equals(prefix)) {
+    ExtPubkey check_key(bitcoin_descriptor);
+    if (check_key.GetVersionData().Equals(prefix)) {
       xpub = check_key;
     }
   } catch (const CfdException &except) {
@@ -2472,11 +2473,11 @@ ExtKey ConfidentialTransaction::GenerateExtPubkeyFromDescriptor(
       xpub_str = xpub_str.substr(xpub_str.find("]"), std::string::npos);
     }
     xpub_str = xpub_str.substr(0, xpub_str.find("/"));
-    xpub = ExtKey(xpub_str);
-    if (!xpub.GetPrefix().Equals(prefix)) {
+    xpub = ExtPubkey(xpub_str);
+    if (!xpub.GetVersionData().Equals(prefix)) {
       warn(
           CFD_LOG_SOURCE, "bitcoin_descriptor illegal prefix[{}].",
-          xpub.GetPrefix().GetHex());
+          xpub.GetVersionData().GetHex());
       throw CfdException(
           kCfdIllegalArgumentError, "bitcoin_descriptor illegal prefix.");
     }
