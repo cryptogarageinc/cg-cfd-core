@@ -83,7 +83,7 @@ class CFD_CORE_EXPORT SigHashType {
    * @brief SigHashフラグ取得
    * @return SigHashフラグ
    */
-  uint32_t GetSigHashFlag();
+  uint32_t GetSigHashFlag() const;
 
  private:
   /**
