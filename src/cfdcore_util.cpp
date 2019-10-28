@@ -46,7 +46,7 @@ SigHashType &SigHashType::operator=(const SigHashType &sighash_type) {
   return *this;
 }
 
-uint32_t SigHashType::GetSigHashFlag() {
+uint32_t SigHashType::GetSigHashFlag() const {
   uint32_t flag = hash_algorithm_;
   if (is_anyone_can_pay_) {
     flag |= kSigHashAnyOneCanPay;
