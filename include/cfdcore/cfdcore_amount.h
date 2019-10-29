@@ -198,6 +198,102 @@ CFD_CORE_EXPORT bool operator==(
 CFD_CORE_EXPORT bool operator!=(
     const int64_t satoshi_amount, const Amount &amount);
 /**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is less than rhs
+ * @retval false lhs is greater than or equal rhs
+ */
+CFD_CORE_EXPORT bool operator<(const Amount &lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(int64_t)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is less than rhs
+ * @retval false lhs is greater than or equal rhs
+ */
+CFD_CORE_EXPORT bool operator<(const int64_t lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(int64_t)
+ * @retval true lhs is less than rhs
+ * @retval false lhs is greater than or equal rhs
+ */
+CFD_CORE_EXPORT bool operator<(const Amount &lhs, const int64_t rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is greater than rhs
+ * @retval false lhs is less than or equal rhs
+ */
+CFD_CORE_EXPORT bool operator>(const Amount &lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(int64_t)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is greater than rhs
+ * @retval false lhs is less than or equal rhs
+ */
+CFD_CORE_EXPORT bool operator>(const int64_t lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(int64_t)
+ * @retval true lhs is greater than rhs
+ * @retval false lhs is less than or equal rhs
+ */
+CFD_CORE_EXPORT bool operator>(const Amount &lhs, const int64_t rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is less than or equal rhs
+ * @retval false lhs is greater than rhs
+ */
+CFD_CORE_EXPORT bool operator<=(const Amount &lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(int64_t)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is less than or equal rhs
+ * @retval false lhs is greater than rhs
+ */
+CFD_CORE_EXPORT bool operator<=(const int64_t lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(int64_t)
+ * @retval true lhs is less than or equal rhs
+ * @retval false lhs is greater than rhs
+ */
+CFD_CORE_EXPORT bool operator<=(const Amount &lhs, const int64_t rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is greater than or equal rhs
+ * @retval false lhs is less than rhs
+ */
+CFD_CORE_EXPORT bool operator>=(const Amount &lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(int64_t)
+ * @param[in] rhs   比較数(Amount)
+ * @retval true lhs is greater than or equal rhs
+ * @retval false lhs is less than rhs
+ */
+CFD_CORE_EXPORT bool operator>=(const int64_t lhs, const Amount &rhs);
+/**
+ * @brief 二方比較オペレータ
+ * @param[in] lhs   被比較数(Amount)
+ * @param[in] rhs   比較数(int64_t)
+ * @retval true lhs is greater than or equal rhs
+ * @retval false lhs is less than rhs
+ */
+CFD_CORE_EXPORT bool operator>=(const Amount &lhs, const int64_t rhs);
+/**
  * @brief 加算オペレータ(Amount + Amount)
  * @param[in] left_amount    被加数 Amountインスタンス
  * @param[in] right_amount    加数 Amountインスタンス
