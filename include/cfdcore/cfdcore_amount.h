@@ -22,6 +22,15 @@ namespace cfd {
  */
 namespace core {
 
+//! bitcoinとsatoshi単位の変換に用いる因数(10^8)
+static constexpr int64_t kCoinBase = 100000000;
+/**
+ * @brief satoshi単位の最大値
+ * @details 厳密には流通通貨の最大値とは異なるが、bitcoin coreに合わせて限度額を設定
+ * @see https://github.com/bitcoin/bitcoin/blob/e756eca9e8bf39f0a891f1760df0a317ecb7fee8/src/amount.h#L25
+ */
+static constexpr int64_t kMaxAmount = 21000000 * kCoinBase;
+
 /**
  * @brief BitcoinのAmountを表現するクラス
  */
@@ -138,14 +147,6 @@ class CFD_CORE_EXPORT Amount {
  private:
   //! satoshi単位のAmount
   int64_t amount_;
-  //! bitcoinとsatoshi単位の変換に用いる因数(10^8)
-  static const int64_t kCoinBase = 100000000;
-  /**
-   * @brief satoshi単位の最大値
-   * @details 厳密には流通通貨の最大値とは異なるが、bitcoin coreに合わせて限度額を設定
-   * @see https://github.com/bitcoin/bitcoin/blob/e756eca9e8bf39f0a891f1760df0a317ecb7fee8/src/amount.h#L25
-   */
-  static const int64_t kMaxAmount = 21000000 * kCoinBase;
 
   /**
    * @brief 引数で与えられたAmount額が不正なものでないかを検証する.
