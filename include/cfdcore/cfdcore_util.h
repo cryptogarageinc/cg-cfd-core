@@ -414,6 +414,12 @@ class CFD_CORE_EXPORT RandomNumberUtil {
    * @return index list
    */
   static std::vector<uint32_t> GetRandomIndexes(uint32_t length);
+  /**
+   * ランダムなbool値を生成する.
+   * @param[in,out] random_cache 乱数キャッシュ値
+   * @return true/false
+   */
+  static bool GetRandomBool(std::vector<bool> *random_cache);
 
  private:
   RandomNumberUtil();
