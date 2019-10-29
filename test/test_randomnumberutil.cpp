@@ -85,6 +85,6 @@ TEST(RandomNumberUtil, GetRandomIndexes3) {
 
 // GetRandomBool---------------------------------------------------------------
 TEST(RandomNumberUtil, GetRandomBool) {
-  uint32_t cashe = 0;
+  std::vector<bool> cashe;
   EXPECT_NO_THROW(RandomNumberUtil::GetRandomBool(&cashe));
 }
