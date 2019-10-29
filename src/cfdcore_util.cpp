@@ -712,6 +712,15 @@ std::vector<uint32_t> RandomNumberUtil::GetRandomIndexes(uint32_t length) {
   return result;
 }
 
+bool RandomNumberUtil::GetRandomBool() {
+  static std::random_device rd;
+  static std::mt19937 engine(rd());
+
+  uint32_t random = engine();
+  uint32_t ret = random & (~(uint32_t)0 >> (32 - 1));
+  return ret;
+}
+
 //////////////////////////////////
 /// StringUtil
 //////////////////////////////////

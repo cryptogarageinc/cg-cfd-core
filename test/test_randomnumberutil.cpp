@@ -83,3 +83,7 @@ TEST(RandomNumberUtil, GetRandomIndexes3) {
   EXPECT_EQ(indexes.size(), static_cast<size_t>(length));
 }
 
+// GetRandomBool---------------------------------------------------------------
+TEST(RandomNumberUtil, GetRandomBool) {
+  EXPECT_NO_THROW(RandomNumberUtil::GetRandomBool());
+}
