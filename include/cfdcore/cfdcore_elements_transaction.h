@@ -270,11 +270,11 @@ class CFD_CORE_EXPORT ConfidentialTxIn : public AbstractTxIn {
    * @param[out] witness_stack_size   witness stack size
    * @return TxInのサイズ
    */
-  uint32_t EstimateTxInSize(
+  static uint32_t EstimateTxInSize(
       AddressType addr_type, Script redeem_script = Script(),
       uint32_t pegin_btc_tx_size = 0, Script fedpeg_script = Script(),
       bool is_issuance = false, bool is_blind = false,
-      uint32_t* witness_stack_size = nullptr) const;
+      uint32_t* witness_stack_size = nullptr);
 
   /**
    * @brief コンストラクタ.
@@ -748,7 +748,7 @@ class CFD_CORE_EXPORT ConfidentialTxOutReference
    * @return serialized size
    */
   uint32_t GetSerializeSize(
-      bool is_blinded, uint32_t* witness_stack_size) const;
+      bool is_blinded = true, uint32_t* witness_stack_size = nullptr) const;
 
  private:
   ConfidentialAssetId asset_;             //!< confidential asset

@@ -523,7 +523,7 @@ ByteData256 ConfidentialTxIn::GetWitnessHash() const {
 uint32_t ConfidentialTxIn::EstimateTxInSize(
     AddressType addr_type, Script redeem_script, uint32_t pegin_btc_tx_size,
     Script fedpeg_script, bool is_issuance, bool is_blind,
-    uint32_t *witness_stack_size) const {
+    uint32_t *witness_stack_size) {
   // issuance時の追加サイズ: entity(32),hash(32),amount(8+1),key(8+1)
   static constexpr const uint32_t kIssuanceAppendSize = 82;
   // blind issuance時の追加サイズ: entity,hash,amount(33),key(33)
