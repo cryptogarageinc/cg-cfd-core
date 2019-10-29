@@ -85,6 +85,17 @@ class CFD_CORE_EXPORT TxOutReference : public AbstractTxOutReference {
 class CFD_CORE_EXPORT TxIn : public AbstractTxIn {
  public:
   /**
+   * @brief TxInのサイズを見積もる。
+   * @param[in] addr_type       address type
+   * @param[in] redeem_script   redeem script
+   * @param[out] witness_stack_size   witness stack size
+   * @return TxInのサイズ
+   */
+  static uint32_t EstimateTxInSize(
+      AddressType addr_type, Script redeem_script = Script(),
+      uint32_t* witness_stack_size = nullptr);
+
+  /**
    * @brief コンストラクタ.
    * @param[in] txid        txid
    * @param[in] index       txidのトランザクションのTxOutのIndex情報(vout)

@@ -18,6 +18,7 @@
 #include "cfdcore/cfdcore_hdwallet.h"
 #include "cfdcore/cfdcore_key.h"
 #include "cfdcore/cfdcore_logger.h"
+#include "cfdcore/cfdcore_transaction.h"
 #include "cfdcore/cfdcore_util.h"
 #include "cfdcore_wally_util.h"  // NOLINT
 #include "wally_elements.h"      // NOLINT
@@ -33,8 +34,6 @@ using logger::warn;
 // -----------------------------------------------------------------------------
 // ファイル内定数
 // -----------------------------------------------------------------------------
-/// ElementsTransactionの最小サイズ
-static constexpr size_t kElementsTransactionMinimumSize = 11;
 /// ConfidentialCommitmentのVersion1(unblind)定義
 static constexpr uint8_t kConfidentialVersion_1 = 1;
 /// TransactionのWitness非対応バージョン定義
@@ -521,6 +520,58 @@ ByteData256 ConfidentialTxIn::GetWitnessHash() const {
   return result;
 }
 
+uint32_t ConfidentialTxIn::EstimateTxInSize(
+    AddressType addr_type, Script redeem_script, uint32_t pegin_btc_tx_size,
+    Script fedpeg_script, bool is_issuance, bool is_blind,
+    uint32_t *witness_stack_size) const {
+  // issuance時の追加サイズ: entity(32),hash(32),amount(8+1),key(8+1)
+  static constexpr const uint32_t kIssuanceAppendSize = 82;
+  // blind issuance時の追加サイズ: entity,hash,amount(33),key(33)
+  static constexpr const uint32_t kIssuanceBlindSize = 130;
+  // issuance rangeproof size
+  static constexpr const uint32_t kTxInRangeproof = 2893 + 3;
+  // pegin size:
+  // btc(9),asset(33),block(33),fedpegSize(-),txSize(3),txoutproof(152)
+  static constexpr const uint32_t kPeginWitnessSize = 230;
+  uint32_t witness_size = 0;
+  uint32_t size =
+      TxIn::EstimateTxInSize(addr_type, redeem_script, &witness_size);
+
+  if (is_issuance) {
+    if (is_blind) {
+      size += kIssuanceBlindSize;
+    } else {
+      size += kIssuanceAppendSize;
+    }
+  }
+
+  if ((pegin_btc_tx_size != 0) || is_issuance || (witness_size != 0)) {
+    if (witness_size == 0) {
+      witness_size += 1;  // witness size
+    }
+
+    if (pegin_btc_tx_size != 0) {
+      witness_size += pegin_btc_tx_size + kPeginWitnessSize;
+      if (!fedpeg_script.IsEmpty()) {
+        witness_size +=
+            static_cast<uint32_t>(fedpeg_script.GetData().GetSerializeSize());
+      }
+    }
+    witness_size += 1;  // pegin witness num
+
+    if (is_issuance && is_blind) {
+      witness_size += kTxInRangeproof * 2;
+    } else {
+      witness_size += 2;  // issuance rangeproof size
+    }
+  }
+
+  if (!witness_stack_size) {
+    *witness_stack_size = witness_size;
+  }
+  return size + witness_size;
+}
+
 // -----------------------------------------------------------------------------
 // ConfidentialTxInReference
 // -----------------------------------------------------------------------------
@@ -679,6 +730,41 @@ ConfidentialTxOutReference::ConfidentialTxOutReference(
       surjection_proof_(tx_out.GetSurjectionProof()),
       range_proof_(tx_out.GetRangeProof()) {
   // do nothing
+}
+
+uint32_t ConfidentialTxOutReference::GetSerializeSize(
+    bool is_blinded, uint32_t *witness_stack_size) const {
+  static constexpr const uint32_t kTxOutSurjection = 131 + 1;
+  static constexpr const uint32_t kTxOutRangeproof = 2893 + 3;
+  uint32_t result = 0;
+  uint32_t witness_size = 0;
+  if (is_blinded && (!locking_script_.IsEmpty())) {
+    result += kConfidentialDataSize;  // asset
+    result += kConfidentialDataSize;  // value
+    result += kConfidentialDataSize;  // nonce
+    result +=
+        static_cast<uint32_t>(locking_script_.GetData().GetSerializeSize());
+    witness_size += kTxOutSurjection;  // surjection proof
+    witness_size += kTxOutRangeproof;  // range proof
+  } else {
+    result += kConfidentialDataSize;   // asset
+    result += kConfidentialValueSize;  // value
+    if (locking_script_.IsEmpty()) {
+      result += 2;  // fee (nonce & lockingScript empty.)
+    } else {
+      result += 1;  // nonce
+      result +=
+          static_cast<uint32_t>(locking_script_.GetData().GetSerializeSize());
+    }
+    witness_size += 1;  // surjection proof
+    witness_size += 1;  // range proof
+  }
+
+  if (!witness_stack_size) {
+    *witness_stack_size += witness_size;
+  }
+  result += witness_size;
+  return result;
 }
 
 // -----------------------------------------------------------------------------

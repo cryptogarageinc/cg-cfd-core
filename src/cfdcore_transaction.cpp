@@ -68,6 +68,87 @@ TxIn::TxIn(
   // do nothing
 }
 
+uint32_t TxIn::EstimateTxInSize(
+    AddressType addr_type, Script redeem_script,
+    uint32_t *witness_stack_size) {
+  // txid, vout, sequence, scriptLength
+  static constexpr const size_t kMinimumTxinSize = 41;
+
+  bool is_pubkey = false;
+  bool is_witness = true;
+  bool use_unlocking_script = true;
+  uint32_t size = kMinimumTxinSize;
+  uint32_t witness_size = 0;
+  uint32_t script_size = 0;
+
+  switch (addr_type) {
+    case AddressType::kP2shAddress:
+      is_witness = false;
+      break;
+    case AddressType::kP2pkhAddress:
+      is_pubkey = true;
+      is_witness = false;
+      break;
+    case AddressType::kP2wshAddress:
+      use_unlocking_script = false;
+      break;
+    case AddressType::kP2wpkhAddress:
+      is_pubkey = true;
+      use_unlocking_script = false;
+      break;
+    case AddressType::kP2shP2wshAddress:
+      break;
+    case AddressType::kP2shP2wpkhAddress:
+      is_pubkey = true;
+      break;
+    default:
+      if (redeem_script.IsEmpty()) {
+        warn(CFD_LOG_SOURCE, "unknown address type, and empty redeem script.");
+        throw CfdException(
+            kCfdIllegalArgumentError,
+            "unknown address type, and empty redeem script.");
+      }
+      is_witness = false;
+      break;
+  }
+
+  if (is_pubkey) {
+    script_size = Pubkey::kCompressedPubkeySize + EC_SIGNATURE_DER_MAX_LEN + 3;
+  } else {
+    script_size = EC_SIGNATURE_DER_MAX_LEN + 2;  // allNum + sig(serialize)
+    if (!redeem_script.IsEmpty()) {
+      script_size +=
+          static_cast<uint32_t>(redeem_script.GetData().GetSerializeSize());
+      if (redeem_script.IsMultisigScript()) {
+        uint32_t reqnum = static_cast<uint32_t>(
+            redeem_script.GetElementList()[1].GetNumber());
+        script_size += (EC_SIGNATURE_DER_MAX_LEN + 1) * reqnum;
+      }
+    }
+  }
+
+  if (is_witness) {
+    if (is_pubkey) {
+      witness_size = script_size;
+      if (use_unlocking_script) {
+        size += 22;  // wpkh locking script length
+      }
+    } else {
+      witness_size = script_size;
+      if (use_unlocking_script) {
+        size += 34;  // wsh locking script length
+      }
+    }
+  } else {
+    size += script_size;
+  }
+  if (!witness_stack_size) {
+    *witness_stack_size = static_cast<uint32_t>(witness_size);
+  }
+  size += witness_size;
+  return static_cast<uint32_t>(size);
+}
+
 // -----------------------------------------------------------------------------
 // TxInReference
 // -----------------------------------------------------------------------------
