@@ -712,12 +712,21 @@ std::vector<uint32_t> RandomNumberUtil::GetRandomIndexes(uint32_t length) {
   return result;
 }
 
-bool RandomNumberUtil::GetRandomBool() {
-  static std::random_device rd;
-  static std::mt19937 engine(rd());
+bool RandomNumberUtil::GetRandomBool(uint32_t* random_cashe) {
+  if (random_cashe == nullptr) {
+    throw CfdException(kCfdIllegalArgumentError, "GetRandomBool error.");
+  }
 
-  uint32_t random = engine();
-  uint32_t ret = random & (~(uint32_t)0 >> (32 - 1));
+  uint32_t random = *random_cashe;
+  if (random == 0) {
+    static std::random_device rd;
+    static std::mt19937 engine(rd());
+    random = engine();
+  }
+
+  uint32_t ret = random & 1;
+  random >>= 1;
+  *random_cashe = random;
   return ret;
 }
 

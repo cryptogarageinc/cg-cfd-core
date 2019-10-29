@@ -85,5 +85,6 @@ TEST(RandomNumberUtil, GetRandomIndexes3) {
 
 // GetRandomBool---------------------------------------------------------------
 TEST(RandomNumberUtil, GetRandomBool) {
-  EXPECT_NO_THROW(RandomNumberUtil::GetRandomBool());
+  uint32_t cashe = 0;
+  EXPECT_NO_THROW(RandomNumberUtil::GetRandomBool(&cashe));
 }
