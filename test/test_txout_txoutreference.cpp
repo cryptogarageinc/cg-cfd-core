@@ -56,3 +56,13 @@ TEST(TxOutReference, Constractor) {
                  exp_script.GetHex().c_str());
   }
 }
+
+TEST(TxOutReference, GetSerializeSize) {
+  {
+    int64_t satoshi = 1000000;
+    TxOut txout(Amount::CreateBySatoshiAmount(satoshi), exp_script);
+    TxOutReference txout_ref(txout);
+
+    EXPECT_EQ(txout_ref.GetSerializeSize(), 34);
+  }
+}

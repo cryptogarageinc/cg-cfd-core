@@ -566,7 +566,7 @@ uint32_t ConfidentialTxIn::EstimateTxInSize(
     }
   }
 
-  if (!witness_stack_size) {
+  if (witness_stack_size) {
     *witness_stack_size = witness_size;
   }
   return size + witness_size;
@@ -760,8 +760,8 @@ uint32_t ConfidentialTxOutReference::GetSerializeSize(
     witness_size += 1;  // range proof
   }
 
-  if (!witness_stack_size) {
-    *witness_stack_size += witness_size;
+  if (witness_stack_size) {
+    *witness_stack_size = witness_size;
   }
   result += witness_size;
   return result;

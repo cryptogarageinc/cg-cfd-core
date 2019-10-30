@@ -142,7 +142,7 @@ uint32_t TxIn::EstimateTxInSize(
   } else {
     size += script_size;
   }
-  if (!witness_stack_size) {
+  if (witness_stack_size) {
     *witness_stack_size = static_cast<uint32_t>(witness_size);
   }
   size += witness_size;

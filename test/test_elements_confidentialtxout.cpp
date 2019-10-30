@@ -295,4 +295,22 @@ TEST(ConfidentialTxOut, CreateDestroyAmountTxOutTest) {
   EXPECT_STREQ(txout.GetLockingScript().ToString().c_str(), "OP_RETURN");
 }
 
+TEST(ConfidentialTxOutReference, GetSerializeSize) {
+  {
+    int64_t satoshi = 1000000;
+    ConfidentialAssetId asset("1234567890123456789012345678901234567890123456789012345678901234");
+    ConfidentialTxOut txout(exp_script, asset,
+        ConfidentialValue(Amount::CreateBySatoshiAmount(satoshi)));
+    ConfidentialTxOutReference txout_ref(txout);
+
+    uint32_t wit_size = 0;
+    EXPECT_EQ(txout_ref.GetSerializeSize(false, &wit_size), 68);
+    EXPECT_EQ(wit_size, 2);
+
+    wit_size = 0;
+    EXPECT_EQ(txout_ref.GetSerializeSize(true, &wit_size), 3150);
+    EXPECT_EQ(wit_size, 3028);
+  }
+}
+
 #endif  // CFD_DISABLE_ELEMENTS
