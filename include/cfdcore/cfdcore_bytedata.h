@@ -80,6 +80,12 @@ class CFD_CORE_EXPORT ByteData {
   ByteData Serialize() const;
 
   /**
+   * @brief serializeされたbyte dataのサイズを取得する。
+   * @return serialize data size
+   */
+  size_t GetSerializeSize() const;
+
+  /**
    * @brief 可変長サイズ情報(バッファ)を取得する.
    * @param[in] value    size value
    * @return variable size buffer

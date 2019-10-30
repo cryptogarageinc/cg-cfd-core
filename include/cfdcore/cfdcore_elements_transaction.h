@@ -260,6 +260,23 @@ class CFD_CORE_EXPORT BlindFactor {
 class CFD_CORE_EXPORT ConfidentialTxIn : public AbstractTxIn {
  public:
   /**
+   * @brief TxInのサイズを見積もる。
+   * @param[in] addr_type           address type
+   * @param[in] redeem_script       redeem script
+   * @param[in] pegin_btc_tx_size   pegin bitcoin transaction size
+   * @param[in] fedpeg_script       fedpeg script
+   * @param[in] is_issuance         issuance/reissuance transaction
+   * @param[in] is_blind            blind transaction (for issuance/reissuance)
+   * @param[out] witness_stack_size   witness stack size
+   * @return TxInのサイズ
+   */
+  static uint32_t EstimateTxInSize(
+      AddressType addr_type, Script redeem_script = Script(),
+      uint32_t pegin_btc_tx_size = 0, Script fedpeg_script = Script(),
+      bool is_issuance = false, bool is_blind = false,
+      uint32_t* witness_stack_size = nullptr);
+
+  /**
    * @brief コンストラクタ.
    */
   ConfidentialTxIn();
@@ -724,6 +741,14 @@ class CFD_CORE_EXPORT ConfidentialTxOutReference
    * @return range proof
    */
   ByteData GetRangeProof() const { return range_proof_; }
+  /**
+   * @brief シリアライズ済みのサイズを取得する.
+   * @param[in] is_blinded    blind済みかどうか
+   * @param[out] witness_stack_size   witness stack size
+   * @return serialized size
+   */
+  uint32_t GetSerializeSize(
+      bool is_blinded = true, uint32_t* witness_stack_size = nullptr) const;
 
  private:
   ConfidentialAssetId asset_;             //!< confidential asset
@@ -778,6 +803,9 @@ struct PegoutKeyData {
  */
 class CFD_CORE_EXPORT ConfidentialTransaction : public AbstractTransaction {
  public:
+  /// ElementsTransactionの最小サイズ
+  static constexpr size_t kElementsTransactionMinimumSize = 11;
+
   /**
    * @brief コンストラクタ.
    *
