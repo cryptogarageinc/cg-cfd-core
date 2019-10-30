@@ -85,6 +85,12 @@ class CFD_CORE_EXPORT TxOutReference : public AbstractTxOutReference {
 class CFD_CORE_EXPORT TxIn : public AbstractTxIn {
  public:
   /**
+   * @brief 最小のTxInサイズ
+   * @details 対象サイズ：txid(64), vout(4), sequence(4), scriptLength(1(仮))
+   */
+  static constexpr const size_t kMinimumTxInSize = 41;
+
+  /**
    * @brief TxInのサイズを見積もる。
    * @param[in] addr_type       address type
    * @param[in] redeem_script   redeem script

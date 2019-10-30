@@ -71,13 +71,10 @@ TxIn::TxIn(
 uint32_t TxIn::EstimateTxInSize(
     AddressType addr_type, Script redeem_script,
     uint32_t *witness_stack_size) {
-  // txid, vout, sequence, scriptLength
-  static constexpr const size_t kMinimumTxinSize = 41;
-
   bool is_pubkey = false;
   bool is_witness = true;
   bool use_unlocking_script = true;
-  uint32_t size = kMinimumTxinSize;
+  uint32_t size = kMinimumTxInSize;
   uint32_t witness_size = 0;
   uint32_t script_size = 0;
 
