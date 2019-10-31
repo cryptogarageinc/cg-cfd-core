@@ -573,6 +573,12 @@ bool AbstractTransaction::IsCoinBase() const {
   return is_coinbase;
 }
 
+uint32_t AbstractTransaction::GetVsizeFromSize(
+    uint32_t no_witness_size, uint32_t witness_size) {
+  uint32_t weight = (no_witness_size * 4) + witness_size;
+  return weight / 4;
+}
+
 bool AbstractTransaction::GetVariableInt(
     const uint8_t *p_byte_data, size_t data_size, uint64_t *p_result,
     size_t *p_size) {
