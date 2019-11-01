@@ -713,13 +713,13 @@ std::vector<uint32_t> RandomNumberUtil::GetRandomIndexes(uint32_t length) {
 }
 
 bool RandomNumberUtil::GetRandomBool(std::vector<bool> *random_cache) {
+  static std::random_device rd;
+  static std::mt19937 engine(rd());
   if (random_cache == nullptr) {
     throw CfdException(kCfdIllegalArgumentError, "GetRandomBool error.");
   }
 
   if (random_cache->empty()) {
-    static std::random_device rd;
-    static std::mt19937 engine(rd());
     uint32_t random = engine();
     for (int i = 0; i < 32; i++) {
       bool value = (random >> i) & 1;
