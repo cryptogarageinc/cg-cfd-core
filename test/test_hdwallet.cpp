@@ -179,8 +179,6 @@ const std::vector<Bip39TestVector> bip39_test_vectors = {
 };
 
 TEST(HDWallet, ConvertTest) {
-  cfd::core::CfdCoreHandle handle = nullptr;
-  cfd::core::Initialize(&handle);
   ByteData actual_entropy;
   std::vector<std::string> actual_mnemonic;
   ByteData actual_seed;
