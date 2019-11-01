@@ -46,7 +46,7 @@ SigHashType &SigHashType::operator=(const SigHashType &sighash_type) {
   return *this;
 }
 
-uint32_t SigHashType::GetSigHashFlag() {
+uint32_t SigHashType::GetSigHashFlag() const {
   uint32_t flag = hash_algorithm_;
   if (is_anyone_can_pay_) {
     flag |= kSigHashAnyOneCanPay;
@@ -710,6 +710,25 @@ std::vector<uint32_t> RandomNumberUtil::GetRandomIndexes(uint32_t length) {
   }
 
   return result;
+}
+
+bool RandomNumberUtil::GetRandomBool(std::vector<bool> *random_cache) {
+  static std::random_device rd;
+  static std::mt19937 engine(rd());
+  if (random_cache == nullptr) {
+    throw CfdException(kCfdIllegalArgumentError, "GetRandomBool error.");
+  }
+
+  if (random_cache->empty()) {
+    uint32_t random = engine();
+    for (int i = 0; i < 32; i++) {
+      bool value = (random >> i) & 1;
+      random_cache->push_back(value);
+    }
+  }
+  bool ret = random_cache->back();
+  random_cache->pop_back();
+  return ret;
 }
 
 //////////////////////////////////

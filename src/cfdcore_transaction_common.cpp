@@ -184,6 +184,12 @@ AbstractTxOutReference::AbstractTxOutReference(const AbstractTxOut &tx_out)
   // do nothing
 }
 
+uint32_t AbstractTxOutReference::GetSerializeSize() const {
+  uint32_t result = 8;  // Amount分
+  result += locking_script_.GetData().GetSerializeSize();
+  return result;
+}
+
 // -----------------------------------------------------------------------------
 // SignatureUtil
 // -----------------------------------------------------------------------------
@@ -565,6 +571,12 @@ bool AbstractTransaction::IsCoinBase() const {
     }
   }
   return is_coinbase;
+}
+
+uint32_t AbstractTransaction::GetVsizeFromSize(
+    uint32_t no_witness_size, uint32_t witness_size) {
+  uint32_t weight = (no_witness_size * 4) + witness_size;
+  return weight / 4;
 }
 
 bool AbstractTransaction::GetVariableInt(

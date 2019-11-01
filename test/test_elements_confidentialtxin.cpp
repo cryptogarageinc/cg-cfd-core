@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "cfdcore/cfdcore_elements_transaction.h"
+#include "cfdcore/cfdcore_address.h"
 #include "cfdcore/cfdcore_common.h"
 #include "cfdcore/cfdcore_exception.h"
 #include "cfdcore/cfdcore_bytedata.h"
@@ -10,6 +11,7 @@
 #include "cfdcore/cfdcore_coin.h"
 #include "cfdcore/cfdcore_util.h"
 
+using cfd::core::AddressType;
 using cfd::core::CfdException;
 using cfd::core::ByteData;
 using cfd::core::ByteData256;
@@ -218,6 +220,44 @@ TEST(ConfidentialTxIn, RemovePeginWitnessStackAll) {
   EXPECT_EQ(txin.GetPeginWitnessStackNum(), 0);
   EXPECT_STREQ(txin.GetWitnessHash().GetHex().c_str(),
     "17f0c9b759a09c56116151cca94f18340acc3a782b2062cee3c41333b2dc63fe");
+}
+
+struct TestEstimateConfidentialTxInSizeVector {
+  AddressType addr_type;
+  uint32_t size;
+  uint32_t witness_size;
+  Script redeem_script;
+  uint32_t pegin_btc_tx;
+  Script fedpeg_script;
+  bool is_issuance;
+  bool is_blind;
+};
+
+TEST(ConfidentialTxIn, EstimateTxInSize) {
+  static const std::vector<TestEstimateConfidentialTxInSizeVector> test_vector = {
+    {AddressType::kP2pkhAddress, 149, 0, Script(), 0, Script(), false, false},
+    {AddressType::kP2shAddress, 138, 0, exp_script, 0, Script(), false, false},
+    {AddressType::kP2shP2wpkhAddress, 282, 111, Script(), 0, Script(), false, false},
+    {AddressType::kP2shP2wshAddress, 230, 79, Script("51"), 0, Script(), false, false},
+    {AddressType::kP2wpkhAddress, 260, 111, Script(), 0, Script(), false, false},
+    {AddressType::kP2wshAddress, 238, 100, exp_script, 0, Script(), false, false},
+    // pegin
+    {AddressType::kP2wpkhAddress, 718, 569, Script(), 226, Script("51"), false, false},
+    // issue
+    {AddressType::kP2wpkhAddress, 342, 111, Script(), 0, Script(), true, false},
+    {AddressType::kP2wpkhAddress, 6180, 5901, Script(), 0, Script(), true, true},
+  };
+
+  for (const auto& test_data : test_vector) {
+    uint32_t size = 0;
+    uint32_t wit_size = 0;
+    EXPECT_NO_THROW((size = ConfidentialTxIn::EstimateTxInSize(
+        test_data.addr_type, test_data.redeem_script, test_data.pegin_btc_tx,
+        test_data.fedpeg_script, test_data.is_issuance, test_data.is_blind,
+        &wit_size)));
+    EXPECT_EQ(size, test_data.size);
+    EXPECT_EQ(wit_size, test_data.witness_size);
+  }
 }
 
 TEST(ConfidentialTxInReference, Constractor) {
