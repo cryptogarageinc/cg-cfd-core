@@ -142,6 +142,8 @@ bool ConfidentialNonce::HasBlinding() const {
   return (version_ != 0) && (version_ != kConfidentialVersion_1);
 }
 
+bool ConfidentialNonce::IsEmpty() const { return (version_ == 0); }
+
 // -----------------------------------------------------------------------------
 // ConfidentialAssetId
 // -----------------------------------------------------------------------------
@@ -243,6 +245,8 @@ ByteData ConfidentialAssetId::GetUnblindedData() const {
   }
   return GetData();
 }
+
+bool ConfidentialAssetId::IsEmpty() const { return (version_ == 0); }
 
 // -----------------------------------------------------------------------------
 // ConfidentialValue
@@ -536,6 +540,7 @@ uint32_t ConfidentialTxIn::EstimateTxInSize(
   uint32_t witness_size = 0;
   uint32_t size =
       TxIn::EstimateTxInSize(addr_type, redeem_script, &witness_size);
+  size -= witness_size;  // non segwit size
 
   if (is_issuance) {
     if (is_blind) {
@@ -738,7 +743,9 @@ uint32_t ConfidentialTxOutReference::GetSerializeSize(
   static constexpr const uint32_t kTxOutRangeproof = 2893 + 3;
   uint32_t result = 0;
   uint32_t witness_size = 0;
-  if (is_blinded && (!locking_script_.IsEmpty())) {
+  bool is_blind = is_blinded || (!nonce_.IsEmpty());
+  if (is_blind && (!locking_script_.IsEmpty()) &&
+      (!locking_script_.IsPegoutScript())) {
     result += kConfidentialDataSize;  // asset
     result += kConfidentialDataSize;  // value
     result += kConfidentialDataSize;  // nonce

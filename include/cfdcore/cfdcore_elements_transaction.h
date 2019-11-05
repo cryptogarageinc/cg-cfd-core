@@ -69,6 +69,12 @@ class CFD_CORE_EXPORT ConfidentialNonce {
    * @retval false unblind
    */
   bool HasBlinding() const;
+  /**
+   * @brief 空かどうかを取得する.
+   * @retval true  empty
+   * @retval false exist value
+   */
+  bool IsEmpty() const;
 
  private:
   ByteData data_;    //!< byte data
@@ -124,6 +130,12 @@ class CFD_CORE_EXPORT ConfidentialAssetId {
    * @return byte array data.
    */
   ByteData GetUnblindedData() const;
+  /**
+   * @brief 空かどうかを取得する.
+   * @retval true  empty
+   * @retval false exist value
+   */
+  bool IsEmpty() const;
 
  private:
   ByteData data_;    //!< byte data
