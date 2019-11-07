@@ -119,11 +119,10 @@ uint32_t TxIn::EstimateTxInSize(
       try {
         // OP_0 <sig1> <sig2> ... <unlocking script>
         uint32_t reqnum = 0;
-        ScriptUtil::ExtractPubkeysFromMultisigScript(
-            redeem_script, &reqnum);
+        ScriptUtil::ExtractPubkeysFromMultisigScript(redeem_script, &reqnum);
         script_size += (EC_SIGNATURE_DER_MAX_LEN + 1) * reqnum;
         script_size += 2;  // 先頭のOP_0部
-      } catch (const CfdException& except) {
+      } catch (const CfdException &except) {
         if (except.GetErrorCode() != CfdError::kCfdIllegalArgumentError) {
           // error occurs other than multisig confirmation
           throw except;

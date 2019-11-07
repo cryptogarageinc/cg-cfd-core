@@ -1002,7 +1002,7 @@ class CFD_CORE_EXPORT ScriptUtil {
    * @return an array of public keys.
    */
   static std::vector<Pubkey> ExtractPubkeysFromMultisigScript(
-    const Script& multisig_script, uint32_t* require_num = nullptr);
+      const Script &multisig_script, uint32_t *require_num = nullptr);
 
  private:
   ScriptUtil();
