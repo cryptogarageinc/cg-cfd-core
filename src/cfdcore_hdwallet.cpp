@@ -5,6 +5,7 @@
  * @brief BIP32/BIP39/BIP44関連クラスの実装
  */
 
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -39,12 +40,13 @@ static constexpr const char* kEmptySeedStr =
  * @param[out] chaincode          chaincode
  * @param[out] privkey            privkey
  * @param[out] pubkey             pubkey
+ * @param[out] fingerprint        finger print
  */
 static void AnalyzeBip32KeyData(
     const void* extkey, const std::string* base58,
     std::vector<uint8_t>* serialize_data, uint32_t* version, uint8_t* depth,
-    uint32_t* child, ByteData256* chaincode, Privkey* privkey,
-    Pubkey* pubkey) {
+    uint32_t* child, ByteData256* chaincode, Privkey* privkey, Pubkey* pubkey,
+    uint32_t* fingerprint) {
   struct ext_key output = {};
   std::string clsname = (privkey != nullptr) ? "ExtPrivkey" : "ExtPubkey";
   const std::vector<uint8_t>* serialize_bytes = nullptr;
@@ -91,6 +93,9 @@ static void AnalyzeBip32KeyData(
   *version = output.version;
   *depth = output.depth;
   *child = output.child_num;
+  if (fingerprint) {
+    memcpy(fingerprint, output.parent160, sizeof(*fingerprint));
+  }
   std::vector<uint8_t> chaincode_bytes(kByteData256Length);
   memcpy(chaincode_bytes.data(), output.chain_code, chaincode_bytes.size());
   *chaincode = ByteData256(chaincode_bytes);
@@ -147,6 +152,50 @@ static std::string ToBase58String(
   return WallyUtil::ConvertStringAndFree(output);
 }
 
+/**
+ * @brief 文字列パスから配列を取得する。
+ * @param[in] string_path       child number string path
+ * @param[in] caller_name       caller class name
+ * @return uint32_t array
+ */
+static std::vector<uint32_t> ToArrayFromString(
+    const std::string& string_path, const std::string& caller_name) {
+  std::vector<uint32_t> result;
+  std::vector<std::string> list = StringUtil::Split(string_path, "/");
+  for (size_t index = 0; index < list.size(); ++index) {
+    std::string str = list[index];
+    bool hardened = false;
+    if (str.size() <= 1) {
+      // do nothing
+    } else if (
+        (str.back() == '\'') || (str.back() == 'h') || (str.back() == 'H')) {
+      str = str.substr(0, str.size() - 1);
+      hardened = true;
+    }
+    if (str == "m") continue;  // master key
+
+    // strtol関数による変換
+    char* p_str_end = nullptr;
+    uint32_t value = std::strtoul(str.c_str(), &p_str_end, 10);
+    if (str.empty() || ((p_str_end != nullptr) && (*p_str_end != '\0'))) {
+      warn(CFD_LOG_SOURCE, "{} bip32 string path fail.", caller_name);
+      throw CfdException(
+          CfdError::kCfdIllegalStateError,
+          caller_name + " bip32 string path fail.");
+    }
+    if (hardened) value |= 0x80000000;
+    result.push_back(static_cast<uint32_t>(value));
+  }
+
+  if (result.empty()) {
+    warn(CFD_LOG_SOURCE, "{} bip32 string path empty.", caller_name);
+    throw CfdException(
+        CfdError::kCfdIllegalStateError,
+        caller_name + " bip32 string path empty.");
+  }
+  return result;
+}
+
 // ----------------------------------------------------------------------------
 // HDWallet
 // ----------------------------------------------------------------------------
@@ -194,6 +243,12 @@ ExtPrivkey HDWallet::GeneratePrivkey(
   return privkey.DerivePrivkey(path);
 }
 
+ExtPrivkey HDWallet::GeneratePrivkey(
+    NetType network_type, const std::string& string_path) const {
+  ExtPrivkey privkey(seed_, network_type);
+  return privkey.DerivePrivkey(string_path);
+}
+
 ExtPubkey HDWallet::GeneratePubkey(NetType network_type) const {
   ExtPrivkey privkey(seed_, network_type);
   return privkey.GetExtPubkey();
@@ -209,6 +264,12 @@ ExtPubkey HDWallet::GeneratePubkey(
     NetType network_type, const std::vector<uint32_t>& path) const {
   ExtPrivkey privkey(seed_, network_type);
   return privkey.DerivePubkey(path);
+}
+
+ExtPubkey HDWallet::GeneratePubkey(
+    NetType network_type, const std::string& string_path) const {
+  ExtPrivkey privkey(seed_, network_type);
+  return privkey.DerivePubkey(string_path);
 }
 
 std::vector<std::string> HDWallet::GetMnemonicWordlist(
@@ -318,7 +379,7 @@ ExtPrivkey::ExtPrivkey(const ByteData& seed, NetType network_type) {
 
   AnalyzeBip32KeyData(
       &extkey, nullptr, nullptr, &version_, &depth_, &child_num_, &chaincode_,
-      &privkey_, nullptr);
+      &privkey_, nullptr, &fingerprint_);
 }
 
 ExtPrivkey::ExtPrivkey(const ByteData& serialize_data) {
@@ -327,14 +388,14 @@ ExtPrivkey::ExtPrivkey(const ByteData& serialize_data) {
   std::vector<uint8_t> data = serialize_data.GetBytes();
   AnalyzeBip32KeyData(
       nullptr, nullptr, &data, &version_, &depth_, &child_num_, &chaincode_,
-      &privkey_, nullptr);
+      &privkey_, nullptr, &fingerprint_);
 }
 
 ExtPrivkey::ExtPrivkey(const std::string& base58_data) {
   std::vector<uint8_t> data;
   AnalyzeBip32KeyData(
       nullptr, &base58_data, &data, &version_, &depth_, &child_num_,
-      &chaincode_, &privkey_, nullptr);
+      &chaincode_, &privkey_, nullptr, &fingerprint_);
   serialize_data_ = ByteData(data);
 }
 
@@ -383,6 +444,11 @@ ExtPrivkey ExtPrivkey::DerivePrivkey(const std::vector<uint32_t>& path) const {
   return ExtPrivkey(ByteData(data));
 }
 
+ExtPrivkey ExtPrivkey::DerivePrivkey(const std::string& string_path) const {
+  std::vector<uint32_t> path = ToArrayFromString(string_path, "ExtPrivkey");
+  return DerivePrivkey(path);
+}
+
 ExtPubkey ExtPrivkey::GetExtPubkey() const {
   struct ext_key extkey;
 
@@ -422,6 +488,11 @@ ExtPubkey ExtPrivkey::DerivePubkey(const std::vector<uint32_t>& path) const {
   return privkey.GetExtPubkey();
 }
 
+ExtPubkey ExtPrivkey::DerivePubkey(const std::string& string_path) const {
+  ExtPrivkey privkey = DerivePrivkey(string_path);
+  return privkey.GetExtPubkey();
+}
+
 bool ExtPrivkey::IsValid() const { return !privkey_.IsInvalid(); }
 
 ByteData256 ExtPrivkey::GetChainCode() const { return chaincode_; }
@@ -440,6 +511,8 @@ ByteData ExtPrivkey::GetVersionData() const {
   byte_data[3] = version_ & 0xff;
   return ByteData(byte_data);
 }
+
+uint32_t ExtPrivkey::GetFingerprint() const { return fingerprint_; }
 
 // ----------------------------------------------------------------------------
 // ExtPubkey
@@ -461,14 +534,14 @@ ExtPubkey::ExtPubkey(
   std::vector<uint8_t> data = serialize_data.GetBytes();
   AnalyzeBip32KeyData(
       nullptr, nullptr, &data, &version_, &depth_, &child_num_, &chaincode_,
-      nullptr, &pubkey_);
+      nullptr, &pubkey_, &fingerprint_);
 }
 
 ExtPubkey::ExtPubkey(const std::string& base58_data) {
   std::vector<uint8_t> data;
   AnalyzeBip32KeyData(
       nullptr, &base58_data, &data, &version_, &depth_, &child_num_,
-      &chaincode_, nullptr, &pubkey_);
+      &chaincode_, nullptr, &pubkey_, &fingerprint_);
   serialize_data_ = ByteData(data);
 }
 
@@ -525,6 +598,11 @@ ExtPubkey ExtPubkey::DerivePubkey(const std::vector<uint32_t>& path) const {
   return ExtPubkey(ByteData(data), tweak_sum_data);
 }
 
+ExtPubkey ExtPubkey::DerivePubkey(const std::string& string_path) const {
+  std::vector<uint32_t> path = ToArrayFromString(string_path, "ExtPrivkey");
+  return DerivePubkey(path);
+}
+
 ByteData256 ExtPubkey::DerivePubTweak(
     const std::vector<uint32_t>& path) const {
   ExtPubkey key = DerivePubkey(path);
@@ -551,6 +629,8 @@ ByteData ExtPubkey::GetVersionData() const {
   byte_data[3] = version_ & 0xff;
   return ByteData(byte_data);
 }
+
+uint32_t ExtPubkey::GetFingerprint() const { return fingerprint_; }
 
 }  // namespace core
 }  // namespace cfd
