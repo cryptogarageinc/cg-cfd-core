@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "cfdcore/cfdcore_exception.h"
+#include "cfdcore/cfdcore_iterator.h"
 #include "cfdcore/cfdcore_logger.h"
 #include "cfdcore/cfdcore_script.h"
 #include "cfdcore/cfdcore_util.h"
@@ -1128,6 +1129,109 @@ Script ScriptUtil::CreatePegoutLogkingScript(
   return locking_script;
 }
 #endif  // CFD_DISABLE_ELEMENTS
+
+std::vector<Pubkey> ScriptUtil::ExtractPubkeysFromMultisigScript(
+    const Script& multisig_script, uint32_t* require_num) {
+  std::vector<Pubkey> pubkeys;
+  const std::vector<ScriptElement> elements = multisig_script.GetElementList();
+
+  // find OP_CHECKMULTISIG or OP_CHECKMULTISIGVERIFY
+  IteratorWrapper<ScriptElement> itr = IteratorWrapper<ScriptElement>(
+      elements, "Invalid script element access", true);
+  // search OP_CHECKMULTISIG(or VERIFY)
+  while (itr.hasNext()) {
+    ScriptElement element = itr.next();
+    if (!element.IsOpCode()) {
+      continue;
+    }
+    if (element.GetOpCode() == ScriptOperator::OP_CHECKMULTISIG ||
+        element.GetOpCode() == ScriptOperator::OP_CHECKMULTISIGVERIFY) {
+      break;
+    }
+  }
+  // target opcode not found
+  if (!itr.hasNext()) {
+    warn(
+        CFD_LOG_SOURCE,
+        "Multisig opcode (OP_CHECKMULTISIG|VERIFY) not found"
+        " in redeem script: script={}",
+        multisig_script.ToString());
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "OP_CHCKMULTISIG(OP_CHECKMULTISIGVERIFY) not found"
+        " in redeem script.");
+  }
+
+  // get contain pubkey num
+  const ScriptElement& op_m = itr.next();
+  if (!op_m.IsNumber()) {
+    warn(
+        CFD_LOG_SOURCE,
+        "Invalid OP_CHECKMULTISIG(VERIFY) input in redeem script."
+        " Missing contain pubkey number.: script={}",
+        multisig_script.ToString());
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Invalid OP_CHCKMULTISIG(OP_CHECKMULTISIGVERIFY) input"
+        " in redeem script. Missing contain pubkey number.");
+  }
+
+  // set pubkey to vector(reverse data)
+  int64_t contain_pubkey_num = op_m.GetNumber();
+  for (int64_t i = 0; i < contain_pubkey_num; ++i) {
+    if (!itr.hasNext()) {
+      warn(
+          CFD_LOG_SOURCE,
+          "Not found enough pubkeys in redeem script.: "
+          "require_pubkey_num={}, script={}",
+          contain_pubkey_num, multisig_script.ToString());
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError,
+          "Not found enough pubkeys in redeem script.");
+    }
+
+    const ScriptElement& pubkey_element = itr.next();
+    // check script element type
+    if (!pubkey_element.IsBinary()) {
+      warn(
+          CFD_LOG_SOURCE,
+          "Invalid script element. Not binary element.: "
+          "ScriptElementType={}, data={}",
+          pubkey_element.GetType(), pubkey_element.ToString());
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError,
+          "Invalid ScriptElementType.(not binary)");
+    }
+
+    // push pubkey data
+    pubkeys.push_back(Pubkey(pubkey_element.GetBinaryData()));
+  }
+
+  // check opcode(require signature num)
+  ScriptElement require_num_element(ScriptType::kOpInvalidOpCode);
+  if (itr.hasNext()) {
+    require_num_element = itr.next();
+  }
+  if (!(require_num_element.IsNumber() && require_num_element.IsOpCode()) ||
+      (require_num_element.GetNumber() <= 0)) {
+    warn(
+        CFD_LOG_SOURCE,
+        "Invalid OP_CHECKMULTISIG(VERIFY) input in redeem script."
+        " Missing require signature number.: script={}",
+        multisig_script.ToString());
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "Invalid OP_CHCKMULTISIG(OP_CHECKMULTISIGVERIFY) input"
+        " in redeem script. Missing require signature number.");
+  }
+
+  if (require_num) {
+    *require_num = static_cast<uint32_t>(require_num_element.GetNumber());
+  }
+  // return reverse pubkey vector
+  std::reverse(std::begin(pubkeys), std::end(pubkeys));
+  return pubkeys;
+}
 
 }  // namespace core
 }  // namespace cfd

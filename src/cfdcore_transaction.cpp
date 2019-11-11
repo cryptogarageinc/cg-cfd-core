@@ -116,10 +116,17 @@ uint32_t TxIn::EstimateTxInSize(
     if (!redeem_script.IsEmpty()) {
       script_size +=
           static_cast<uint32_t>(redeem_script.GetData().GetSerializeSize());
-      if (redeem_script.IsMultisigScript()) {
-        uint32_t reqnum = static_cast<uint32_t>(
-            redeem_script.GetElementList()[1].GetNumber());
+      try {
+        // OP_0 <sig1> <sig2> ... <unlocking script>
+        uint32_t reqnum = 0;
+        ScriptUtil::ExtractPubkeysFromMultisigScript(redeem_script, &reqnum);
         script_size += (EC_SIGNATURE_DER_MAX_LEN + 1) * reqnum;
+        script_size += 2;  // 先頭のOP_0部
+      } catch (const CfdException &except) {
+        if (except.GetErrorCode() != CfdError::kCfdIllegalArgumentError) {
+          // error occurs other than multisig confirmation
+          throw except;
+        }
       }
     }
   }
