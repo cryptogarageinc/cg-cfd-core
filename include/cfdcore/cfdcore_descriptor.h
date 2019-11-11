@@ -17,7 +17,9 @@
 #include "cfdcore/cfdcore_bytedata.h"
 #include "cfdcore/cfdcore_coin.h"
 #include "cfdcore/cfdcore_common.h"
+#include "cfdcore/cfdcore_hdwallet.h"
 #include "cfdcore/cfdcore_key.h"
+#include "cfdcore/cfdcore_transaction_common.h"
 
 namespace cfd {
 namespace core {
@@ -60,6 +62,229 @@ enum DescriptorKeyType {
 };
 
 /**
+ * @brief key型descriptorの参照クラスです.
+ */
+class CFD_CORE_EXPORT DescriptorKeyReference {
+ public:
+  /**
+   * @brief constructor.
+   */
+  DescriptorKeyReference();
+  /**
+   * @brief constructor.
+   * @param[in] pubkey      pubkey
+   */
+  explicit DescriptorKeyReference(const Pubkey& pubkey);
+  /**
+   * @brief constructor.
+   * @param[in] ext_privkey   ext privkey
+   * @param[in] arg           argument
+   */
+  explicit DescriptorKeyReference(
+      const ExtPrivkey& ext_privkey, const std::string* arg = nullptr);
+  /**
+   * @brief constructor.
+   * @param[in] ext_pubkey   ext pubkey
+   * @param[in] arg           argument
+   */
+  explicit DescriptorKeyReference(
+      const ExtPubkey& ext_pubkey, const std::string* arg = nullptr);
+  /**
+   * @brief copy constructor.
+   * @param[in] object    DescriptorKeyReference object
+   * @return DescriptorKeyReference object
+   */
+  DescriptorKeyReference& operator=(const DescriptorKeyReference& object);
+
+  /**
+   * @brief getting pubkey.
+   * @return pubkey
+   */
+  Pubkey GetPubkey() const;
+  /**
+   * @brief getting argument.
+   * @return argument
+   */
+  std::string GetArgument() const;
+  /**
+   * @brief exist ext-privkey.
+   * @retval true  exist
+   * @retval false not exist
+   */
+  bool HasExtPrivkey() const;
+  /**
+   * @brief exist ext-pubkey.
+   * @retval true  exist
+   * @retval false not exist
+   */
+  bool HasExtPubkey() const;
+  /**
+   * @brief getting ext-privkey.
+   * @details need ext-privkey exists.
+   * @return ext-privkey
+   */
+  ExtPrivkey GetExtPrivkey() const;
+  /**
+   * @brief getting ext-pubkey.
+   * @details need ext-pubkey exists.
+   * @return ext-pubkey
+   */
+  ExtPubkey GetExtPubkey() const;
+
+ private:
+  DescriptorKeyType key_type_;  //!< node key type
+  Pubkey pubkey_;               //!< pubkey
+  std::string key_info_;        //!< key string data
+  std::string argument_;        //!< argument
+};
+
+/**
+ * @brief Script型descriptorの参照クラスです.
+ */
+class CFD_CORE_EXPORT DescriptorScriptReference {
+ public:
+  /**
+   * @brief constructor.
+   */
+  DescriptorScriptReference();
+  /**
+   * @brief constructor.
+   * @details `raw` type only.
+   * @param[in] locking_script    locking script
+   * @param[in] script_type       script type
+   * @param[in] address_prefixes  address prefix list
+   */
+  explicit DescriptorScriptReference(
+      const Script& locking_script, DescriptorScriptType script_type,
+      const std::vector<AddressFormatData>& address_prefixes);
+  /**
+   * @brief constructor.
+   * @details `sh` or `wsh` type only.
+   * @param[in] locking_script    locking script
+   * @param[in] script_type       script type
+   * @param[in] child_script      child script node
+   * @param[in] address_prefixes  address prefix list
+   */
+  explicit DescriptorScriptReference(
+      const Script& locking_script, DescriptorScriptType script_type,
+      const DescriptorScriptReference& child_script,
+      const std::vector<AddressFormatData>& address_prefixes);
+  /**
+   * @brief constructor.
+   * @param[in] locking_script    locking script
+   * @param[in] script_type       script type
+   * @param[in] key_list          key(pubkey, extprivkey, extpubkey) list
+   * @param[in] address_prefixes  address prefix list
+   */
+  explicit DescriptorScriptReference(
+      const Script& locking_script, DescriptorScriptType script_type,
+      const std::vector<DescriptorKeyReference>& key_list,
+      const std::vector<AddressFormatData>& address_prefixes);
+  /**
+   * @brief constructor.
+   * @param[in] address_script    address script
+   * @param[in] address_prefixes  address prefix list
+   */
+  explicit DescriptorScriptReference(
+      const Address& address_script,
+      const std::vector<AddressFormatData>& address_prefixes);
+  /**
+   * @brief copy constructor.
+   * @param[in] object    DescriptorScriptReference object
+   * @return DescriptorScriptReference object
+   */
+  DescriptorScriptReference& operator=(
+      const DescriptorScriptReference& object);
+
+  /**
+   * @brief getting locking script.
+   * @return locking script
+   */
+  Script GetLockingScript() const;
+  /**
+   * @brief exist address data.
+   * @retval true  exist
+   * @retval false not exist
+   */
+  bool HasAddress() const;
+  /**
+   * @brief getting address.
+   * @param[in] net_type    network type
+   * @return address
+   */
+  Address GenerateAddress(NetType net_type) const;
+  /**
+   * @brief getting address list.
+   * @param[in] net_type    network type
+   * @return address list
+   */
+  std::vector<Address> GenerateAddresses(NetType net_type) const;
+  /**
+   * @brief getting address type.
+   * @return address type
+   */
+  AddressType GetAddressType() const;
+  /**
+   * @brief getting hash type.
+   * @return hash type
+   */
+  HashType GetHashType() const;
+
+  // script api
+  /**
+   * @brief exist redeem script.
+   * @retval true  exist
+   * @retval false not exist
+   */
+  bool HasRedeemScript() const;
+  /**
+   * @brief getting redeem script.
+   * @return redeem script
+   */
+  Script GetRedeemScript() const;
+  /**
+   * @brief exist child script node.
+   * @retval true  exist
+   * @retval false not exist
+   */
+  bool HasChild() const;
+  /**
+   * @brief getting child script node.
+   * @return child script node
+   */
+  DescriptorScriptReference GetChild() const;
+
+  // key api
+  /**
+   * @brief exist key list.
+   * @retval true  exist
+   * @retval false not exist
+   */
+  bool HasKey() const;
+  /**
+   * @brief getting key list number.
+   * @return key list number
+   */
+  uint32_t GetKeyNum() const;
+  /**
+   * @brief getting key list.
+   * @return key list
+   */
+  std::vector<DescriptorKeyReference> GetKeyList() const;
+
+ private:
+  DescriptorScriptType script_type_;    //!< node script type
+  Script locking_script_;               //!< locking script
+  bool is_script_;                      //!< exist redeem script
+  Script redeem_script_;                //!< redeem script
+  Address address_script_;              //!< address script data
+  //! child script
+  std::shared_ptr<DescriptorScriptReference> child_script_ = nullptr;
+  std::vector<DescriptorKeyReference> keys_;      //!< key list
+  std::vector<AddressFormatData> addr_prefixes_;  //!< address prefixes
+};
+
+/**
  * @brief Descriptor用Node定義クラス
  */
 class CFD_CORE_EXPORT DescriptorNode {
@@ -99,20 +324,19 @@ class CFD_CORE_EXPORT DescriptorNode {
   DescriptorNode& operator=(const DescriptorNode& object);
 
   /**
-   * @brief generate script.
+   * @brief get reference object.
    * @param[in] array_argument  argument
-   * @param[in] script_list     (redeem or locking) script list.
-   * @return locking script
+   * @return reference object
    */
-  Script GenerateScript(
-      std::vector<std::string>* array_argument,
-      std::vector<Script>* script_list = nullptr) const;
+  DescriptorScriptReference GetReference(
+      std::vector<std::string>* array_argument) const;
+
   /**
-   * @brief generate script all.
+   * @brief get reference object list.
    * @param[in] array_argument  argument
-   * @return locking script list
+   * @return reference object list
    */
-  std::vector<Script> GenerateScriptAll(
+  std::vector<DescriptorScriptReference> GetReferences(
       std::vector<std::string>* array_argument) const;
 
   /**
@@ -122,7 +346,7 @@ class CFD_CORE_EXPORT DescriptorNode {
   uint32_t GetNeedArgumentNum() const;
 
   /**
-   * @brief collect output descriptor.
+   * @brief getting output descriptor.
    * @param[in] append_checksum  append checksum
    * @return output descriptor
    */
@@ -152,6 +376,13 @@ class CFD_CORE_EXPORT DescriptorNode {
    * @return pubkey
    */
   Pubkey GetPubkey(std::vector<std::string>* array_argument) const;
+  /**
+   * @brief get key reference object.
+   * @param[in] array_argument  argument
+   * @return key reference object list
+   */
+  DescriptorKeyReference GetKeyReferences(
+      std::vector<std::string>* array_argument) const;
 
  private:
   std::string name_;                              //!< node name
@@ -227,46 +458,51 @@ class CFD_CORE_EXPORT Descriptor {
   uint32_t GetNeedArgumentNum() const;
 
   /**
-   * @brief get locking script.
-   * @param[in] script_list     (redeem or locking) script list.
+   * @brief getting locking script.
    * @return locking script
    */
-  Script GetScript(std::vector<Script>* script_list = nullptr) const;
+  Script GetLockingScript() const;
 
   /**
-   * @brief generate locking script.
+   * @brief getting locking script.
    * @param[in] argument        argument
-   * @param[in] script_list     (redeem or locking) script list.
    * @return locking script
    */
-  Script GenerateScript(
-      const std::string& argument,
-      std::vector<Script>* script_list = nullptr) const;
+  Script GetLockingScript(const std::string& argument) const;
   /**
-   * @brief generate locking script.
+   * @brief getting locking script.
    * @param[in] array_argument  argument
-   * @param[in] script_list     (redeem or locking) script list.
    * @return locking script
    */
-  Script GenerateScript(
-      const std::vector<std::string>& array_argument,
-      std::vector<Script>* script_list = nullptr) const;
-
-  /**
-   * @brief generate combo script.
-   * @return locking script list
-   */
-  std::vector<Script> GetScriptCombo() const;
-  /**
-   * @brief generate combo script.
-   * @param[in] array_argument  argument
-   * @return locking script list
-   */
-  std::vector<Script> GetScriptCombo(
+  Script GetLockingScript(
       const std::vector<std::string>& array_argument) const;
 
   /**
-   * @brief collect output descriptor.
+   * @brief getting locking script list.
+   * @param[in] array_argument  argument
+   * @return locking script
+   */
+  std::vector<Script> GetLockingScriptAll(
+      const std::vector<std::string>* array_argument = nullptr) const;
+
+  /**
+   * @brief getting descriptor reference.
+   * @param[in] array_argument  argument
+   * @return descriptor reference
+   */
+  DescriptorScriptReference GetReference(
+      const std::vector<std::string>* array_argument = nullptr) const;
+
+  /**
+   * @brief getting descriptor reference list.
+   * @param[in] array_argument  argument
+   * @return descriptor reference list
+   */
+  std::vector<DescriptorScriptReference> GetReferenceAll(
+      const std::vector<std::string>* array_argument = nullptr) const;
+
+  /**
+   * @brief getting output descriptor.
    * @param[in] append_checksum  append checksum
    * @return output descriptor
    */

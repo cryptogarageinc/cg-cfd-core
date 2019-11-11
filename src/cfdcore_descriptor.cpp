@@ -57,9 +57,328 @@ static const DescriptorNodeScriptData kDescriptorNodeScriptTable[] = {
 };
 
 // -----------------------------------------------------------------------------
+// DescriptorKeyReference
+// -----------------------------------------------------------------------------
+DescriptorKeyReference::DescriptorKeyReference()
+    : key_type_(DescriptorKeyType::kDescriptorKeyNull) {}
+
+DescriptorKeyReference::DescriptorKeyReference(const Pubkey& pubkey)
+    : key_type_(DescriptorKeyType::kDescriptorKeyPublic),
+      pubkey_(pubkey),
+      key_info_(pubkey.GetHex()) {}
+
+DescriptorKeyReference::DescriptorKeyReference(
+    const ExtPrivkey& ext_privkey, const std::string* arg)
+    : key_type_(DescriptorKeyType::kDescriptorKeyBip32Priv),
+      pubkey_(ext_privkey.GetExtPubkey().GetPubkey()),
+      key_info_(ext_privkey.ToString()),
+      argument_((arg) ? *arg : "") {}
+
+DescriptorKeyReference::DescriptorKeyReference(
+    const ExtPubkey& ext_pubkey, const std::string* arg)
+    : key_type_(DescriptorKeyType::kDescriptorKeyBip32),
+      pubkey_(ext_pubkey.GetPubkey()),
+      key_info_(ext_pubkey.ToString()),
+      argument_((arg) ? *arg : "") {}
+
+DescriptorKeyReference& DescriptorKeyReference::operator=(
+    const DescriptorKeyReference& object) {
+  key_type_ = object.key_type_;
+  pubkey_ = object.pubkey_;
+  key_info_ = object.key_info_;
+  argument_ = object.argument_;
+  return *this;
+}
+
+Pubkey DescriptorKeyReference::GetPubkey() const { return pubkey_; }
+
+std::string DescriptorKeyReference::GetArgument() const { return argument_; }
+
+bool DescriptorKeyReference::HasExtPubkey() const {
+  if ((key_type_ == DescriptorKeyType::kDescriptorKeyBip32) ||
+      (key_type_ == DescriptorKeyType::kDescriptorKeyBip32Priv)) {
+    return true;
+  }
+  return false;
+}
+
+bool DescriptorKeyReference::HasExtPrivkey() const {
+  if (key_type_ == DescriptorKeyType::kDescriptorKeyBip32Priv) {
+    return true;
+  }
+  return false;
+}
+
+ExtPrivkey DescriptorKeyReference::GetExtPrivkey() const {
+  if (key_type_ == DescriptorKeyType::kDescriptorKeyBip32Priv) {
+    return ExtPrivkey(key_info_);
+  }
+  warn(CFD_LOG_SOURCE, "Failed to GetExtPrivkey. unsupported key type.");
+  throw CfdException(
+      CfdError::kCfdIllegalArgumentError,
+      "GetExtPrivkey unsupported key type.");
+}
+
+ExtPubkey DescriptorKeyReference::GetExtPubkey() const {
+  if (key_type_ == DescriptorKeyType::kDescriptorKeyBip32) {
+    return ExtPubkey(key_info_);
+  }
+  if (key_type_ == DescriptorKeyType::kDescriptorKeyBip32Priv) {
+    return ExtPrivkey(key_info_).GetExtPubkey();
+  }
+  warn(CFD_LOG_SOURCE, "Failed to GetExtPubkey. unsupported key type.");
+  throw CfdException(
+      CfdError::kCfdIllegalArgumentError,
+      "GetExtPubkey unsupported key type.");
+}
+
+// -----------------------------------------------------------------------------
+// DescriptorScriptReference
+// -----------------------------------------------------------------------------
+DescriptorScriptReference::DescriptorScriptReference()
+    : script_type_(DescriptorScriptType::kDescriptorScriptNull),
+      is_script_(false) {
+  // do nothing
+}
+
+DescriptorScriptReference::DescriptorScriptReference(
+    const Script& locking_script, DescriptorScriptType script_type,
+    const std::vector<AddressFormatData>& address_prefixes)
+    : script_type_(script_type),
+      locking_script_(locking_script),
+      is_script_(false),
+      addr_prefixes_(address_prefixes) {
+  if (script_type != DescriptorScriptType::kDescriptorScriptRaw) {
+    warn(
+        CFD_LOG_SOURCE, "If it is not a raw type, key or script is required.");
+    throw CfdException(
+        CfdError::kCfdIllegalArgumentError,
+        "If it is not a raw type, key or script is required.");
+  }
+}
+
+DescriptorScriptReference::DescriptorScriptReference(
+    const Script& locking_script, DescriptorScriptType script_type,
+    const DescriptorScriptReference& child_script,
+    const std::vector<AddressFormatData>& address_prefixes)
+    : script_type_(script_type),
+      locking_script_(locking_script),
+      is_script_(true),
+      addr_prefixes_(address_prefixes) {
+  redeem_script_ = child_script.locking_script_;
+  child_script_ = std::make_shared<DescriptorScriptReference>(child_script);
+}
+
+DescriptorScriptReference::DescriptorScriptReference(
+    const Script& locking_script, DescriptorScriptType script_type,
+    const std::vector<DescriptorKeyReference>& key_list,
+    const std::vector<AddressFormatData>& address_prefixes)
+    : script_type_(script_type),
+      locking_script_(locking_script),
+      is_script_(false),
+      keys_(key_list),
+      addr_prefixes_(address_prefixes) {
+  // do nothing
+}
+
+DescriptorScriptReference::DescriptorScriptReference(
+    const Address& address_script,
+    const std::vector<AddressFormatData>& address_prefixes)
+    : script_type_(DescriptorScriptType::kDescriptorScriptAddr),
+      locking_script_(address_script.GetLockingScript()),
+      is_script_(false),
+      address_script_(address_script),
+      addr_prefixes_(address_prefixes) {
+  // do nothing
+}
+
+DescriptorScriptReference& DescriptorScriptReference::operator=(
+    const DescriptorScriptReference& object) {
+  locking_script_ = object.locking_script_;
+  script_type_ = object.script_type_;
+  address_script_ = object.address_script_;
+  is_script_ = object.is_script_;
+  redeem_script_ = object.redeem_script_;
+  child_script_ = object.child_script_;
+  keys_ = object.keys_;
+  addr_prefixes_ = object.addr_prefixes_;
+  return *this;
+}
+
+Script DescriptorScriptReference::GetLockingScript() const {
+  return locking_script_;
+}
+
+bool DescriptorScriptReference::HasAddress() const {
+  if (script_type_ == DescriptorScriptType::kDescriptorScriptRaw) {
+    // TODO(k-matsuzawa) 将来的にはdecoderawtransaction相当には対応させたい
+    return false;
+  }
+  return true;
+}
+
+Address DescriptorScriptReference::GenerateAddress(NetType net_type) const {
+  bool is_key = false;
+  bool is_witness = false;
+  switch (script_type_) {
+    case DescriptorScriptType::kDescriptorScriptRaw:
+      // TODO(k-matsuzawa) 将来的にはdecoderawtransaction相当には対応させたい
+      warn(CFD_LOG_SOURCE, "raw type descriptor is not support.");
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError,
+          "raw type descriptor is not support.");
+    case DescriptorScriptType::kDescriptorScriptAddr:
+      if (net_type != address_script_.GetNetType()) {
+        warn(CFD_LOG_SOURCE, "Failed to nettype. unmatch address nettype.");
+        throw CfdException(
+            CfdError::kCfdIllegalArgumentError, "unmatch address nettype.");
+      }
+      return address_script_;
+    case DescriptorScriptType::kDescriptorScriptWpkh:
+      is_witness = true;
+      // fall-through
+    case DescriptorScriptType::kDescriptorScriptPk:
+    case DescriptorScriptType::kDescriptorScriptPkh:
+    case DescriptorScriptType::kDescriptorScriptMulti:
+    case DescriptorScriptType::kDescriptorScriptSortedMulti:
+      is_key = true;
+      break;
+    case DescriptorScriptType::kDescriptorScriptCombo:
+      if (!locking_script_.IsP2shScript()) {
+        is_key = true;
+        is_witness = locking_script_.IsP2wpkhScript();
+      }
+      break;
+    case DescriptorScriptType::kDescriptorScriptWsh:
+      is_witness = true;
+      break;
+    default:
+      // case DescriptorScriptType::kDescriptorScriptSh:
+      break;
+  }
+  if (is_key) {
+    Pubkey pubkey = keys_[0].GetPubkey();
+    if (is_witness) {
+      return Address(
+          net_type, WitnessVersion::kVersion0, pubkey, addr_prefixes_);
+    } else {
+      return Address(net_type, pubkey, addr_prefixes_);
+    }
+  }
+
+  if (script_type_ == DescriptorScriptType::kDescriptorScriptWsh) {
+    return Address(
+        net_type, WitnessVersion::kVersion0, redeem_script_, addr_prefixes_);
+  }
+  if (script_type_ == DescriptorScriptType::kDescriptorScriptWsh) {
+    return Address(
+        net_type, WitnessVersion::kVersion0, redeem_script_, addr_prefixes_);
+  }
+  return Address(net_type, redeem_script_, addr_prefixes_);
+}
+
+std::vector<Address> DescriptorScriptReference::GenerateAddresses(
+    NetType net_type) const {
+  std::vector<Address> result;
+  if ((script_type_ == DescriptorScriptType::kDescriptorScriptMulti) ||
+      (script_type_ == DescriptorScriptType::kDescriptorScriptSortedMulti)) {
+    for (const auto& key : keys_) {
+      result.emplace_back(net_type, key.GetPubkey(), addr_prefixes_);
+    }
+  } else {
+    result.push_back(GenerateAddress(net_type));
+  }
+  return result;
+}
+
+AddressType DescriptorScriptReference::GetAddressType() const {
+  switch (script_type_) {
+    case DescriptorScriptType::kDescriptorScriptRaw:
+      // TODO(k-matsuzawa) 将来的にはdecoderawtransaction相当には対応させたい
+      warn(
+          CFD_LOG_SOURCE,
+          "Failed to GenerateAddress. raw type descriptor is not support.");
+      throw CfdException(
+          CfdError::kCfdIllegalArgumentError,
+          "raw type descriptor is not support.");
+    case DescriptorScriptType::kDescriptorScriptAddr:
+      return address_script_.GetAddressType();
+    default:
+      break;
+  }
+  if (locking_script_.IsP2shScript()) {
+    if (redeem_script_.IsP2wpkhScript()) {
+      return AddressType::kP2shP2wpkhAddress;
+    } else if (redeem_script_.IsP2wshScript()) {
+      return AddressType::kP2shP2wshAddress;
+    }
+    return AddressType::kP2shAddress;
+  }
+  if (locking_script_.IsP2wpkhScript()) {
+    return AddressType::kP2wpkhAddress;
+  }
+  if (locking_script_.IsP2wshScript()) {
+    return AddressType::kP2wshAddress;
+  }
+  if (locking_script_.IsP2pkScript() || locking_script_.IsP2pkScript() ||
+      locking_script_.IsMultisigScript()) {
+    return AddressType::kP2pkhAddress;
+  }
+  warn(CFD_LOG_SOURCE, "Failed to GetAddressType. unknown address type.");
+  throw CfdException(
+      CfdError::kCfdIllegalArgumentError, "unknown address type.");
+}
+
+HashType DescriptorScriptReference::GetHashType() const {
+  if (locking_script_.IsP2shScript()) {
+    return HashType::kP2sh;
+  }
+  if (locking_script_.IsP2wpkhScript()) {
+    return HashType::kP2wpkh;
+  }
+  if (locking_script_.IsP2wshScript()) {
+    return HashType::kP2wsh;
+  }
+  if (locking_script_.IsP2pkScript()) {
+    return HashType::kP2pkh;
+  }
+  warn(CFD_LOG_SOURCE, "Failed to GetHashType. unsupported hash type.");
+  throw CfdException(
+      CfdError::kCfdIllegalArgumentError, "unsupported hash type.");
+}
+
+bool DescriptorScriptReference::HasRedeemScript() const {
+  return !redeem_script_.IsEmpty();
+}
+
+Script DescriptorScriptReference::GetRedeemScript() const {
+  return redeem_script_;
+}
+
+bool DescriptorScriptReference::HasChild() const { return is_script_; }
+
+DescriptorScriptReference DescriptorScriptReference::GetChild() const {
+  return *child_script_;
+}
+
+bool DescriptorScriptReference::HasKey() const { return !keys_.empty(); }
+
+uint32_t DescriptorScriptReference::GetKeyNum() const {
+  return static_cast<uint32_t>(keys_.size());
+}
+
+std::vector<DescriptorKeyReference> DescriptorScriptReference::GetKeyList()
+    const {
+  return keys_;
+}
+
+// -----------------------------------------------------------------------------
 // DescriptorNode
 // -----------------------------------------------------------------------------
-DescriptorNode::DescriptorNode() {
+DescriptorNode::DescriptorNode()
+    : node_type_(DescriptorNodeType::kDescriptorTypeNull),
+      script_type_(DescriptorScriptType::kDescriptorScriptNull),
+      key_type_(DescriptorKeyType::kDescriptorKeyNull) {
   addr_prefixes_ = GetBitcoinAddressFormatList();
 }
 
@@ -96,7 +415,7 @@ DescriptorNode DescriptorNode::Parse(
   for (uint32_t index = 0; index < node.GetNeedArgumentNum(); ++index) {
     list.push_back("0");
   }
-  node.GenerateScript(&list);
+  node.GetReference(&list);
   return node;
 }
 
@@ -497,7 +816,8 @@ void DescriptorNode::AnalyzeAll(const std::string& parent_name) {
     }
     if (parent_name == "sh") {
       script_type_ = p_data->type;
-      Script script = GenerateScript(nullptr, nullptr);
+      DescriptorScriptReference ref = GetReference(nullptr);
+      Script script = ref.GetLockingScript();
       if ((script.GetData().GetDataSize() + 3) > 520) {
         warn(
             CFD_LOG_SOURCE, "Failed to script size over. size={}",
@@ -574,102 +894,138 @@ void DescriptorNode::AnalyzeAll(const std::string& parent_name) {
   script_type_ = p_data->type;
 }
 
-Script DescriptorNode::GenerateScript(
-    std::vector<std::string>* array_argument,
-    std::vector<Script>* script_list) const {
+DescriptorScriptReference DescriptorNode::GetReference(
+    std::vector<std::string>* array_argument) const {
+  std::vector<DescriptorScriptReference> list;
+  list = GetReferences(array_argument);
+  return list[0];
+}
+
+std::vector<DescriptorScriptReference> DescriptorNode::GetReferences(
+    std::vector<std::string>* array_argument) const {
   if ((depth_ == 0) && (array_argument) && (array_argument->size() > 1)) {
     std::reverse(array_argument->begin(), array_argument->end());
   }
+  std::vector<DescriptorScriptReference> result;
   ScriptBuilder build;
   Script locking_script;
 
   if (node_type_ == DescriptorNodeType::kDescriptorTypeKey) {
-    Pubkey pubkey = GetPubkey(array_argument);
-    build.AppendData(pubkey);
+    // do nothing
   } else if (node_type_ == DescriptorNodeType::kDescriptorTypeNumber) {
     ScriptElement elem(static_cast<int64_t>(number_));
     build.AppendElement(elem);
   } else if (node_type_ == DescriptorNodeType::kDescriptorTypeScript) {
     if (script_type_ == DescriptorScriptType::kDescriptorScriptRaw) {
       locking_script = Script(value_);
+      result.emplace_back(locking_script, script_type_, addr_prefixes_);
     } else if (script_type_ == DescriptorScriptType::kDescriptorScriptAddr) {
       Address addr(value_, addr_prefixes_);
+      result.emplace_back(addr, addr_prefixes_);
       locking_script = addr.GetLockingScript();
     } else if (
         (script_type_ == DescriptorScriptType::kDescriptorScriptMulti) ||
         (script_type_ == DescriptorScriptType::kDescriptorScriptSortedMulti)) {
       uint32_t reqnum = child_node_[0].number_;
       std::vector<Pubkey> pubkeys;
+      std::vector<DescriptorKeyReference> keys;
+      DescriptorKeyReference key_ref;
       for (size_t index = 1; index < child_node_.size(); ++index) {
-        pubkeys.push_back(child_node_[index].GetPubkey(array_argument));
+        key_ref = child_node_[index].GetKeyReferences(array_argument);
+        keys.push_back(key_ref);
+        pubkeys.push_back(key_ref.GetPubkey());
       }
       if (script_type_ == DescriptorScriptType::kDescriptorScriptSortedMulti) {
         // https://github.com/bitcoin/bips/blob/master/bip-0067.mediawiki
         std::sort(pubkeys.begin(), pubkeys.end(), Pubkey::IsLarge);
       }
       locking_script = ScriptUtil::CreateMultisigRedeemScript(reqnum, pubkeys);
-      if (script_list) script_list->push_back(locking_script);
+      result.emplace_back(locking_script, script_type_, keys, addr_prefixes_);
     } else if (
         (script_type_ == DescriptorScriptType::kDescriptorScriptSh) ||
         (script_type_ == DescriptorScriptType::kDescriptorScriptWsh)) {
-      Script script =
-          child_node_[0].GenerateScript(array_argument, script_list);
-      if (script_list && (!script.IsMultisigScript())) {
-        script_list->push_back(script);
-      }
+      DescriptorScriptReference ref =
+          child_node_[0].GetReference(array_argument);
+      Script script = ref.GetLockingScript();
       if (script_type_ == DescriptorScriptType::kDescriptorScriptWsh) {
         locking_script = ScriptUtil::CreateP2wshLockingScript(script);
       } else {
         locking_script = ScriptUtil::CreateP2shLockingScript(script);
       }
-    }
+      result.emplace_back(locking_script, script_type_, ref, addr_prefixes_);
+    } else {
+      std::vector<DescriptorKeyReference> keys;
+      DescriptorKeyReference ref =
+          child_node_[0].GetKeyReferences(array_argument);
+      keys.push_back(ref);
+      Pubkey pubkey = ref.GetPubkey();
+      if (script_type_ == DescriptorScriptType::kDescriptorScriptCombo) {
+        if (pubkey.IsCompress()) {
+          // p2wpkh
+          locking_script = ScriptUtil::CreateP2wpkhLockingScript(pubkey);
+          result.emplace_back(
+              locking_script, script_type_, keys, addr_prefixes_);
 
-    if (locking_script.IsEmpty()) {
-      Pubkey pubkey = child_node_[0].GetPubkey(array_argument);
-      if (script_type_ == DescriptorScriptType::kDescriptorScriptPk) {
+          // p2sh-p2wpkh
+          DescriptorScriptReference child_script(
+              locking_script, DescriptorScriptType::kDescriptorScriptWpkh,
+              keys, addr_prefixes_);
+          locking_script = ScriptUtil::CreateP2shLockingScript(locking_script);
+          result.emplace_back(
+              locking_script, script_type_, child_script, addr_prefixes_);
+        }
+
+        // p2pkh
+        locking_script = ScriptUtil::CreateP2pkhLockingScript(pubkey);
+        result.emplace_back(
+            locking_script, script_type_, keys, addr_prefixes_);
+
+        // p2pk
         build.AppendData(pubkey);
         build.AppendOperator(ScriptOperator::OP_CHECKSIG);
+        locking_script = build.Build();
+        result.emplace_back(
+            locking_script, script_type_, keys, addr_prefixes_);
       } else {
-        if (script_type_ == DescriptorScriptType::kDescriptorScriptCombo) {
-          // combo時は、最もセキュリティが高いものを返す。
-          if (pubkey.IsCompress()) {
-            // p2wpkh
-            locking_script = ScriptUtil::CreateP2wpkhLockingScript(pubkey);
-          } else {
-            // p2pkh
-            locking_script = ScriptUtil::CreateP2pkhLockingScript(pubkey);
-          }
-        } else if (
-            script_type_ == DescriptorScriptType::kDescriptorScriptPkh) {
+        if (script_type_ == DescriptorScriptType::kDescriptorScriptPkh) {
           locking_script = ScriptUtil::CreateP2pkhLockingScript(pubkey);
         } else if (
             script_type_ == DescriptorScriptType::kDescriptorScriptWpkh) {
           locking_script = ScriptUtil::CreateP2wpkhLockingScript(pubkey);
+        } else if (script_type_ == DescriptorScriptType::kDescriptorScriptPk) {
+          build.AppendData(pubkey);
+          build.AppendOperator(ScriptOperator::OP_CHECKSIG);
+          locking_script = build.Build();
         }
+        result.emplace_back(
+            locking_script, script_type_, keys, addr_prefixes_);
       }
     }
   } else {
     // do nothing
   }
 
-  if ((depth_ == 0) && (script_list) && (script_list->size() > 1)) {
-    std::reverse(script_list->begin(), script_list->end());
-  }
-  if (!locking_script.IsEmpty()) {
-    return locking_script;
-  }
-  return build.Build();
+  return result;
 }
 
 Pubkey DescriptorNode::GetPubkey(
     std::vector<std::string>* array_argument) const {
+  DescriptorKeyReference ref = GetKeyReferences(array_argument);
+  return ref.GetPubkey();
+}
+
+DescriptorKeyReference DescriptorNode::GetKeyReferences(
+    std::vector<std::string>* array_argument) const {
+  DescriptorKeyReference result;
   Pubkey pubkey;
   if (key_type_ == DescriptorKeyType::kDescriptorKeyPublic) {
     pubkey = Pubkey(key_info_);
+    result = DescriptorKeyReference(pubkey);
   } else if (
       (key_type_ == DescriptorKeyType::kDescriptorKeyBip32) ||
       (key_type_ == DescriptorKeyType::kDescriptorKeyBip32Priv)) {
     std::string arg_value;
+    std::string* arg_pointer = nullptr;
     if (need_arg_num_ == 0) {
       // 指定キー。強化鍵の場合、xprv/tprvの必要あり。
     } else if ((!array_argument) || array_argument->empty()) {
@@ -685,21 +1041,23 @@ Pubkey DescriptorNode::GetPubkey(
         arg_value = array_argument->back();
         array_argument->pop_back();
       }
+      arg_pointer = &arg_value;
     }
 
     ExtPubkey xpub;
     if (key_type_ == DescriptorKeyType::kDescriptorKeyBip32Priv) {
       ExtPrivkey xpriv(key_info_);
-      if (need_arg_num_ == 0) {
-        xpub = xpriv.GetExtPubkey();
-      } else {
-        xpub = xpriv.DerivePubkey(arg_value);
+      if (need_arg_num_ != 0) {
+        xpriv = xpriv.DerivePrivkey(arg_value);
       }
+      xpub = xpriv.GetExtPubkey();
+      result = DescriptorKeyReference(xpriv, arg_pointer);
     } else {
       xpub = ExtPubkey(key_info_);
       if (need_arg_num_ != 0) {
         xpub = xpub.DerivePubkey(arg_value);
       }
+      result = DescriptorKeyReference(xpub, arg_pointer);
     }
 
     if (!xpub.IsValid()) {
@@ -718,47 +1076,6 @@ Pubkey DescriptorNode::GetPubkey(
     throw CfdException(
         CfdError::kCfdIllegalArgumentError, "Invalid pubkey data.");
   }
-  return pubkey;
-}
-
-std::vector<Script> DescriptorNode::GenerateScriptAll(
-    std::vector<std::string>* array_argument) const {
-  if ((depth_ == 0) && (array_argument) && (array_argument->size() > 1)) {
-    std::reverse(array_argument->begin(), array_argument->end());
-  }
-
-  if (script_type_ != DescriptorScriptType::kDescriptorScriptCombo) {
-    // warn(CFD_LOG_SOURCE, "Illegal node. only `combo`.");
-    // throw CfdException(
-    //     CfdError::kCfdIllegalArgumentError, "Illegal node. only `combo`.");
-    return std::vector<Script>{GenerateScript(array_argument)};
-  }
-  if (child_node_.empty()) {
-    warn(CFD_LOG_SOURCE, "Failed to child node empty.");
-    throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Failed to child node empty.");
-  }
-  std::vector<Script> result;
-  Pubkey pubkey = child_node_[0].GetPubkey(array_argument);
-
-  if (pubkey.IsCompress()) {
-    // p2wpkh
-    Script locking_script = ScriptUtil::CreateP2wpkhLockingScript(pubkey);
-    result.push_back(locking_script);
-
-    // p2sh-p2wpkh
-    result.push_back(ScriptUtil::CreateP2shLockingScript(locking_script));
-  }
-
-  // p2pkh
-  result.push_back(ScriptUtil::CreateP2pkhLockingScript(pubkey));
-
-  // p2pk
-  ScriptBuilder build;
-  build.AppendData(pubkey);
-  build.AppendOperator(ScriptOperator::OP_CHECKSIG);
-  result.push_back(build.Build());
-
   return result;
 }
 
@@ -839,7 +1156,7 @@ uint32_t Descriptor::GetNeedArgumentNum() const {
   return root_node_.GetNeedArgumentNum();
 }
 
-Script Descriptor::GetScript(std::vector<Script>* script_list) const {
+Script Descriptor::GetLockingScript() const {
   if (GetNeedArgumentNum() != 0) {
     warn(CFD_LOG_SOURCE, "Failed to empty argument.");
     throw CfdException(
@@ -847,47 +1164,52 @@ Script Descriptor::GetScript(std::vector<Script>* script_list) const {
         "Failed to empty argument. need argument descriptor.");
   }
   std::vector<std::string> list;
-  return root_node_.GenerateScript(&list, script_list);
+  return GetLockingScriptAll(&list)[0];
 }
 
-std::vector<Script> Descriptor::GetScriptCombo() const {
-  std::vector<std::string> list;
-  return GetScriptCombo(list);
-}
-
-std::vector<Script> Descriptor::GetScriptCombo(
-    const std::vector<std::string>& array_argument) const {
-  if (root_node_.GetScriptType() !=
-      DescriptorScriptType::kDescriptorScriptCombo) {
-    warn(CFD_LOG_SOURCE, "Illegal node. only `combo`.");
-    throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Illegal node. only `combo`.");
-  }
-  std::vector<std::string> list = array_argument;
-  return root_node_.GenerateScriptAll(&list);
-}
-
-Script Descriptor::GenerateScript(
-    const std::string& argument, std::vector<Script>* script_list) const {
+Script Descriptor::GetLockingScript(const std::string& argument) const {
   std::vector<std::string> list;
   for (uint32_t index = 0; index < GetNeedArgumentNum(); ++index) {
     list.push_back(argument);
   }
-  return GenerateScript(list, script_list);
+  return GetLockingScriptAll(&list)[0];
 }
 
-Script Descriptor::GenerateScript(
-    const std::vector<std::string>& array_argument,
-    std::vector<Script>* script_list) const {
+Script Descriptor::GetLockingScript(
+    const std::vector<std::string>& array_argument) const {
   std::vector<std::string> copy_list = array_argument;
-  return root_node_.GenerateScript(&copy_list, script_list);
+  return GetLockingScriptAll(&copy_list)[0];
 }
 
-DescriptorNode Descriptor::GetNode() const { return root_node_; }
+std::vector<Script> Descriptor::GetLockingScriptAll(
+    const std::vector<std::string>* array_argument) const {
+  std::vector<DescriptorScriptReference> ref_list =
+      GetReferenceAll(array_argument);
+  std::vector<Script> result;
+  for (const auto& ref : ref_list) {
+    result.push_back(ref.GetLockingScript());
+  }
+  return result;
+}
+
+DescriptorScriptReference Descriptor::GetReference(
+    const std::vector<std::string>* array_argument) const {
+  return GetReferenceAll(array_argument)[0];
+}
+
+std::vector<DescriptorScriptReference> Descriptor::GetReferenceAll(
+    const std::vector<std::string>* array_argument) const {
+  std::vector<std::string> copy_list;
+  if (array_argument) copy_list = *array_argument;
+  std::vector<DescriptorScriptReference> ref_list;
+  return root_node_.GetReferences(&copy_list);
+}
 
 std::string Descriptor::ToString(bool append_checksum) const {
   return root_node_.ToString(append_checksum);
 }
+
+DescriptorNode Descriptor::GetNode() const { return root_node_; }
 
 }  // namespace core
 }  // namespace cfd
