@@ -185,9 +185,9 @@ AbstractTxOutReference::AbstractTxOutReference(const AbstractTxOut &tx_out)
 }
 
 uint32_t AbstractTxOutReference::GetSerializeSize() const {
-  uint32_t result = 8;  // Amount分
+  size_t result = 8;  // Amount分
   result += locking_script_.GetData().GetSerializeSize();
-  return result;
+  return static_cast<uint32_t>(result);
 }
 
 // -----------------------------------------------------------------------------
@@ -576,7 +576,9 @@ bool AbstractTransaction::IsCoinBase() const {
 uint32_t AbstractTransaction::GetVsizeFromSize(
     uint32_t no_witness_size, uint32_t witness_size) {
   uint32_t weight = (no_witness_size * 4) + witness_size;
-  return weight / 4;
+  // 端数切り上げ
+  uint32_t vsize = (weight + 3) / 4;
+  return vsize;
 }
 
 bool AbstractTransaction::GetVariableInt(
