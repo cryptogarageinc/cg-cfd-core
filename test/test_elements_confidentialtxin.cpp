@@ -237,15 +237,15 @@ TEST(ConfidentialTxIn, EstimateTxInSize) {
   static const std::vector<TestEstimateConfidentialTxInSizeVector> test_vector = {
     {AddressType::kP2pkhAddress, 149, 0, Script(), 0, Script(), false, false},
     {AddressType::kP2shAddress, 138, 0, exp_script, 0, Script(), false, false},
-    {AddressType::kP2shP2wpkhAddress, 282, 111, Script(), 0, Script(), false, false},
-    {AddressType::kP2shP2wshAddress, 230, 79, Script("51"), 0, Script(), false, false},
-    {AddressType::kP2wpkhAddress, 260, 111, Script(), 0, Script(), false, false},
-    {AddressType::kP2wshAddress, 238, 100, exp_script, 0, Script(), false, false},
+    {AddressType::kP2shP2wpkhAddress, 174, 111, Script(), 0, Script(), false, false},
+    {AddressType::kP2shP2wshAddress, 154, 79, Script("51"), 0, Script(), false, false},
+    {AddressType::kP2wpkhAddress, 152, 111, Script(), 0, Script(), false, false},
+    {AddressType::kP2wshAddress, 141, 100, exp_script, 0, Script(), false, false},
     // pegin
-    {AddressType::kP2wpkhAddress, 718, 569, Script(), 226, Script("51"), false, false},
+    {AddressType::kP2wpkhAddress, 610, 569, Script(), 226, Script("51"), false, false},
     // issue
-    {AddressType::kP2wpkhAddress, 342, 111, Script(), 0, Script(), true, false},
-    {AddressType::kP2wpkhAddress, 6180, 5901, Script(), 0, Script(), true, true},
+    {AddressType::kP2wpkhAddress, 234, 111, Script(), 0, Script(), true, false},
+    {AddressType::kP2wpkhAddress, 6072, 5901, Script(), 0, Script(), true, true},
   };
 
   for (const auto& test_data : test_vector) {

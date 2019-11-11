@@ -19,6 +19,7 @@ TEST(ConfidentialNonce, Constractor) {
   EXPECT_STREQ(nonce.GetHex().c_str(), "");
   EXPECT_EQ(nonce.GetData().GetDataSize(), 0);
   EXPECT_EQ(nonce.HasBlinding(), false);
+  EXPECT_TRUE(nonce.IsEmpty());
 }
 
 TEST(ConfidentialNonce, Constractor_hex0) {
@@ -38,6 +39,7 @@ TEST(ConfidentialNonce, Constractor_hex32) {
       "01186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179");
   EXPECT_EQ(nonce.GetData().GetDataSize(), 33);
   EXPECT_EQ(nonce.HasBlinding(), false);
+  EXPECT_FALSE(nonce.IsEmpty());
 }
 
 TEST(ConfidentialNonce, Constractor_hex33) {
