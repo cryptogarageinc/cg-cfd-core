@@ -42,6 +42,7 @@ TEST(ExtPubkey, Base58ConstructorTest) {
   EXPECT_STREQ("0488b21e000000000000000000a3fa8c983223306de0f0f65e74ebb1e98aba751633bf91d5fb56529aa5c132c102f632717d78bf73e74aa8461e2e782532abae4eed5110241025afb59ebfd3d2fd", extkey.GetData().GetHex().c_str());
   EXPECT_STREQ("0488b21e", extkey.GetVersionData().GetHex().c_str());
   EXPECT_EQ(extpubkey_kVersionMainnetPubkey, extkey.GetVersion());
+  EXPECT_EQ(0, extkey.GetFingerprint());
   EXPECT_TRUE(extkey.IsValid());
   EXPECT_STREQ(ext_base58.c_str(), extkey.ToString().c_str());
   EXPECT_EQ(0, extkey.GetDepth());
@@ -54,6 +55,7 @@ TEST(ExtPubkey, Base58ConstructorTest) {
   EXPECT_STREQ("043587cf02f4a831a200000000bdc76da475a6fbdc4f3758939ab2096d4ab53b7d66c0eed66fc0f4be242835fc030061b08c4c80dc04aaa0b44018d2c4bcdb0d9c0992fb4fddf9d2fb096a5164c0", extkey.GetData().GetHex().c_str());
   EXPECT_STREQ("043587cf", extkey.GetVersionData().GetHex().c_str());
   EXPECT_EQ(extpubkey_kVersionTestnetPubkey, extkey.GetVersion());
+  EXPECT_EQ(2721163508, extkey.GetFingerprint());
   EXPECT_TRUE(extkey.IsValid());
   EXPECT_STREQ(ext_base58.c_str(), extkey.ToString().c_str());
   EXPECT_EQ(2, extkey.GetDepth());
@@ -87,6 +89,20 @@ TEST(ExtPubkey, DerivePubkeyTest) {
 
   EXPECT_NO_THROW((child1 = extkey.DerivePubkey(0)));
   EXPECT_NO_THROW((child2 = child1.DerivePubkey(44)));
+  EXPECT_STREQ(child2.GetData().GetHex().c_str(), child.GetData().GetHex().c_str());
+  EXPECT_STREQ(child2.GetVersionData().GetHex().c_str(), child.GetVersionData().GetHex().c_str());
+  EXPECT_EQ(child2.GetVersion(), child.GetVersion());
+  EXPECT_TRUE(child2.IsValid());
+  EXPECT_STREQ(child2.ToString().c_str(), child.ToString().c_str());
+  EXPECT_EQ(child2.GetDepth(), child.GetDepth());
+  EXPECT_STREQ(child2.GetPubkey().GetHex().c_str(), child.GetPubkey().GetHex().c_str());
+
+  try {
+    child2 = extkey.DerivePubkey("m/0/44");
+  } catch (const CfdException& except) {
+    EXPECT_STREQ(except.what(), "");
+  }
+  EXPECT_NO_THROW((child2 = extkey.DerivePubkey("m/0/44")));
   EXPECT_STREQ(child2.GetData().GetHex().c_str(), child.GetData().GetHex().c_str());
   EXPECT_STREQ(child2.GetVersionData().GetHex().c_str(), child.GetVersionData().GetHex().c_str());
   EXPECT_EQ(child2.GetVersion(), child.GetVersion());

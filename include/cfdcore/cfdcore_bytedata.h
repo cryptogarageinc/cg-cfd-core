@@ -92,6 +92,15 @@ class CFD_CORE_EXPORT ByteData {
    */
   static ByteData GetVariableInt(uint64_t value);
 
+  /**
+   * @brief 指定された2つのバッファのHEX値を比較する.
+   * @param[in] source        source target
+   * @param[in] destination   destination target
+   * @retval true   大きい
+   * @retval false  小さい
+   */
+  static bool IsLarge(const ByteData& source, const ByteData& destination);
+
  private:
   /**
    * @brief データ格納Byte配列

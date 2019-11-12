@@ -109,6 +109,15 @@ class CFD_CORE_EXPORT Pubkey {
    */
   static bool IsValid(const ByteData& byte_data);
 
+  /**
+   * @brief 指定された2つの公開鍵のHEX値を比較する.
+   * @param[in] source        source target
+   * @param[in] destination   destination target
+   * @retval true   大きい
+   * @retval false  小さい
+   */
+  static bool IsLarge(const Pubkey& source, const Pubkey& destination);
+
  private:
   /**
    * @brief ByteData of PublicKey

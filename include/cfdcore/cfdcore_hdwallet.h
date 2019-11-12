@@ -89,6 +89,15 @@ class CFD_CORE_EXPORT HDWallet {
    */
   ExtPrivkey GeneratePrivkey(
       NetType network_type, const std::vector<uint32_t>& path) const;
+  /**
+   * @brief 拡張秘密鍵を生成する。
+   * @param[in] network_type      network type
+   * @param[in] string_path       child number string path
+   * @return extended privkey
+   * @throws CfdException If invalid seed.
+   */
+  ExtPrivkey GeneratePrivkey(
+      NetType network_type, const std::string& string_path) const;
 
   /**
    * @brief 拡張公開鍵を生成する。
@@ -114,6 +123,15 @@ class CFD_CORE_EXPORT HDWallet {
    */
   ExtPubkey GeneratePubkey(
       NetType network_type, const std::vector<uint32_t>& path) const;
+  /**
+   * @brief 拡張公開鍵を生成する。
+   * @param[in] network_type      network type
+   * @param[in] string_path       child number string path
+   * @return extended pubkey
+   * @throws CfdException If invalid seed.
+   */
+  ExtPubkey GeneratePubkey(
+      NetType network_type, const std::string& string_path) const;
 
   /**
    * @brief Mnemonic で利用できる Wordlist を取得する.
@@ -250,6 +268,13 @@ class CFD_CORE_EXPORT ExtPrivkey {
    * @throws CfdException If invalid seed.
    */
   ExtPrivkey DerivePrivkey(const std::vector<uint32_t>& path) const;
+  /**
+   * @brief 指定階層の拡張秘密鍵を取得する。
+   * @param[in] string_path     child number string path
+   * @return extended pubkey
+   * @throws CfdException If invalid seed.
+   */
+  ExtPrivkey DerivePrivkey(const std::string& string_path) const;
 
   /**
    * @brief 同一階層の拡張公開鍵を取得する。
@@ -271,6 +296,13 @@ class CFD_CORE_EXPORT ExtPrivkey {
    * @throws CfdException If invalid seed.
    */
   ExtPubkey DerivePubkey(const std::vector<uint32_t>& path) const;
+  /**
+   * @brief 指定階層の拡張公開鍵を取得する。
+   * @param[in] string_path     child number string path
+   * @return extended pubkey
+   * @throws CfdException If invalid seed.
+   */
+  ExtPubkey DerivePubkey(const std::string& string_path) const;
 
   /**
    * @brief 状態が正常であるかを返却する.
@@ -304,14 +336,20 @@ class CFD_CORE_EXPORT ExtPrivkey {
    * @return version data (4byte)
    */
   ByteData GetVersionData() const;
+  /**
+   * @brief fingerprint部を取得する.
+   * @return fingerprint data (4byte)
+   */
+  uint32_t GetFingerprint() const;
 
  private:
-  ByteData serialize_data_;  //!< serialize data
-  uint32_t version_ = 0;     //!< version
-  uint8_t depth_ = 0;        //!< depth
-  uint32_t child_num_ = 0;   //!< child number
-  ByteData256 chaincode_;    //!< chain code
-  Privkey privkey_;          //!< private key
+  ByteData serialize_data_;   //!< serialize data
+  uint32_t version_ = 0;      //!< version
+  uint32_t fingerprint_ = 0;  //!< finger print
+  uint8_t depth_ = 0;         //!< depth
+  uint32_t child_num_ = 0;    //!< child number
+  ByteData256 chaincode_;     //!< chain code
+  Privkey privkey_;           //!< private key
 };
 
 /**
@@ -380,6 +418,13 @@ class CFD_CORE_EXPORT ExtPubkey {
    * @throws CfdException If invalid seed.
    */
   ExtPubkey DerivePubkey(const std::vector<uint32_t>& path) const;
+  /**
+   * @brief 指定階層の拡張公開鍵を取得する。
+   * @param[in] string_path     child number string path
+   * @return extended pubkey
+   * @throws CfdException If invalid seed.
+   */
+  ExtPubkey DerivePubkey(const std::string& string_path) const;
 
   /**
    * @brief 派生Pubkeyを生成する過程で生成されたtweak値の合成値を取得する。
@@ -425,15 +470,21 @@ class CFD_CORE_EXPORT ExtPubkey {
    * @return version data (4byte)
    */
   ByteData GetVersionData() const;
+  /**
+   * @brief fingerprint部を取得する.
+   * @return fingerprint data (4byte)
+   */
+  uint32_t GetFingerprint() const;
 
  private:
-  ByteData serialize_data_;  //!< serialize data
-  uint32_t version_ = 0;     //!< version
-  uint8_t depth_ = 0;        //!< depth
-  uint32_t child_num_ = 0;   //!< child number
-  ByteData256 chaincode_;    //!< chain code
-  Pubkey pubkey_;            //!< public key
-  ByteData256 tweak_sum_;    //!< tweak sum
+  ByteData serialize_data_;   //!< serialize data
+  uint32_t version_ = 0;      //!< version
+  uint32_t fingerprint_ = 0;  //!< finger print
+  uint8_t depth_ = 0;         //!< depth
+  uint32_t child_num_ = 0;    //!< child number
+  ByteData256 chaincode_;     //!< chain code
+  Pubkey pubkey_;             //!< public key
+  ByteData256 tweak_sum_;     //!< tweak sum
 };
 
 }  // namespace core
