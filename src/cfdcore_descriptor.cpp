@@ -132,6 +132,10 @@ ExtPubkey DescriptorKeyReference::GetExtPubkey() const {
       "GetExtPubkey unsupported key type.");
 }
 
+DescriptorKeyType DescriptorKeyReference::GetKeyType() const {
+  return key_type_;
+}
+
 // -----------------------------------------------------------------------------
 // DescriptorScriptReference
 // -----------------------------------------------------------------------------
@@ -370,6 +374,10 @@ uint32_t DescriptorScriptReference::GetKeyNum() const {
 std::vector<DescriptorKeyReference> DescriptorScriptReference::GetKeyList()
     const {
   return keys_;
+}
+
+DescriptorScriptType DescriptorScriptReference::GetScriptType() const {
+  return script_type_;
 }
 
 // -----------------------------------------------------------------------------

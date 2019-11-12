@@ -379,6 +379,7 @@ TEST(Descriptor, Parse_wsh_extkey_derive) {
       "bc1qvjtfmrxu524qhdevl6yyyasjs7xmnzjlqlu60mrwepact60eyz9s9xjw0c");
     EXPECT_EQ(script_list[0].GetAddressType(), AddressType::kP2wshAddress);
     EXPECT_EQ(script_list[0].GetHashType(), HashType::kP2wsh);
+    EXPECT_EQ(script_list[0].GetScriptType(), DescriptorScriptType::kDescriptorScriptWsh);
 
     EXPECT_TRUE(script_list[0].HasChild());
     EXPECT_STREQ(script_list[0].GetRedeemScript().ToString().c_str(),
@@ -400,6 +401,7 @@ TEST(Descriptor, Parse_wsh_extkey_derive) {
         "02c04c4e03921809fcbef9a26da2d62b19b2b4eb383b3e6cfaaef6370e75144774");
       EXPECT_STREQ(keys[1].GetExtPubkey().ToString().c_str(),
         "xpub6EKMC2gSMfKgQJ3iNMZVNB4GLH1Dc4hNPah1iMbbztxdUPRo84MMcTgkPATWNRyzr7WifKrt5VvQi4GEqRwybCP1LHoXBKLN6cB15HuBKPE");
+      EXPECT_EQ(keys[1].GetKeyType(), DescriptorKeyType::kDescriptorKeyBip32);
     }
   }
 

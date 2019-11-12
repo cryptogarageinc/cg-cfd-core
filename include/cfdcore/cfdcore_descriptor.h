@@ -130,6 +130,11 @@ class CFD_CORE_EXPORT DescriptorKeyReference {
    * @return ext-pubkey
    */
   ExtPubkey GetExtPubkey() const;
+  /**
+   * @brief getting key type.
+   * @return key type
+   */
+  DescriptorKeyType GetKeyType() const;
 
  private:
   DescriptorKeyType key_type_;  //!< node key type
@@ -271,13 +276,18 @@ class CFD_CORE_EXPORT DescriptorScriptReference {
    * @return key list
    */
   std::vector<DescriptorKeyReference> GetKeyList() const;
+  /**
+   * @brief getting script type.
+   * @return script type
+   */
+  DescriptorScriptType GetScriptType() const;
 
  private:
-  DescriptorScriptType script_type_;    //!< node script type
-  Script locking_script_;               //!< locking script
-  bool is_script_;                      //!< exist redeem script
-  Script redeem_script_;                //!< redeem script
-  Address address_script_;              //!< address script data
+  DescriptorScriptType script_type_;  //!< node script type
+  Script locking_script_;             //!< locking script
+  bool is_script_;                    //!< exist redeem script
+  Script redeem_script_;              //!< redeem script
+  Address address_script_;            //!< address script data
   //! child script
   std::shared_ptr<DescriptorScriptReference> child_script_ = nullptr;
   std::vector<DescriptorKeyReference> keys_;      //!< key list
