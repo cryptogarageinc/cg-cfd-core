@@ -324,9 +324,11 @@ AddressType DescriptorScriptReference::GetAddressType() const {
   if (locking_script_.IsP2wshScript()) {
     return AddressType::kP2wshAddress;
   }
-  if (locking_script_.IsP2pkScript() || locking_script_.IsP2pkScript() ||
-      locking_script_.IsMultisigScript()) {
+  if (locking_script_.IsP2pkhScript()) {
     return AddressType::kP2pkhAddress;
+  }
+  if (locking_script_.IsP2pkScript() || locking_script_.IsMultisigScript()) {
+    return AddressType::kP2shAddress;  // unsupported script
   }
   warn(CFD_LOG_SOURCE, "Failed to GetAddressType. unknown address type.");
   throw CfdException(
@@ -362,7 +364,10 @@ Script DescriptorScriptReference::GetRedeemScript() const {
 bool DescriptorScriptReference::HasChild() const { return is_script_; }
 
 DescriptorScriptReference DescriptorScriptReference::GetChild() const {
-  return *child_script_;
+  if (is_script_) {
+    return *child_script_;
+  }
+  return DescriptorScriptReference();
 }
 
 bool DescriptorScriptReference::HasKey() const { return !keys_.empty(); }
@@ -643,7 +648,6 @@ void DescriptorNode::AnalyzeKey() {
       key_type_ = DescriptorKeyType::kDescriptorKeyBip32Priv;
     }
     ExtPubkey xpub;
-    ExtPrivkey xpriv;
     std::string path;
     std::string key;
     bool hardened = false;
@@ -708,6 +712,7 @@ void DescriptorNode::AnalyzeKey() {
         privkey = Privkey(bytes);
         pubkey = privkey.GeneratePubkey();
       }
+      key_info_ = pubkey.GetHex();
     } catch (const CfdException& except) {
       std::string errmsg(except.what());
       if (errmsg.find("hex to byte convert error.") != std::string::npos) {
