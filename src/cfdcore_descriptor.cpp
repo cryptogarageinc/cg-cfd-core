@@ -774,15 +774,20 @@ void DescriptorNode::AnalyzeAll(const std::string& parent_name) {
     }
   }
   if (p_data == nullptr) {
-    warn(CFD_LOG_SOURCE, "Failed to unknown name.");
+    warn(
+        CFD_LOG_SOURCE,
+        "Failed to analyze descriptor. script's name not found.");
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Failed to unknown name.");
+        CfdError::kCfdIllegalArgumentError, "Failed to analyze descriptor.");
   }
 
   if (p_data->top_only && (depth_ != 0)) {
-    warn(CFD_LOG_SOURCE, "Failed to depth is not zero.");
+    warn(
+        CFD_LOG_SOURCE,
+        "Failed to depth. The target can only exist at the top.");
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Failed to depth is not zero.");
+        CfdError::kCfdIllegalArgumentError,
+        "Failed to depth. The target can only exist at the top.");
   }
   if (p_data->has_child) {
     if (child_node_.empty()) {
@@ -875,32 +880,34 @@ void DescriptorNode::AnalyzeAll(const std::string& parent_name) {
           CfdError::kCfdIllegalArgumentError,
           "Failed to wsh parent. only top or sh.");
     } else if ((name_ == "wpkh") && (parent_name == "wsh")) {
-      warn(CFD_LOG_SOURCE, "Failed to wpkh parent. cannot wsh.");
+      warn(
+          CFD_LOG_SOURCE,
+          "Failed to check wpkh. wpkh cannot be a child of wsh.");
       throw CfdException(
           CfdError::kCfdIllegalArgumentError,
-          "Failed to wpkh parent. cannot wsh.");
+          "Failed to check wpkh. wpkh cannot be a child of wsh.");
     } else if (
         ((name_ == "wsh") || (name_ == "sh")) &&
         (child_node_[0].node_type_ !=
          DescriptorNodeType::kDescriptorTypeScript)) {
       warn(
           CFD_LOG_SOURCE,
-          "Failed to sh child type. child is script only. nodetype={}",
+          "Failed to check script type. child is script only. nodetype={}",
           child_node_[0].node_type_);
       throw CfdException(
           CfdError::kCfdIllegalArgumentError,
-          "Failed to sh child type. child is script only.");
+          "Failed to check script type. child is script only.");
     } else if (
         (name_ != "wsh") && (name_ != "sh") &&
         (child_node_[0].node_type_ !=
          DescriptorNodeType::kDescriptorTypeKey)) {
       warn(
           CFD_LOG_SOURCE,
-          "Failed to child type. child is key only. nodetype={}",
+          "Failed to check key-hash type. child is key only. nodetype={}",
           child_node_[0].node_type_);
       throw CfdException(
           CfdError::kCfdIllegalArgumentError,
-          "Failed to child type. child is key only.");
+          "Failed to check key-hash type. child is key only.");
     }
     child_node_[0].AnalyzeAll(name_);
   }
