@@ -48,7 +48,7 @@ const std::string Txid::GetHex() const {
 
 const ByteData Txid::GetData() const { return data_; }
 
-bool Txid::Equals(const Txid& txid) {
+bool Txid::Equals(const Txid& txid) const {
   if (data_.Equals(txid.data_)) {
     return true;
   }
