@@ -784,10 +784,10 @@ void DescriptorNode::AnalyzeAll(const std::string& parent_name) {
   if (p_data->top_only && (depth_ != 0)) {
     warn(
         CFD_LOG_SOURCE,
-        "Failed to depth. The target can only exist at the top.");
+        "Failed to analyse descriptor. The target can only exist at the top.");
     throw CfdException(
         CfdError::kCfdIllegalArgumentError,
-        "Failed to depth. The target can only exist at the top.");
+        "Failed to analyse descriptor. The target can only exist at the top.");
   }
   if (p_data->has_child) {
     if (child_node_.empty()) {
