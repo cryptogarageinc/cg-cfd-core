@@ -89,6 +89,9 @@ ConfidentialNonce::ConfidentialNonce(const std::string &hex_string)
     case kConfidentialDataSize: {
       const std::vector<uint8_t> &data = data_.GetBytes();
       version_ = data[0];
+      if (version_ == 0) {
+        data_ = ByteData();
+      }
       break;
     }
     default:
@@ -116,8 +119,12 @@ ConfidentialNonce::ConfidentialNonce(const ByteData &byte_data)
     }
     case kConfidentialDataSize: {
       const std::vector<uint8_t> &data = byte_data.GetBytes();
-      data_ = byte_data;
       version_ = data[0];
+      if (version_ == 0) {
+        data_ = ByteData();
+      } else {
+        data_ = byte_data;
+      }
       break;
     }
     default:
@@ -171,8 +178,12 @@ ConfidentialAssetId::ConfidentialAssetId(const std::string &hex_string)
     case kConfidentialDataSize: {
       const std::vector<uint8_t> &data = data_.GetBytes();
       std::vector<uint8_t> buffer(data.cbegin() + 1, data.cend());
-      data_ = ByteData(buffer);
       version_ = data[0];
+      if (version_ == 0) {
+        data_ = ByteData();
+      } else {
+        data_ = ByteData(buffer);
+      }
       break;
     }
     default:
@@ -202,8 +213,10 @@ ConfidentialAssetId::ConfidentialAssetId(const ByteData &byte_data)
     case kConfidentialDataSize: {
       const std::vector<uint8_t> &data = byte_data.GetBytes();
       std::vector<uint8_t> buffer(data.cbegin() + 1, data.cend());
-      data_ = ByteData(buffer);
       version_ = data[0];
+      if (version_ != 0) {
+        data_ = ByteData(buffer);
+      }
       break;
     }
     default:
@@ -274,6 +287,9 @@ ConfidentialValue::ConfidentialValue(const std::string &hex_string)
     case kConfidentialValueSize: {
       const std::vector<uint8_t> &data = data_.GetBytes();
       version_ = data[0];
+      if (version_ == 0) {
+        data_ = ByteData();
+      }
       break;
     }
     default:
@@ -302,8 +318,12 @@ ConfidentialValue::ConfidentialValue(const ByteData &byte_data)
     case kConfidentialDataSize:
     case kConfidentialValueSize: {
       const std::vector<uint8_t> &data = byte_data.GetBytes();
-      data_ = byte_data;
       version_ = data[0];
+      if (version_ == 0) {
+        data_ = ByteData();
+      } else {
+        data_ = byte_data;
+      }
       break;
     }
     default:

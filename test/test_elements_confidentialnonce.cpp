@@ -53,6 +53,16 @@ TEST(ConfidentialNonce, Constractor_hex33) {
   EXPECT_EQ(nonce.HasBlinding(), true);
 }
 
+TEST(ConfidentialNonce, Constractor_hex33_version0) {
+  // 33byte
+  ConfidentialNonce nonce(
+      "00c384a78ae89b9600a8d2b4ddb3090ba5dad224ff4b85e6868f2916ca64314ad9");
+  EXPECT_STREQ(nonce.GetHex().c_str(), "");
+  EXPECT_EQ(nonce.GetData().GetDataSize(), 0);
+  EXPECT_EQ(nonce.HasBlinding(), false);
+  EXPECT_TRUE(nonce.IsEmpty());
+}
+
 TEST(ConfidentialNonce, Constractor_sizeerr) {
   // error
   EXPECT_THROW(ConfidentialNonce nonce("001122"), CfdException);

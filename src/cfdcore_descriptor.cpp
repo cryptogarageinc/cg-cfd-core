@@ -324,9 +324,11 @@ AddressType DescriptorScriptReference::GetAddressType() const {
   if (locking_script_.IsP2wshScript()) {
     return AddressType::kP2wshAddress;
   }
-  if (locking_script_.IsP2pkScript() || locking_script_.IsP2pkScript() ||
-      locking_script_.IsMultisigScript()) {
+  if (locking_script_.IsP2pkhScript()) {
     return AddressType::kP2pkhAddress;
+  }
+  if (locking_script_.IsP2pkScript() || locking_script_.IsMultisigScript()) {
+    return AddressType::kP2shAddress;  // unsupported script
   }
   warn(CFD_LOG_SOURCE, "Failed to GetAddressType. unknown address type.");
   throw CfdException(
@@ -362,7 +364,10 @@ Script DescriptorScriptReference::GetRedeemScript() const {
 bool DescriptorScriptReference::HasChild() const { return is_script_; }
 
 DescriptorScriptReference DescriptorScriptReference::GetChild() const {
-  return *child_script_;
+  if (is_script_) {
+    return *child_script_;
+  }
+  return DescriptorScriptReference();
 }
 
 bool DescriptorScriptReference::HasKey() const { return !keys_.empty(); }
@@ -643,7 +648,6 @@ void DescriptorNode::AnalyzeKey() {
       key_type_ = DescriptorKeyType::kDescriptorKeyBip32Priv;
     }
     ExtPubkey xpub;
-    ExtPrivkey xpriv;
     std::string path;
     std::string key;
     bool hardened = false;
@@ -708,6 +712,7 @@ void DescriptorNode::AnalyzeKey() {
         privkey = Privkey(bytes);
         pubkey = privkey.GeneratePubkey();
       }
+      key_info_ = pubkey.GetHex();
     } catch (const CfdException& except) {
       std::string errmsg(except.what());
       if (errmsg.find("hex to byte convert error.") != std::string::npos) {
@@ -769,15 +774,20 @@ void DescriptorNode::AnalyzeAll(const std::string& parent_name) {
     }
   }
   if (p_data == nullptr) {
-    warn(CFD_LOG_SOURCE, "Failed to unknown name.");
+    warn(
+        CFD_LOG_SOURCE,
+        "Failed to analyze descriptor. script's name not found.");
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Failed to unknown name.");
+        CfdError::kCfdIllegalArgumentError, "Failed to analyze descriptor.");
   }
 
   if (p_data->top_only && (depth_ != 0)) {
-    warn(CFD_LOG_SOURCE, "Failed to depth is not zero.");
+    warn(
+        CFD_LOG_SOURCE,
+        "Failed to analyse descriptor. The target can only exist at the top.");
     throw CfdException(
-        CfdError::kCfdIllegalArgumentError, "Failed to depth is not zero.");
+        CfdError::kCfdIllegalArgumentError,
+        "Failed to analyse descriptor. The target can only exist at the top.");
   }
   if (p_data->has_child) {
     if (child_node_.empty()) {
@@ -870,32 +880,34 @@ void DescriptorNode::AnalyzeAll(const std::string& parent_name) {
           CfdError::kCfdIllegalArgumentError,
           "Failed to wsh parent. only top or sh.");
     } else if ((name_ == "wpkh") && (parent_name == "wsh")) {
-      warn(CFD_LOG_SOURCE, "Failed to wpkh parent. cannot wsh.");
+      warn(
+          CFD_LOG_SOURCE,
+          "Failed to check wpkh. wpkh cannot be a child of wsh.");
       throw CfdException(
           CfdError::kCfdIllegalArgumentError,
-          "Failed to wpkh parent. cannot wsh.");
+          "Failed to check wpkh. wpkh cannot be a child of wsh.");
     } else if (
         ((name_ == "wsh") || (name_ == "sh")) &&
         (child_node_[0].node_type_ !=
          DescriptorNodeType::kDescriptorTypeScript)) {
       warn(
           CFD_LOG_SOURCE,
-          "Failed to sh child type. child is script only. nodetype={}",
+          "Failed to check script type. child is script only. nodetype={}",
           child_node_[0].node_type_);
       throw CfdException(
           CfdError::kCfdIllegalArgumentError,
-          "Failed to sh child type. child is script only.");
+          "Failed to check script type. child is script only.");
     } else if (
         (name_ != "wsh") && (name_ != "sh") &&
         (child_node_[0].node_type_ !=
          DescriptorNodeType::kDescriptorTypeKey)) {
       warn(
           CFD_LOG_SOURCE,
-          "Failed to child type. child is key only. nodetype={}",
+          "Failed to check key-hash type. child is key only. nodetype={}",
           child_node_[0].node_type_);
       throw CfdException(
           CfdError::kCfdIllegalArgumentError,
-          "Failed to child type. child is key only.");
+          "Failed to check key-hash type. child is key only.");
     }
     child_node_[0].AnalyzeAll(name_);
   }

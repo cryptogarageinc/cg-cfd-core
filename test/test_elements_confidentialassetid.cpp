@@ -55,6 +55,17 @@ TEST(ConfidentialAssetId, Constractor_hex33) {
       "0a7f0c8d0a4e6fb92c63893345facbd99dc603dc1cd18c73e5700bd9a0babb1f0b");
 }
 
+TEST(ConfidentialAssetId, Constractor_hex33_version0) {
+  // 33byte
+  ConfidentialAssetId assetid(
+      "007f0c8d0a4e6fb92c63893345facbd99dc603dc1cd18c73e5700bd9a0babb1f0b");
+  EXPECT_STREQ(assetid.GetHex().c_str(), "");
+  EXPECT_EQ(assetid.GetData().GetDataSize(), 0);
+  EXPECT_EQ(assetid.HasBlinding(), false);
+  EXPECT_STREQ(assetid.GetUnblindedData().GetHex().c_str(), "");
+  EXPECT_TRUE(assetid.IsEmpty());
+}
+
 TEST(ConfidentialAssetId, Constractor_hex_err) {
   // error
   EXPECT_THROW(ConfidentialAssetId assetid("001122"), CfdException);
