@@ -576,6 +576,17 @@ ExtPubkey ExtPubkey::DerivePubkey(const std::vector<uint32_t>& path) const {
       &extkey, path.data(), path.size(), flag | BIP32_FLAG_KEY_TWEAK_SUM,
       &child_key);
   if (ret != WALLY_OK) {
+    // hardened check
+    for (const auto& value : path) {
+      if ((value & ExtPrivkey::kHardenedKey) != 0) {
+        warn(
+            CFD_LOG_SOURCE,
+            "bip32_key_from_parent_path error. ret={} hardened=true", ret);
+        throw CfdException(
+            CfdError::kCfdIllegalArgumentError,
+            "ExtPubkey hardened derive error.");
+      }
+    }
     warn(CFD_LOG_SOURCE, "bip32_key_from_parent_path error. ret={}", ret);
     throw CfdException(
         CfdError::kCfdIllegalArgumentError, "ExtPubkey derive error.");
