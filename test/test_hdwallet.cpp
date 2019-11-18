@@ -319,6 +319,10 @@ TEST(HDWallet, GeneratePrivkeyTest) {
   ExtPrivkey privkey2;
   EXPECT_NO_THROW((privkey2 = privkey1.DerivePrivkey(44)));
   EXPECT_STREQ(privkey2.ToString().c_str(), privkey0.ToString().c_str());
+
+  ExtPrivkey privkeyh;
+  EXPECT_NO_THROW((privkeyh = wallet.GeneratePrivkey(NetType::kMainnet, "m/0h/44h")));
+  EXPECT_STREQ(privkeyh.ToString().c_str(), "xprv9xcgxExFiq8qWLdxFHXpEZF8VH7Qr9YDZb8c7vMsqygWk2YGTBgSnDtm1LESskfAJqGMWkWWGagNCSbHdVgA8EFxSbfAQTKSD1z4iJ8qHtq");
 }
 
 TEST(HDWallet, GeneratePubkeyTest) {
@@ -345,4 +349,8 @@ TEST(HDWallet, GeneratePubkeyTest) {
   ExtPubkey pubkey2;
   EXPECT_NO_THROW((pubkey2 = pubkey1.DerivePubkey(44)));
   EXPECT_STREQ(pubkey2.ToString().c_str(), pubkey0.ToString().c_str());
+
+  ExtPubkey pubkeyh;
+  EXPECT_NO_THROW((pubkeyh = wallet.GeneratePubkey(NetType::kMainnet, "m/0H/44H")));
+  EXPECT_STREQ(pubkeyh.ToString().c_str(), "xpub6Bc3MkV9ZCh8ipiRMK4pbhBs3JwuFcG4vp4CvJmVQKDVcpsQzizhL2DErc5DHMQuKwBxTg1jLP6PCqriLmLsJzjB2kD9TE9hvqxQ4yLKtcV");
 }
